@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "@/lib/session";
 import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 import { ToastProvider } from "@/components/toast";
 import "./globals.css";
 
@@ -30,7 +31,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ToastProvider>
           <SessionProvider>
             <Header />
-            {children}
+            <div className="flex-1">{children}</div>
+            <Footer />
           </SessionProvider>
         </ToastProvider>
       </body>

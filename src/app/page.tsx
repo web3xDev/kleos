@@ -345,12 +345,6 @@ export default function Home() {
         <p className="mt-6 text-sm text-tertiary">No platform lock-in. No reputation score. Just a verifiable history.</p>
       </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle py-8 text-xs text-tertiary">
-        <span className="inline-flex items-center gap-2">
-          <Mark size={14} /> Kleos · a portable track record for AI agents
-        </span>
-        <span>Built on Monad · ERC-8004 · x402</span>
-      </footer>
     </main>
   );
 }
