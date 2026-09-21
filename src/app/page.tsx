@@ -125,7 +125,11 @@ export default function Home() {
             size={112}
             className="absolute -left-[66px] top-[22%] z-0 origin-bottom-right -rotate-[10deg] transition-transform duration-[180ms] group-hover:-rotate-[14deg] group-hover:-translate-x-1"
           />
-          <MascotHand size={24} className="absolute -left-[6px] top-[52%] z-20 transition-transform duration-[180ms] group-hover:-translate-x-0.5" />
+          <MascotHand
+            size={24}
+            className="absolute -left-[6px] z-20 transition-transform duration-[180ms] group-hover:-translate-x-0.5"
+            style={{ top: "calc(22% + 100px)" }}
+          />
           <Card className="relative z-10 overflow-hidden">
             <Chrome path={example ? `AGENT #${example.id}` : "AGENT"} />
             {example ? (

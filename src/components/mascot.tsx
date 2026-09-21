@@ -45,10 +45,10 @@ export function Mascot({ size = 112, className = "" }: { size?: number; classNam
 }
 
 /** Four fingers over the card edge, drawn separately so they sit above the card. */
-export function MascotHand({ size = 28, className = "" }: { size?: number; className?: string }) {
+export function MascotHand({ size = 28, className = "", style }: { size?: number; className?: string; style?: React.CSSProperties }) {
   const rows = ["0110", "1111", "1111", "0111"];
   return (
-    <svg width={size} height={size} viewBox="0 0 4 4" shapeRendering="crispEdges" className={className} aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 4 4" shapeRendering="crispEdges" className={className} style={style} aria-hidden="true">
       {rows.flatMap((row, y) =>
         [...row].map((c, x) => (c === "0" ? null : <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill="var(--accent)" />)),
       )}
