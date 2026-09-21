@@ -122,8 +122,8 @@ export default function Home() {
           {/* peeking from behind the card's left edge: pivot at the bottom-right,
               body hidden behind the card, head leaning out */}
           <Mascot
-            size={56}
-            className="absolute -left-[18px] top-[34%] z-0 origin-bottom-right -rotate-[22deg] transition-transform duration-[180ms] group-hover:-rotate-[26deg]"
+            size={84}
+            className="absolute -left-[34px] top-[30%] z-0 origin-right -rotate-[20deg] transition-transform duration-[180ms] group-hover:-rotate-[24deg]"
           />
           <Card className="relative z-10 overflow-hidden">
             <Chrome path={example ? `AGENT #${example.id}` : "AGENT"} />
