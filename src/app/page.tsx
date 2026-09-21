@@ -148,7 +148,9 @@ export default function Home() {
               <div className="border-t border-border-subtle px-5 py-4">
                 <div className="flex items-center justify-between gap-3">
                   <Label>Latest stamp</Label>
-                  <VerifiedBadge />
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+                    <Check size={12} strokeWidth={2} /> Verified
+                  </span>
                 </div>
                 <div className="mt-3 flex items-start gap-3">
                   <Check size={14} strokeWidth={2} className="mt-1 shrink-0 text-success" />
@@ -189,7 +191,7 @@ export default function Home() {
       </section>
 
       {/* A stamp */}
-      <section className="grid gap-10 py-24 md:grid-cols-2 md:items-center md:py-36">
+      <section className="grid gap-10 py-20 md:grid-cols-2 md:items-center md:py-36">
         <div>
           <Reveal>
             <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a stamp.</h2>
@@ -197,7 +199,7 @@ export default function Home() {
           <ol className="mt-8">
             {[
               ["01", "Payment settles", "A payment for a tool lands on Monad. That is the proof the action happened."],
-              ["02", "Receipt is signed", "What was bought, for how much, and the answer's hash, signed by the agent's wallet."],
+              ["02", "Receipt is signed", "The agent's wallet signs what was bought, how much it cost, and the answer's hash."],
               ["03", "Stamp is anchored", "The receipt hash goes on chain next to the settlement. Anyone can check it."],
             ].map(([n, t, b], i, arr) => (
               <li key={n}>
@@ -298,7 +300,7 @@ export default function Home() {
 
       {/* How it works: one pipeline, ending in a real stamp */}
       <Reveal>
-      <section className="py-24 md:py-36">
+      <section className="py-20 md:py-36">
         <Label>How it works</Label>
         <h2 className="mt-3 max-w-2xl text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">
           One paid action becomes a permanent record.
@@ -313,7 +315,7 @@ export default function Home() {
       {/* A real record: the example, verified live in this browser */}
       {example && (
         <Reveal>
-        <section className="py-24 md:py-36">
+        <section className="py-20 md:py-36">
           <div className="flex items-end justify-between gap-4">
             <div>
               <Label>Verify a real record</Label>
@@ -371,7 +373,11 @@ export default function Home() {
                       );
                     // Evidence for the first two checks, from the latest stamp.
                     const evidence =
-                      i === 0 && latest ? shortHex(latest.receiptHash, 10, 8) : i === 1 && latest ? shortHex(latest.receipt.wallet, 8, 6) : null;
+                      i === 0 && latest
+                        ? { k: "Receipt hash", v: shortHex(latest.receiptHash, 10, 8) }
+                        : i === 1 && latest
+                          ? { k: "Signer", v: shortHex(latest.receipt.wallet, 8, 6) }
+                          : null;
                     return (
                       <li key={c.label} className="text-sm">
                         {evidence && checks ? (
@@ -380,7 +386,10 @@ export default function Home() {
                               <span className={c.ok === false ? "text-error" : "text-primary"}>{c.label}</span>
                               {icon}
                             </summary>
-                            <Mono className="mt-1 block text-xs text-tertiary">{evidence}</Mono>
+                            <div className="mt-1.5 flex items-baseline gap-3 pl-0.5">
+                              <Label className="text-[10px]">{evidence.k}</Label>
+                              <Mono className="text-xs text-secondary">{evidence.v}</Mono>
+                            </div>
                           </details>
                         ) : (
                           <div className="flex items-center justify-between">
@@ -412,7 +421,8 @@ export default function Home() {
 
       {/* Closing */}
       <Reveal>
-      <section className="py-24 md:py-36">
+      <section className="grid gap-12 py-20 md:grid-cols-[1.2fr_1fr] md:items-center md:py-36">
+        <div>
         <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Your agent starts with zero.</h2>
         <p className="mt-2 text-[32px] font-semibold leading-tight tracking-tight text-tertiary md:text-[40px]">Every action changes that.</p>
         <div className="mt-8">
@@ -424,6 +434,34 @@ export default function Home() {
           </Link>
         </div>
         <p className="mt-6 text-sm text-tertiary">No platform owns the record. No reputation score. Just a verifiable history.</p>
+        </div>
+
+        {/* zero → actions → history, from the example's real stamps */}
+        {example && (
+          <ol className="md:justify-self-end">
+            {[
+              { v: "0", l: "actions", dim: true },
+              ...Array.from({ length: Math.min(example.stamps.length, 3) }, (_, i) => ({
+                v: String(i + 1),
+                l: i === 0 ? "verified action" : "verified actions",
+                dim: false,
+              })),
+              ...(example.stamps.length > 3 ? [{ v: "…", l: `${example.stamps.length} verified actions`, dim: false }] : []),
+              { v: formatUsdc(usdc), l: "USDC settled", dim: false },
+            ].map((row, i, arr) => (
+              <li key={i} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <span className={`mt-2 block h-[7px] w-[7px] rounded-full ${row.dim ? "bg-border-hover" : "bg-primary"}`} />
+                  {i < arr.length - 1 && <span className="my-1 block w-px flex-1 bg-border" />}
+                </div>
+                <div className="pb-5">
+                  <span className={`metric text-[24px] ${row.dim ? "text-tertiary" : ""}`}>{row.v}</span>
+                  <Label className="mt-0.5">{row.l}</Label>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
       </Reveal>
 

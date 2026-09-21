@@ -16,7 +16,7 @@ const STEPS = [
   { n: "01", t: "Register", who: "Human", sub: "ERC-8004 identity", out: "identity", body: "One passkey ceremony. No seed phrase, no wallet." },
   { n: "02", t: "Connect", who: "Human + runtime", sub: "Runtime wallet", out: "paired key", body: "The software that runs the agent gets its own key. It never sees yours." },
   { n: "03", t: "Act", who: "Agent + runtime", sub: "x402 payment", out: "settlement", body: "The agent buys a tool. The payment settles on Monad." },
-  { n: "04", t: "Stamp", who: "Kleos", sub: "Portable record", out: "anchored", body: "A signed receipt, anchored next to the payment. Provable by anyone." },
+  { n: "04", t: "Stamp", who: "Kleos", sub: "Portable record", out: "anchored", body: "A signed receipt, anchored next to the payment. Anyone can verify it." },
 ];
 
 // Timing of the sequence, in ms from the moment the section is in view.
@@ -42,7 +42,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
       {/* the head of the drawn rail: a 3px point, no glow, gone when it arrives */}
       <span
         aria-hidden
-        className="absolute top-[2px] hidden h-[3px] w-[3px] rounded-full bg-primary md:block"
+        className="absolute top-[2.5px] hidden h-[2px] w-[2px] rounded-full bg-primary md:block"
         style={{
           left: inView ? "calc(75% + 18px)" : "0px",
           opacity: inView ? 0 : 1,
