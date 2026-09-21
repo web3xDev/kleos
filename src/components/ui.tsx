@@ -17,7 +17,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Button({ variant = "primary", size = "md", loading, className, children, disabled, ...rest }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-[8px] font-medium disabled:cursor-not-allowed disabled:opacity-50";
+    "group/btn inline-flex items-center justify-center gap-2 rounded-[8px] font-medium disabled:cursor-not-allowed disabled:opacity-50";
   const sizes = { md: "h-10 px-4 text-sm", lg: "h-12 px-5 text-[15px]" };
   const variants = {
     primary: "bg-primary text-background hover:bg-white",

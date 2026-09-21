@@ -154,3 +154,11 @@ textarea,
   text-transform: uppercase;
   color: var(--text-tertiary);
 }
+
+/* Arrow inside a button slides 2px right on hover. */
+.group\/btn:hover svg.lucide-arrow-right {
+  transform: translateX(2px);
+}
+svg.lucide-arrow-right {
+  transition: transform 180ms cubic-bezier(0.2, 0, 0, 1);
+}
