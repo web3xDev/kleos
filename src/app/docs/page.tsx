@@ -4,6 +4,7 @@ import Link from "next/link";
 import { addresses, chain, x402Facilitator } from "@/lib/chain";
 import { Label, Mono } from "@/components/ui";
 import { MentalModel } from "@/components/mental-model";
+import { DocsNav } from "@/components/docs-nav";
 
 function Code({ children }: { children: string }) {
   return (
@@ -21,7 +22,7 @@ function H2({ id, children }: { id: string; children: React.ReactNode }) {
   );
 }
 
-const nav = [
+const nav: [string, string][] = [
   ["what", "What Kleos is"],
   ["quickstart", "Add a track record in 10 minutes"],
   ["stamp", "What a stamp is"],
@@ -35,18 +36,7 @@ export default function DocsPage() {
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 py-12 md:px-8">
       <div className="grid gap-12 md:grid-cols-[220px_1fr]">
-        <aside className="md:sticky md:top-24 md:self-start">
-          <Label>Docs</Label>
-          <ul className="mt-3 space-y-1.5">
-            {nav.map(([id, label]) => (
-              <li key={id}>
-                <a href={`#${id}`} className="text-sm text-secondary hover:text-primary">
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </aside>
+        <DocsNav items={nav} />
 
         <article className="min-w-0 space-y-16">
           <header>
