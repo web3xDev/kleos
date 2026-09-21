@@ -201,7 +201,7 @@ export default function Home() {
               ["03", "Stamp is anchored", "The receipt hash goes on chain next to the settlement. Anyone can check it."],
             ].map(([n, t, b], i, arr) => (
               <li key={n}>
-                <Reveal className="flex gap-4" delay={120 + i * 140}>
+                <Reveal className="flex gap-4" delay={90 + i * 100}>
                   <div className="flex flex-col items-center">
                     <Mono className="mt-0.5 w-6 text-tertiary">{n}</Mono>
                     {i < arr.length - 1 && <span className="my-2 block w-px flex-1 bg-border" />}
@@ -216,7 +216,7 @@ export default function Home() {
           </ol>
         </div>
 
-        <Reveal delay={520}>
+        <Reveal delay={380}>
         <Card className="overflow-hidden">
           <Chrome path="STAMP" />
           {latest && example ? (
