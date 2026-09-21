@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Fingerprint } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { Wordmark } from "@/components/mark";
+import { TestnetBadge } from "@/components/ui";
 
 const nav = [
   { href: "/explore", label: "Explore" },
@@ -38,6 +39,9 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <span className="hidden sm:inline-flex">
+            <TestnetBadge />
+          </span>
           {session ? (
             <>
               <Link
@@ -49,7 +53,7 @@ export function Header() {
                 My agents
               </Link>
               <span
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-success/40 text-success"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-secondary"
                 title={`Session ends in ${Math.ceil(secondsLeft / 60)} min`}
               >
                 <Fingerprint size={16} strokeWidth={1.5} />

@@ -64,3 +64,7 @@ Lucide, 1.5px stroke. 16px UI, 18px buttons, 20px nav, 24px feature states. No e
 ## Accent rule (decided 2026-09-21)
 
 No purple buttons. The primary action (Register agent, Connect runtime) is the white primary button, like every other primary. Purple stays only as the input focus ring and small accent details; several purples were tried on the dark surface and none earned its place.
+
+## Motion and green (decided 2026-09-21)
+
+The wordmark and the tally in the header and hero are static. The tally's landing stroke is used only when a stamp is actually created (playground, feeds). Green appears only on verified / settled / connected states, never as an ambient "live" indicator; the navbar carries a small amber TESTNET badge and a grey session ring instead. No pulses.
