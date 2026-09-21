@@ -29,11 +29,11 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
   return (
     <ol ref={ref} className="relative mt-12 grid gap-10 md:grid-cols-4 md:gap-6">
       {/* base rail */}
-      <span aria-hidden className="absolute top-[3px] left-0 hidden h-px w-full bg-border md:block" />
+      <span aria-hidden className="absolute top-[3px] left-0 hidden h-px w-[calc(75%+18px)] bg-border md:block" />
       {/* drawn rail */}
       <span
         aria-hidden
-        className="absolute top-[3px] left-0 hidden h-px w-full origin-left bg-secondary md:block"
+        className="absolute top-[3px] left-0 hidden h-px w-[calc(75%+18px)] origin-left bg-secondary md:block"
         style={{
           transform: inView ? "scaleX(1)" : "scaleX(0)",
           transition: `transform ${DRAW_MS}ms linear`,
@@ -59,7 +59,6 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                 transition: `background 300ms ${delay}ms`,
               }}
             />
-            {i === 3 && <span aria-hidden className="absolute top-[3px] right-0 hidden h-px w-3 bg-background md:block" />}
 
             <div className="flex items-baseline gap-3">
               <Mono className="text-tertiary">{st.n}</Mono>
