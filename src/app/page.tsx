@@ -6,9 +6,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
-import { chain } from "@/lib/chain";
-import { fetchStamps, formatUsdc, type Stamp } from "@/lib/stamps";
+import { ArrowRight, ArrowUpRight, Check, Loader2, X } from "lucide-react";
+import { addresses, chain } from "@/lib/chain";
+import { useSession } from "@/lib/session";
+import { fetchStamps, formatUsdc, verifyStamp, type Check as VerifyCheck, type Stamp } from "@/lib/stamps";
 import { Button, Card, Label, Mono, TestnetBadge, VerifiedBadge, shortHex } from "@/components/ui";
 import { Mark } from "@/components/mark";
 
@@ -46,9 +47,11 @@ function ConnectedPill({ label }: { label: string }) {
 }
 
 export default function Home() {
+  const { publicClient } = useSession();
   const [data, setData] = useState<ExploreData | null>(null);
   const [example, setExample] = useState<Example | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [checks, setChecks] = useState<VerifyCheck[][] | null>(null);
 
   useEffect(() => {
     fetch("/api/explore")
@@ -60,11 +63,23 @@ export default function Home() {
         if (top && top.stamps > 0) {
           const stamps = await fetchStamps(BigInt(top.id));
           setExample({ id: top.id, name: top.name ?? `Agent #${top.id}`, wallet: top.wallet, stamps });
+          // Verify the example's stamps in the browser, for real, against Monad.
+          const results: VerifyCheck[][] = [];
+          for (const st of stamps.slice(0, 5)) results.push(await verifyStamp(publicClient, st));
+          setChecks(results);
         }
       })
       .catch(() => null)
       .finally(() => setLoaded(true));
-  }, []);
+  }, [publicClient]);
+
+  // One row per check label: passed only when every verified stamp passed it.
+  const CHECKS = ["Receipt hash recomputed", "Signed by the agent's wallet", "Anchored on Monad", "Payment settled on Monad"];
+  const checkRows = CHECKS.map((label) => ({
+    label,
+    ok: checks ? checks.every((cs) => cs.find((c) => c.label === label)?.ok) : null,
+  }));
+  const passed = checkRows.filter((c) => c.ok).length;
 
   const usdc = example ? example.stamps.reduce((s, x) => s + BigInt(x.receipt.amount), 0n) : 0n;
   const latest = example?.stamps[0];
@@ -80,8 +95,8 @@ export default function Home() {
             Give your agent a track record.
           </h1>
           <p className="mt-6 max-w-lg text-lg text-secondary">
-            Kleos turns an agent&apos;s paid actions into a portable, verifiable history. Every stamp sits next to a
-            payment on Monad, so it cannot be faked, and no platform owns it.
+            Kleos turns an agent&apos;s paid actions into a portable, verifiable history. Every paid action leaves a
+            stamp next to its settlement on Monad. Anyone can verify the record.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/me">
@@ -126,20 +141,29 @@ export default function Home() {
                     <Label className="mt-1">USDC settled</Label>
                   </div>
                 </div>
-                {latest && (
-                  <div className="mt-5 flex items-center gap-3 border-t border-border-subtle pt-4">
-                    <Check size={14} strokeWidth={2} className="shrink-0 text-success" />
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm text-primary">{latest.receipt.tool}</div>
-                      <div className="text-xs text-tertiary">{latest.receipt.platform}</div>
-                    </div>
-                    <div className="text-right">
-                      <Mono className="block text-primary">{formatUsdc(BigInt(latest.receipt.amount))}</Mono>
-                      <span className="text-[11px] text-tertiary">{timeAgo(latest.receipt.timestamp)}</span>
-                    </div>
-                  </div>
-                )}
               </Link>
+            ) : null}
+            {example && latest ? (
+              <div className="border-t border-border-subtle px-5 py-4">
+                <Label>Latest stamp</Label>
+                <div className="mt-2 flex items-start gap-3">
+                  <Check size={14} strokeWidth={2} className="mt-1 shrink-0 text-success" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm text-primary">{latest.receipt.tool}</div>
+                    <div className="mt-0.5 text-xs text-tertiary">
+                      {formatUsdc(BigInt(latest.receipt.amount))} USDC · {timeAgo(latest.receipt.timestamp)}
+                    </div>
+                    <a
+                      href={`${chain.blockExplorers.default.url}/tx/${latest.receipt.settlementTx}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center gap-1 font-mono text-xs text-secondary hover:text-primary"
+                    >
+                      Settlement {shortHex(latest.receipt.settlementTx, 6, 4)} <ArrowUpRight size={12} strokeWidth={1.5} />
+                    </a>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="p-5">
                 {loaded ? (
@@ -160,38 +184,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Network state */}
-      <section className="border-y border-border-subtle py-8">
-        <Label>Live on {chain.name}</Label>
-        <div className="mt-5 grid grid-cols-2 gap-8 md:grid-cols-4">
-          <Stat value={data ? data.total.toLocaleString() : null} label="Agents registered" />
-          <Stat
-            value={data ? data.withTrackRecord.toLocaleString() : null}
-            label={data?.withTrackRecord === 1 ? "Agent with a track record" : "Agents with a track record"}
-          />
-          <Stat value={data ? data.totalStamps.toLocaleString() : null} label="Verified actions" />
-          <Stat value={example ? formatUsdc(usdc) : data ? "$0.00" : null} label="USDC settled" testnet />
-        </div>
-        <p className="mt-4 text-xs text-tertiary">Read from the ERC-8004 registry and KleosStamps. No mock numbers, ever.</p>
-      </section>
-
       {/* A stamp */}
       <section className="grid gap-10 py-20 md:grid-cols-2 md:items-center md:py-28">
         <div>
-          <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a mark.</h2>
+          <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a stamp.</h2>
           <ol className="mt-8">
             {[
-              ["Payment settles.", "An x402 payment lands on Monad. That is the proof the action happened."],
-              ["Receipt is signed.", "The runtime signs what it bought and seals the answer to the owner's passkey."],
-              ["Stamp is anchored.", "The receipt hash goes on chain next to the settlement. Anyone can check it."],
-            ].map(([t, b], i, arr) => (
-              <li key={t} className="flex gap-4">
+              ["01", "Payment settles", "Agent / runtime", "An x402 payment lands on Monad."],
+              ["02", "Receipt is signed", "Runtime", "The runtime signs what it bought and seals the answer to the owner."],
+              ["03", "Stamp is anchored", "Kleos", "The receipt hash is anchored next to the settlement. Anyone can check it."],
+            ].map(([n, t, who, b], i, arr) => (
+              <li key={n} className="flex gap-4">
                 <div className="flex flex-col items-center">
-                  <span className="mt-1.5 block h-2 w-2 rounded-full bg-primary" />
-                  {i < arr.length - 1 && <span className="my-1 block w-px flex-1 bg-border" />}
+                  <Mono className="mt-0.5 w-6 text-tertiary">{n}</Mono>
+                  {i < arr.length - 1 && <span className="my-2 block w-px flex-1 bg-border" />}
                 </div>
-                <div className="pb-6">
-                  <div className="text-[15px] font-medium text-primary">{t}</div>
+                <div className="pb-7">
+                  <div className="flex flex-wrap items-baseline gap-x-3">
+                    <span className="text-[15px] font-medium text-primary">{t}</span>
+                    <Label>{who}</Label>
+                  </div>
                   <div className="mt-1 text-sm text-secondary">{b}</div>
                 </div>
               </li>
@@ -241,6 +253,40 @@ export default function Home() {
         </Card>
       </section>
 
+      {/* Network state */}
+      <section className="border-y border-border-subtle py-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <Label>Live on {chain.name}</Label>
+          <div className="flex flex-wrap gap-x-5 gap-y-1">
+            <a
+              href={`${chain.blockExplorers.default.url}/address/${addresses.identityRegistry}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 font-mono text-[11px] text-tertiary hover:text-secondary"
+            >
+              ERC-8004 registry <ArrowUpRight size={11} strokeWidth={1.5} />
+            </a>
+            <a
+              href={`${chain.blockExplorers.default.url}/address/${addresses.kleosStamps}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 font-mono text-[11px] text-tertiary hover:text-secondary"
+            >
+              KleosStamps <ArrowUpRight size={11} strokeWidth={1.5} />
+            </a>
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-6 md:grid-cols-4">
+          <Stat value={data ? data.total.toLocaleString() : null} label="Agents registered" />
+          <Stat
+            value={data ? data.withTrackRecord.toLocaleString() : null}
+            label={data?.withTrackRecord === 1 ? "Agent with a track record" : "Agents with a track record"}
+          />
+          <Stat value={data ? data.totalStamps.toLocaleString() : null} label="Verified actions" />
+          <Stat value={example ? formatUsdc(usdc) : data ? "$0.00" : null} label="USDC settled" testnet />
+        </div>
+      </section>
+
       {/* How it works: a chain, not four tiles */}
       <section className="border-t border-border-subtle py-20 md:py-28">
         <Label>How it works</Label>
@@ -265,14 +311,14 @@ export default function Home() {
         <p className="mt-12 text-[24px] font-semibold tracking-tight">No platform owns the record.</p>
       </section>
 
-      {/* Profile preview: the product's core page, real */}
+      {/* A real record: the example, verified live in this browser */}
       {example && (
         <section className="border-t border-border-subtle py-20 md:py-28">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <Label>A real agent</Label>
+              <Label>A real record</Label>
               <p className="mt-2 max-w-md text-sm text-secondary">
-                This is what a track record looks like. Open it and verify it yourself, in your browser, against Monad.
+                This record is being verified right now, in your browser, directly against Monad. No Kleos API is consulted.
               </p>
             </div>
             <Link href={`/a/${example.id}`} className="hidden items-center gap-1 text-sm text-secondary hover:text-primary md:inline-flex">
@@ -280,48 +326,59 @@ export default function Home() {
             </Link>
           </div>
           <Card className="mt-6 overflow-hidden">
-            <Chrome path={`AGENT #${example.id}`} />
-            <div className="p-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <div className="text-[24px] font-semibold leading-tight">{example.name}</div>
-                  <div className="mt-2 flex items-center gap-3">
-                    <Mono className="text-secondary">Agent #{example.id}</Mono>
-                    {example.wallet && <ConnectedPill label="Active" />}
+            <Chrome path={`AGENT #${example.id} / VERIFY`} />
+            <div className="grid md:grid-cols-[1fr_1fr]">
+              <div className="p-6 md:border-r md:border-border-subtle">
+                <div className="text-[24px] font-semibold leading-tight">{example.name}</div>
+                <div className="mt-2 flex items-center gap-3">
+                  <Mono className="text-secondary">Agent #{example.id}</Mono>
+                  {example.wallet && <ConnectedPill label="Active" />}
+                </div>
+                <div className="mt-6 grid grid-cols-3 gap-6">
+                  <div>
+                    <div className="metric">{example.stamps.length}</div>
+                    <Label className="mt-1">Verified actions</Label>
+                  </div>
+                  <div>
+                    <div className="metric">{formatUsdc(usdc)}</div>
+                    <Label className="mt-1">USDC settled</Label>
+                  </div>
+                  <div>
+                    <div className="metric">{tools}</div>
+                    <Label className="mt-1">{tools === 1 ? "Tool" : "Tools"}</Label>
                   </div>
                 </div>
-                <TestnetBadge />
               </div>
-              <div className="mt-6 grid grid-cols-3 gap-6 md:max-w-md">
-                <div>
-                  <div className="metric">{example.stamps.length}</div>
-                  <Label className="mt-1">Verified actions</Label>
+              <div className="bg-surface-elevated p-6">
+                <div className="flex items-baseline justify-between gap-4">
+                  <Label>Verification</Label>
+                  <Mono className="text-xs text-secondary">
+                    {checks ? `${passed} / ${checkRows.length} checks passed` : "checking"}
+                  </Mono>
                 </div>
-                <div>
-                  <div className="metric">{formatUsdc(usdc)}</div>
-                  <Label className="mt-1">USDC settled</Label>
-                </div>
-                <div>
-                  <div className="metric">{tools}</div>
-                  <Label className="mt-1">{tools === 1 ? "Tool" : "Tools"}</Label>
-                </div>
+                <ul className="mt-4 space-y-2">
+                  {checkRows.map((c) => (
+                    <li key={c.label} className="flex items-center justify-between text-sm">
+                      <span className={c.ok === false ? "text-error" : "text-primary"}>{c.label}</span>
+                      {c.ok === null ? (
+                        <Loader2 size={14} strokeWidth={1.5} className="animate-spin text-tertiary" />
+                      ) : c.ok ? (
+                        <Check size={14} strokeWidth={2} className="text-success" />
+                      ) : (
+                        <X size={14} strokeWidth={2} className="text-error" />
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-5 text-xs text-tertiary">
+                  Kleos does not decide whether this record is valid. Your browser does.
+                </p>
               </div>
             </div>
-            <ul className="divide-y divide-border-subtle border-t border-border-subtle">
-              {example.stamps.slice(0, 3).map((s) => (
-                <li key={s.receiptHash} className="flex items-center gap-4 px-6 py-3.5">
-                  <Check size={14} strokeWidth={2} className="shrink-0 text-success" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm text-primary">{s.receipt.tool}</div>
-                    <div className="text-xs text-tertiary">{s.receipt.platform}</div>
-                  </div>
-                  <Mono className="text-primary">{formatUsdc(BigInt(s.receipt.amount))}</Mono>
-                  <span className="hidden w-20 text-right text-xs text-tertiary sm:block">{timeAgo(s.receipt.timestamp)}</span>
-                </li>
-              ))}
-            </ul>
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle px-6 py-4">
-              <span className="text-xs text-tertiary">Kleos does not decide whether this record is valid. Your browser does.</span>
+              <span className="text-xs text-tertiary">
+                {example.stamps.length} {example.stamps.length === 1 ? "stamp" : "stamps"} · each one recomputed, signature-checked, read from KleosStamps, settlement fetched
+              </span>
               <Link href={`/a/${example.id}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                 Verify this profile <ArrowRight size={14} strokeWidth={1.5} />
               </Link>
