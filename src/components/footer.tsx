@@ -38,7 +38,7 @@ export function Footer() {
             )}
           </nav>
         </div>
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-6">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
           <Mono className="text-xs text-tertiary">ERC-8004 · x402 · {chain.name}</Mono>
           <span className="text-xs text-tertiary">© 2026 Kleos</span>
         </div>
