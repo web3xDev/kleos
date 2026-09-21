@@ -423,9 +423,7 @@ export default function Home() {
       {/* FAQ */}
       <Reveal>
       <section className="py-20 md:py-36">
-        <div className="md:max-w-3xl">
-          <Faq />
-        </div>
+        <Faq />
       </section>
       </Reveal>
 
