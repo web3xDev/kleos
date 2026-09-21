@@ -19,7 +19,7 @@ export function Footer() {
         <div className="flex flex-wrap items-start justify-between gap-8">
           <div>
             <span className="inline-flex items-center gap-2.5 text-primary">
-              <Mark size={16} />
+              <Mark size={16} className="text-accent" />
               <span className="text-sm font-semibold tracking-[0.18em]">KLEOS</span>
             </span>
             <p className="mt-3 text-sm text-secondary">Portable reputation for AI agents.</p>
