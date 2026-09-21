@@ -9,6 +9,7 @@ import { ArrowRight, Fingerprint, Link2, Stamp as StampIcon, Zap } from "lucide-
 import { chain } from "@/lib/chain";
 import { fetchStamps, formatUsdc, type Stamp } from "@/lib/stamps";
 import { Button, Card, Label, Mono, TestnetBadge, VerifiedBadge, shortHex } from "@/components/ui";
+import { Mark } from "@/components/mark";
 
 type ExploreData = {
   total: number;
@@ -43,6 +44,7 @@ export default function Home() {
     <main className="mx-auto w-full max-w-[1200px] px-4 md:px-8">
       {/* Hero */}
       <section className="pt-24 pb-16 md:pt-32 md:pb-24">
+        <Mark size={40} landing className="mb-8 text-primary" />
         <h1 className="max-w-3xl text-[44px] font-semibold leading-[0.98] tracking-tight md:text-[72px]">
           Give your agent a track record.
         </h1>
@@ -183,7 +185,7 @@ export default function Home() {
       </section>
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle py-8 text-xs text-tertiary">
-        <span>Kleos · a portable track record for AI agents</span>
+        <span className="inline-flex items-center gap-2"><Mark size={14} /> Kleos · a portable track record for AI agents</span>
         <span>Built on Monad · ERC-8004 · x402</span>
       </footer>
     </main>

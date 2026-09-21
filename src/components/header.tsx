@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fingerprint } from "lucide-react";
 import { useSession } from "@/lib/session";
+import { Wordmark } from "@/components/mark";
 
 const nav = [
   { href: "/explore", label: "Explore" },
@@ -18,8 +19,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-border-subtle bg-background/85 backdrop-blur-[6px]">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 md:px-8">
-        <Link href="/" className="text-sm font-semibold tracking-[0.18em] text-primary">
-          KLEOS
+        <Link href="/" aria-label="Kleos home">
+          <Wordmark />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
