@@ -127,7 +127,7 @@ export default function MePage() {
               : "One passkey. No seed phrase, no extension, no account. Nothing is stored on this device; your keys are derived from your passkey each time."}
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
-            <Button size="lg" loading={busy} onClick={returning ? signIn : create}>
+            <Button size="lg" variant="accent" loading={busy} onClick={returning ? signIn : create}>
               {busy ? "Waiting for passkey" : ended ? "Continue with passkey" : returning ? "Sign in" : "Create passkey"}
             </Button>
             <Button size="lg" variant="ghost" disabled={busy} onClick={returning ? create : signIn}>
@@ -160,7 +160,7 @@ export default function MePage() {
           <Button variant="ghost" onClick={end}>
             End session
           </Button>
-          <Button onClick={() => setShowRegister((v) => !v)}>
+          <Button variant="accent" onClick={() => setShowRegister((v) => !v)}>
             <Plus size={16} strokeWidth={1.5} />
             Register agent
           </Button>
@@ -180,7 +180,7 @@ export default function MePage() {
                 disabled={working}
                 autoFocus
               />
-              <Button type="submit" disabled={!name.trim() || working} loading={working} className="shrink-0">
+              <Button type="submit" variant="accent" disabled={!name.trim() || working} loading={working} className="shrink-0">
                 Register
               </Button>
             </div>
@@ -257,7 +257,7 @@ export default function MePage() {
           <Card className="p-10 text-center">
             <p className="text-secondary">No agents yet.</p>
             <p className="mt-1 text-sm text-tertiary">Register one to give it an identity and start a track record.</p>
-            <Button className="mt-6" onClick={() => setShowRegister(true)}>
+            <Button variant="accent" className="mt-6" onClick={() => setShowRegister(true)}>
               <Plus size={16} strokeWidth={1.5} />
               Register agent
             </Button>

@@ -153,7 +153,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                 Recompute the receipts, check the signatures, anchors and payments directly against Monad. Kleos is not consulted.
               </div>
             </div>
-            <Button onClick={verifyAll} disabled={verification.running} loading={verification.running}>
+            <Button variant="accent" onClick={verifyAll} disabled={verification.running} loading={verification.running}>
               <ShieldCheck size={16} strokeWidth={1.5} />
               Verify this profile
             </Button>

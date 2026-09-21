@@ -105,7 +105,7 @@ export function ConnectRuntime({ agent, onDone, onCancel }: { agent: Agent; onDo
         )}
         {error && <p className="mt-3 text-sm text-error">{error}</p>}
         <div className="mt-5 flex gap-2">
-          <Button type="submit" disabled={!code.trim() || working} loading={working}>
+          <Button type="submit" variant="accent" disabled={!code.trim() || working} loading={working}>
             Connect runtime
           </Button>
           <Button type="button" variant="ghost" onClick={onCancel} disabled={working}>

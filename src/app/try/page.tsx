@@ -91,7 +91,7 @@ export default function TryPage() {
           <div className="text-xs text-tertiary">
             This demo agent is owned by Kleos and funded by us. Each run costs it 0.01 USDC.
           </div>
-          <Button onClick={run} loading={running} disabled={running}>
+          <Button variant="accent" onClick={run} loading={running} disabled={running}>
             <Play size={16} strokeWidth={1.5} />
             Run an action
           </Button>
