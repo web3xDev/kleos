@@ -4,13 +4,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Fingerprint, Loader2, Plus, Link2 } from "lucide-react";
+import { ArrowRight, Check, Fingerprint, Loader2, Plus, Link2, Unlink } from "lucide-react";
 import { useSession, SESSION_MINUTES, hadSession } from "@/lib/session";
 import { cachedAgentIds, ensureGas, loadAgent, registerAgent, type Agent } from "@/lib/agents";
+import { fetchStamps, formatUsdc } from "@/lib/stamps";
+import { disconnectRuntime } from "@/lib/pairing";
 import { hasStoredCredential } from "@/lib/passkey";
 import { chain } from "@/lib/chain";
 import { Badge, Button, Card, Input, Label, Mono, TestnetBadge, shortHex } from "@/components/ui";
 import { ConnectRuntime } from "@/components/connect-runtime";
+import { useToast } from "@/components/toast";
 
 type Progress = "idle" | "gas" | "signing" | "done";
 
@@ -30,6 +33,10 @@ export default function MePage() {
   const [ended, setEnded] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [connecting, setConnecting] = useState<Agent | null>(null);
+  const [summary, setSummary] = useState<Map<string, { actions: number; usdc: bigint }>>(new Map());
+  const [revoking, setRevoking] = useState<Agent | null>(null);
+  const [revokeBusy, setRevokeBusy] = useState(false);
+  const { notify } = useToast();
 
   useEffect(() => {
     setReturning(hasStoredCredential());
@@ -42,6 +49,13 @@ export default function MePage() {
     try {
       const list = await Promise.all(cachedAgentIds(session.address).map((id) => loadAgent(publicClient, id)));
       setAgents(list.sort((a, b) => Number(b.id - a.id)));
+      const sums = await Promise.all(
+        list.map(async (a) => {
+          const stamps = await fetchStamps(a.id);
+          return [String(a.id), { actions: stamps.length, usdc: stamps.reduce((t, x) => t + BigInt(x.receipt.amount), 0n) }] as const;
+        }),
+      );
+      setSummary(new Map(sums));
     } finally {
       setLoadingAgents(false);
     }
@@ -77,6 +91,22 @@ export default function MePage() {
     }
   }
 
+  async function onRevoke() {
+    if (!session || !revoking) return;
+    setRevokeBusy(true);
+    try {
+      await ensureGas(publicClient, session.address);
+      await disconnectRuntime({ agentId: revoking.id, wallet: session.wallet, publicClient });
+      notify("Runtime revoked", "It can no longer create stamps for this agent. Existing stamps remain verifiable.");
+      setRevoking(null);
+      void refresh();
+    } catch (err) {
+      notify("Could not revoke", err instanceof Error ? err.message : String(err));
+    } finally {
+      setRevokeBusy(false);
+    }
+  }
+
   const working = progress === "gas" || progress === "signing";
   const mm = Math.floor(secondsLeft / 60);
   const ss = String(secondsLeft % 60).padStart(2, "0");
@@ -89,11 +119,11 @@ export default function MePage() {
             <Fingerprint size={22} strokeWidth={1.5} />
           </div>
           <h1 className="mt-6 text-[40px] font-semibold leading-none tracking-tight">
-            {ended ? "Session ended" : "Your agents"}
+            {ended ? "Your session ended" : "Your agents"}
           </h1>
           <p className="mt-4 text-secondary">
             {ended
-              ? "Your keys live only in memory, so reloading the page ends the session. Nothing was stored; your passkey rebuilds everything."
+              ? "Your agents are onchain. Your session is not. Your signing and encryption keys live in memory only; reloading clears them by design. One Touch ID restores the same keys."
               : "One passkey. No seed phrase, no extension, no account. Nothing is stored on this device; your keys are derived from your passkey each time."}
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
@@ -197,6 +227,24 @@ export default function MePage() {
         </div>
       )}
 
+      {revoking && (
+        <Card className="mt-8 p-6">
+          <h2 className="text-[24px] font-semibold leading-tight">Revoke this runtime?</h2>
+          <p className="mt-2 text-sm text-secondary">
+            <Mono className="text-primary">{shortHex(revoking.wallet ?? "")}</Mono> will no longer be able to create stamps for{" "}
+            {revoking.name}. Existing stamps remain verifiable.
+          </p>
+          <div className="mt-5 flex gap-2">
+            <Button onClick={onRevoke} loading={revokeBusy} disabled={revokeBusy}>
+              Revoke runtime
+            </Button>
+            <Button variant="ghost" onClick={() => setRevoking(null)} disabled={revokeBusy}>
+              Cancel
+            </Button>
+          </div>
+        </Card>
+      )}
+
       <section className="mt-10">
         {loadingAgents && agents.length === 0 && (
           <div className="grid gap-4 md:grid-cols-2">
@@ -237,14 +285,24 @@ export default function MePage() {
 
               <div className="mt-5 grid grid-cols-2 gap-4">
                 <div>
-                  <div className="metric">0</div>
+                  <div className="metric">{summary.get(String(a.id))?.actions ?? "–"}</div>
                   <Label className="mt-1">Verified actions</Label>
                 </div>
                 <div>
-                  <div className="metric">$0.00</div>
+                  <div className="metric">{summary.has(String(a.id)) ? formatUsdc(summary.get(String(a.id))!.usdc) : "–"}</div>
                   <Label className="mt-1">USDC settled</Label>
                 </div>
               </div>
+
+              {!a.wallet ? (
+                <p className="mt-4 rounded-[8px] border border-border-subtle bg-background px-3 py-2.5 text-xs text-secondary">
+                  <span className="text-primary">Identity ready.</span> Nothing can stamp actions yet. Connect the runtime that runs this agent.
+                </p>
+              ) : (summary.get(String(a.id))?.actions ?? 0) === 0 ? (
+                <p className="mt-4 rounded-[8px] border border-border-subtle bg-background px-3 py-2.5 text-xs text-secondary">
+                  <span className="text-primary">Ready.</span> Its first paid action will create the first stamp.
+                </p>
+              ) : null}
 
               <dl className="mt-5 space-y-2 border-t border-border-subtle pt-4">
                 <div className="flex items-baseline justify-between gap-4">
@@ -266,10 +324,15 @@ export default function MePage() {
               </dl>
 
               <div className="mt-5 flex items-center gap-2">
-                {!a.wallet && (
+                {!a.wallet ? (
                   <Button variant="secondary" onClick={() => setConnecting(a)}>
                     <Link2 size={16} strokeWidth={1.5} />
                     Connect runtime
+                  </Button>
+                ) : (
+                  <Button variant="ghost" onClick={() => setRevoking(a)}>
+                    <Unlink size={16} strokeWidth={1.5} />
+                    Revoke runtime
                   </Button>
                 )}
                 <Link href={`/a/${a.id}`} className="ml-auto inline-flex items-center gap-1 text-sm text-secondary hover:text-primary">

@@ -65,17 +65,18 @@ export default function Home() {
             </Button>
           </Link>
         </div>
+        <p className="mt-4 text-xs text-tertiary">Creates an ERC-8004 identity for an agent you already run. One passkey, no wallet.</p>
       </section>
 
       {/* Live numbers */}
       <section className="border-y border-border-subtle py-10">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <Stat value={data ? data.total.toLocaleString() : null} label={`Agents registered on ${chain.name}`} />
-          <Stat value={data ? data.withTrackRecord.toLocaleString() : null} label="With a track record" />
+          <Stat value={data ? data.withTrackRecord.toLocaleString() : null} label={data?.withTrackRecord === 1 ? "Agent with a track record" : "Agents with a track record"} />
           <Stat value={data ? data.totalStamps.toLocaleString() : null} label="Verified actions" />
           <Stat value={example ? formatUsdc(usdc) : data ? "$0.00" : null} label="USDC settled" testnet />
         </div>
-        <p className="mt-4 text-xs text-tertiary">Read live from the ERC-8004 registry and KleosStamps. No mock numbers, ever.</p>
+        <p className="mt-4 text-xs text-tertiary">Live {chain.name} activity, read from the ERC-8004 registry and KleosStamps. No mock numbers, ever.</p>
       </section>
 
       {/* Stamp */}

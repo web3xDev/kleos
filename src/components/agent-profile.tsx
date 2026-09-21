@@ -114,19 +114,13 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             Owned by a verified passkey{isOwner ? " (you)" : ""}. ERC-8004 identity on {chain.name}.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {isOwner && <Badge tone="accent">Owner view</Badge>}
-          <Button variant="secondary" onClick={verifyAll} disabled={stamps.length === 0 || verification.running} loading={verification.running}>
-            <ShieldCheck size={16} strokeWidth={1.5} />
-            Verify this profile
-          </Button>
-        </div>
+        <div className="flex items-center gap-2">{isOwner && <Badge tone="accent">Owner view</Badge>}</div>
       </header>
 
       {/* Track record */}
       <section className="mt-10">
         <Label>Track record</Label>
-        <div className="mt-3 grid grid-cols-2 gap-6 md:grid-cols-5">
+        <div className="mt-3 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-5">
           <div>
             <div className="metric">{record.actions}</div>
             <Label className="mt-1">Verified actions</Label>
@@ -151,17 +145,32 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         <p className="mt-3 text-xs text-tertiary">
           Computed from stamps anchored on Monad. No score, no weighting. Verified actions, not a reputation score.
         </p>
+
+        {stamps.length > 0 && verification.total === 0 && (
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[10px] border border-border bg-surface-elevated p-5">
+            <div>
+              <div className="text-sm font-medium text-primary">Anyone can verify this record.</div>
+              <div className="mt-1 text-sm text-secondary">
+                Recompute the receipts, check the signatures, anchors and payments directly against Monad. Kleos is not consulted.
+              </div>
+            </div>
+            <Button onClick={verifyAll} disabled={verification.running} loading={verification.running}>
+              <ShieldCheck size={16} strokeWidth={1.5} />
+              Verify this profile
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* Verification panel */}
       {verification.total > 0 && (
-        <Card className="mt-8 p-5">
-          <div className="flex items-center justify-between">
+        <Card className="mt-6 bg-surface-elevated p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="text-sm font-medium">
-              {verification.running ? "Verifying track record" : allVerified ? "Track record verified" : "Verification finished"}
+              {verification.running ? "Verifying record" : allVerified ? "Record independently verified" : "Verification finished"}
             </div>
             <Mono className="text-secondary">
-              {verifiedCount} / {verification.total} stamps
+              {verifiedCount} / {verification.total} stamps verified against {chain.name}
             </Mono>
           </div>
           <ol className="mt-4 space-y-1.5 text-sm">
@@ -183,9 +192,14 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
               );
             })}
           </ol>
-          <p className="mt-4 text-xs text-tertiary">
-            Verified in your browser against {chain.name}. Kleos does not decide whether this record is valid.
-          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-tertiary">
+              Verified in your browser against {chain.name}. Kleos does not decide whether this record is valid.
+            </p>
+            <button className="text-xs text-secondary hover:text-primary" onClick={verifyAll} disabled={verification.running}>
+              Run again
+            </button>
+          </div>
         </Card>
       )}
 
@@ -200,7 +214,9 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
               <span className="text-sm text-tertiary">No runtime connected</span>
             )}
           </div>
-          <p className="mt-1 text-xs text-tertiary">The key registered as this agent&apos;s wallet in ERC-8004. Only it can stamp.</p>
+          <p className="mt-1 text-xs text-tertiary">
+            The software wallet currently registered to this agent (ERC-8004 agentWallet). Only the registered runtime can create stamps.
+          </p>
         </div>
         <div>
           <Label>Owner</Label>
@@ -229,7 +245,9 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         {!loading && stamps.length === 0 && (
           <Card className="mt-4 p-10 text-center">
             <p className="text-secondary">No track record yet.</p>
-            <p className="mt-1 text-sm text-tertiary">This agent has no verified actions. Pair a runtime to start one.</p>
+            <p className="mt-1 text-sm text-tertiary">
+              The identity is ready. Connect a runtime and its first paid action will create the first stamp.
+            </p>
           </Card>
         )}
 
@@ -258,7 +276,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                 </button>
 
                 {isOpen && (
-                  <div className="border-t border-border-subtle bg-background px-5 py-5">
+                  <div className="border-t border-border-subtle bg-surface-elevated px-5 py-5">
                     <dl className="grid gap-x-8 gap-y-3 text-sm md:grid-cols-2">
                       <Row label="Tool" value={s.receipt.tool} />
                       <Row label="Platform" value={s.receipt.platform} />
@@ -297,7 +315,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                               {d.hashMatches ? (
                                 <>
                                   <Check size={12} className="text-success" />
-                                  <span className="text-secondary">Hash matches the anchored receipt</span>
+                                  <span className="text-secondary">Answer hash matches the anchored receipt</span>
                                 </>
                               ) : (
                                 <>
@@ -309,13 +327,15 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                           </div>
                         ) : (
                           <Button variant="secondary" className="mt-2" onClick={() => decrypt(s)}>
-                            Decrypt with your passkey session
+                            Decrypt with passkey
                           </Button>
                         )
                       ) : (
-                        <div className="mt-2 flex items-center gap-2 text-sm text-tertiary">
-                          <Lock size={14} strokeWidth={1.5} />
-                          Owner only. The body is encrypted to the owner&apos;s passkey; Kleos cannot read it either.
+                        <div className="mt-2 flex items-start gap-2 text-sm text-tertiary">
+                          <Lock size={14} strokeWidth={1.5} className="mt-0.5 shrink-0" />
+                          <span>
+                            <span className="text-secondary">Private answer.</span> Encrypted to the agent owner&apos;s passkey. Kleos cannot read it.
+                          </span>
                         </div>
                       )}
                     </div>
@@ -332,7 +352,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
 
 function Row({ label, value, href }: { label: string; value: string; href?: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-4">
+    <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
       <dt>
         <Label>{label}</Label>
       </dt>

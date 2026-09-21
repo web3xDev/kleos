@@ -13,11 +13,11 @@ type Status = "idle" | "start" | "done" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
 
 const ROWS: Omit<Row, "status">[] = [
-  { key: "agent", title: "Agent wakes up", who: "Demo agent" },
-  { key: "tool", title: "Calls a paid tool", who: "x402 · 0.01 USDC" },
-  { key: "payment", title: "Payment settles on Monad", who: "Facilitator" },
-  { key: "stamp", title: "Receipt signed and sealed", who: "Kleos" },
-  { key: "anchor", title: "Stamp anchored on Monad", who: "KleosStamps" },
+  { key: "agent", title: "Agent wakes up", who: "Agent #1910 · runtime checks it is the registered wallet" },
+  { key: "tool", title: "Calls a paid tool", who: "x402 · 0.01 USDC · kleos-demo/monad-block" },
+  { key: "payment", title: "Payment settles on Monad", who: "USDC transferWithAuthorization, submitted by the facilitator" },
+  { key: "stamp", title: "Receipt signed and sealed", who: "EIP-191 by the runtime wallet · body encrypted to the owner" },
+  { key: "anchor", title: "Stamp anchored on Monad", who: "KleosStamps.stamp() · only the registered runtime can" },
 ];
 
 export default function TryPage() {
@@ -133,7 +133,9 @@ export default function TryPage() {
                 </div>
               )}
             </div>
-            {r.ms !== undefined && r.status !== "idle" && <Mono className="text-xs text-tertiary">{(r.ms / 1000).toFixed(1)}s</Mono>}
+            {r.ms !== undefined && r.status !== "idle" && (
+              <Mono className="hidden text-[11px] text-tertiary sm:block">{(r.ms / 1000).toFixed(1)}s</Mono>
+            )}
           </li>
         ))}
       </ol>

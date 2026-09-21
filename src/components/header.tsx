@@ -56,6 +56,19 @@ export function Header() {
           </span>
         </div>
       </div>
+      <nav className="flex items-center gap-1 overflow-x-auto border-t border-border-subtle px-3 py-1.5 md:hidden">
+        {nav.map((n) => (
+          <Link
+            key={n.href}
+            href={n.href}
+            className={`shrink-0 rounded-[8px] px-3 py-1.5 text-sm ${
+              pathname.startsWith(n.href) ? "text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
+            }`}
+          >
+            {n.label}
+          </Link>
+        ))}
+      </nav>
     </header>
   );
 }

@@ -9,6 +9,7 @@ import { useSession } from "@/lib/session";
 import { ensureGas, type Agent } from "@/lib/agents";
 import { connectRuntime, decodePairing } from "@/lib/pairing";
 import { Button, Card, Mono, shortHex } from "@/components/ui";
+import { MentalModel } from "@/components/mental-model";
 
 type Step = "idle" | "gas" | "submitting" | "done";
 
@@ -48,9 +49,18 @@ export function ConnectRuntime({ agent, onDone, onCancel }: { agent: Agent; onDo
   return (
     <Card className="p-6">
       <h2 className="text-[24px] font-semibold leading-tight">Connect your runtime</h2>
-      <p className="mt-1 text-sm text-secondary">Your runtime is the software that actually runs {agent.name}.</p>
+      <p className="mt-1 text-sm text-secondary">
+        Your runtime is the software that runs {agent.name} and spends its wallet: an MCP server, a bot, a wallet process.
+      </p>
 
-      <div className="mt-5 rounded-[8px] border border-border-subtle bg-background p-4">
+      <details className="mt-4 rounded-[8px] border border-border-subtle bg-background p-4">
+        <summary className="cursor-pointer text-xs text-tertiary hover:text-secondary">What is what: you, agent, runtime, tool, stamp</summary>
+        <div className="mt-4">
+          <MentalModel compact />
+        </div>
+      </details>
+
+      <div className="mt-4 rounded-[8px] border border-border-subtle bg-background p-4">
         <div className="flex items-center gap-2 text-xs text-tertiary">
           <Terminal size={14} strokeWidth={1.5} />
           In the terminal where your agent runs
@@ -59,10 +69,10 @@ export function ConnectRuntime({ agent, onDone, onCancel }: { agent: Agent; onDo
       </div>
 
       <form onSubmit={submit} className="mt-5">
-        <label className="label">Pairing code</label>
+        <label className="label">Paste pairing code</label>
         <textarea
           className="mt-2 h-24 w-full resize-none rounded-[8px] border border-border bg-background p-3 font-mono text-xs text-primary placeholder:text-tertiary focus:border-accent focus:outline-none disabled:opacity-50"
-          placeholder="Paste the code the terminal printed"
+          placeholder={`The code printed by npx kleos pair ${String(agent.id)}`}
           value={code}
           onChange={(e) => setCode(e.target.value)}
           disabled={working}

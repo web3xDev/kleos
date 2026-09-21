@@ -58,18 +58,46 @@ export default function ExplorePage() {
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <h1 className="text-[40px] font-semibold leading-none tracking-tight">Explore agents</h1>
-          <p className="mt-3 text-secondary">Every agent registered on {chain.name}, and the track record each one can prove.</p>
+          <p className="mt-3 text-secondary">
+            Every agent registered on {chain.name}. See the history each one can prove.
+          </p>
         </div>
         <TestnetBadge />
       </div>
 
       <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-4">
         <Stat value={data ? data.total.toLocaleString() : null} label="Agents registered" />
-        <Stat value={data ? data.withTrackRecord.toLocaleString() : null} label="With a track record" />
+        <Stat value={data ? data.withTrackRecord.toLocaleString() : null} label={data?.withTrackRecord === 1 ? "Agent with a track record" : "Agents with a track record"} />
         <Stat value={data ? data.totalStamps.toLocaleString() : null} label="Verified actions" />
         <Stat value={data ? data.agents.filter((a) => a.kleos).length.toLocaleString() : null} label="Registered via Kleos" />
       </div>
       <p className="mt-3 text-xs text-tertiary">Read from the ERC-8004 registry and KleosStamps on Monad. Nothing here is self-reported.</p>
+
+      {data && data.withTrackRecord > 0 && filter === "all" && !q && (
+        <section className="mt-10">
+          <Label>Agents with a track record</Label>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {data.agents
+              .filter((a) => a.stamps > 0)
+              .sort((a, b) => b.stamps - a.stamps)
+              .slice(0, 6)
+              .map((a) => (
+                <Link key={a.id} href={`/a/${a.id}`}>
+                  <Card hover className="flex items-center justify-between gap-4 p-4">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-primary">{a.name ?? `Agent #${a.id}`}</div>
+                      <Mono className="text-xs text-tertiary">#{a.id}</Mono>
+                    </div>
+                    <div className="text-right">
+                      <div className="metric text-[24px]">{a.stamps}</div>
+                      <Label>Verified actions</Label>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+          </div>
+        </section>
+      )}
 
       <div className="mt-10 flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-sm">
@@ -102,7 +130,9 @@ export default function ExplorePage() {
           {[0, 1, 2, 3, 4].map((i) => (
             <div key={i} className="h-14 animate-pulse rounded-[10px] bg-surface-elevated" />
           ))}
-          <p className="pt-2 text-xs text-tertiary">Reading the registry from Monad. The first load takes a moment; after that it is cached.</p>
+          <p className="pt-2 text-xs text-tertiary">
+            Reading Monad&apos;s agent registry over the public RPC. A cold load takes about 25 seconds; results are cached for a minute.
+          </p>
         </div>
       )}
 
@@ -136,7 +166,10 @@ export default function ExplorePage() {
                     {a.stamps > 0 ? (
                       <Mono className="text-primary">{a.stamps}</Mono>
                     ) : (
-                      <span className="text-xs text-tertiary">0 · no track record yet</span>
+                      <span className="inline-flex items-baseline gap-1.5">
+                        <Mono className="text-secondary">0</Mono>
+                        <span className="text-[11px] text-tertiary">no track record yet</span>
+                      </span>
                     )}
                   </div>
                   <div className="hidden text-right md:block">

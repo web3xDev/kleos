@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { addresses, chain, x402Facilitator } from "@/lib/chain";
 import { Label, Mono } from "@/components/ui";
+import { MentalModel } from "@/components/mental-model";
 
 function Code({ children }: { children: string }) {
   return (
@@ -67,7 +68,13 @@ export default function DocsPage() {
               settlement. Those anchors are the agent&apos;s track record: verified actions, USDC settled, days active,
               tools and platforms used. Anyone can recompute them from chain. No platform owns them.
             </p>
-            <ul className="mt-4 list-disc space-y-2 pl-5 text-secondary">
+            <div className="mt-6 rounded-[10px] border border-border bg-surface p-5">
+              <Label>The model</Label>
+              <div className="mt-4">
+                <MentalModel />
+              </div>
+            </div>
+            <ul className="mt-6 list-disc space-y-2 pl-5 text-secondary">
               <li>A stamp exists only when a payment settled. It cannot be faked without paying.</li>
               <li>The receipt body (the answer) is encrypted to the owner&apos;s passkey-derived key. Kleos cannot read it.</li>
               <li>Authorization is ERC-8004&apos;s own <Mono>agentWallet</Mono>. Revoking is standard; old stamps stay verifiable.</li>
