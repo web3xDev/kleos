@@ -39,7 +39,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Mono className="text-[11px] tracking-[0.14em] text-warning/60">TESTNET</Mono>
+          <Mono className="text-xs text-warning/70">Testnet</Mono>
           {session ? (
             <Link
               href="/me"
