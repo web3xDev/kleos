@@ -1,11 +1,12 @@
 "use client";
 
-// Landing. Every number on it is read from chain; the example agent and
-// stamp are real. If there is nothing yet, it says so.
+// Landing. The product is placed inside the page: a real agent card in the
+// hero, a real stamp, a real profile preview. Every number is read from
+// chain; when there is nothing yet, the page says so.
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Fingerprint, Link2, Stamp as StampIcon, Zap } from "lucide-react";
+import { ArrowRight, Check, Circle } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { fetchStamps, formatUsdc, type Stamp } from "@/lib/stamps";
 import { Button, Card, Label, Mono, TestnetBadge, VerifiedBadge, shortHex } from "@/components/ui";
@@ -18,9 +19,38 @@ type ExploreData = {
   agents: { id: number; name: string | null; stamps: number; wallet: `0x${string}` | null }[];
 };
 
+type Example = { id: number; name: string; wallet: `0x${string}` | null; stamps: Stamp[] };
+
+function timeAgo(ts: number): string {
+  const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
+  return `${Math.floor(s / 86400)} d ago`;
+}
+
+/** Small "KLEOS / X" tag that marks a block as a piece of the real interface. */
+function Chrome({ path }: { path: string }) {
+  return (
+    <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-2">
+      <Mark size={12} className="text-tertiary" />
+      <Mono className="text-[11px] tracking-wide text-tertiary">KLEOS / {path}</Mono>
+    </div>
+  );
+}
+
+function ConnectedPill({ label }: { label: string }) {
+  return (
+    <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-muted px-2.5 text-xs font-medium text-success">
+      <Circle size={8} strokeWidth={0} fill="currentColor" /> {label}
+    </span>
+  );
+}
+
 export default function Home() {
   const [data, setData] = useState<ExploreData | null>(null);
-  const [example, setExample] = useState<{ id: number; name: string; stamps: Stamp[] } | null>(null);
+  const [example, setExample] = useState<Example | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     fetch("/api/explore")
@@ -31,139 +61,274 @@ export default function Home() {
         const top = [...d.agents].sort((a, b) => b.stamps - a.stamps)[0];
         if (top && top.stamps > 0) {
           const stamps = await fetchStamps(BigInt(top.id));
-          setExample({ id: top.id, name: top.name ?? `Agent #${top.id}`, stamps });
+          setExample({ id: top.id, name: top.name ?? `Agent #${top.id}`, wallet: top.wallet, stamps });
         }
       })
-      .catch(() => null);
+      .catch(() => null)
+      .finally(() => setLoaded(true));
   }, []);
 
   const usdc = example ? example.stamps.reduce((s, x) => s + BigInt(x.receipt.amount), 0n) : 0n;
   const latest = example?.stamps[0];
+  const tools = example ? new Set(example.stamps.map((s) => s.receipt.tool)).size : 0;
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 md:px-8">
-      {/* Hero */}
-      <section className="pt-24 pb-16 md:pt-32 md:pb-24">
-        <Mark size={40} landing className="mb-8 text-primary" />
-        <h1 className="max-w-3xl text-[44px] font-semibold leading-[0.98] tracking-tight md:text-[72px]">
-          Give your agent a track record.
-        </h1>
-        <p className="mt-6 max-w-xl text-lg text-secondary">
-          Kleos turns an agent&apos;s paid actions into a portable, verifiable history. Every stamp sits next to a
-          payment on Monad, so it cannot be faked, and no platform owns it.
-        </p>
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Link href="/me">
-            <Button size="lg">
-              Register your agent
-              <ArrowRight size={16} strokeWidth={1.5} />
-            </Button>
-          </Link>
-          <Link href="/explore">
-            <Button size="lg" variant="secondary">
-              Explore agents
-            </Button>
-          </Link>
+      {/* Hero: copy on the left, the real product on the right */}
+      <section className="grid gap-12 pt-20 pb-16 md:grid-cols-[1.2fr_1fr] md:items-center md:pt-28 md:pb-24">
+        <div>
+          <Mark size={36} landing className="mb-8 text-primary" />
+          <h1 className="max-w-2xl text-[44px] font-semibold leading-[0.98] tracking-tight md:text-[64px]">
+            Give your agent a track record.
+          </h1>
+          <p className="mt-6 max-w-lg text-lg text-secondary">
+            Kleos turns an agent&apos;s paid actions into a portable, verifiable history. Every stamp sits next to a
+            payment on Monad, so it cannot be faked, and no platform owns it.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/me">
+              <Button size="lg">
+                Register your agent
+                <ArrowRight size={16} strokeWidth={1.5} />
+              </Button>
+            </Link>
+            <Link href="/explore">
+              <Button size="lg" variant="secondary">
+                Explore agents
+              </Button>
+            </Link>
+          </div>
+          <p className="mt-4 text-xs text-tertiary">Creates an ERC-8004 identity for an agent you already run. One passkey, no wallet.</p>
         </div>
-        <p className="mt-4 text-xs text-tertiary">Creates an ERC-8004 identity for an agent you already run. One passkey, no wallet.</p>
+
+        {/* Live agent card */}
+        <div className="md:w-full md:max-w-sm md:justify-self-end">
+          <Card className="overflow-hidden">
+            <Chrome path={example ? `AGENT #${example.id}` : "AGENT"} />
+            {example ? (
+              <Link href={`/a/${example.id}`} className="block p-5 hover:bg-surface-hover">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-lg font-semibold leading-tight">{example.name}</div>
+                    <Mono className="mt-1 block text-secondary">Agent #{example.id}</Mono>
+                  </div>
+                  {example.wallet ? (
+                    <ConnectedPill label="Runtime connected" />
+                  ) : (
+                    <span className="inline-flex h-6 items-center rounded-full border border-border px-2.5 text-xs text-secondary">No runtime</span>
+                  )}
+                </div>
+                <div className="mt-5 grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="metric">{example.stamps.length}</div>
+                    <Label className="mt-1">Verified actions</Label>
+                  </div>
+                  <div>
+                    <div className="metric">{formatUsdc(usdc)}</div>
+                    <Label className="mt-1">USDC settled</Label>
+                  </div>
+                </div>
+                {latest && (
+                  <div className="mt-5 flex items-center gap-3 border-t border-border-subtle pt-4">
+                    <Check size={14} strokeWidth={2} className="shrink-0 text-success" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm text-primary">{latest.receipt.tool}</div>
+                      <div className="text-xs text-tertiary">{latest.receipt.platform}</div>
+                    </div>
+                    <div className="text-right">
+                      <Mono className="block text-primary">{formatUsdc(BigInt(latest.receipt.amount))}</Mono>
+                      <span className="text-[11px] text-tertiary">{timeAgo(latest.receipt.timestamp)}</span>
+                    </div>
+                  </div>
+                )}
+              </Link>
+            ) : (
+              <div className="p-5">
+                {loaded ? (
+                  <>
+                    <div className="text-sm text-secondary">No agent has a track record yet.</div>
+                    <div className="mt-1 text-xs text-tertiary">The first one will appear here.</div>
+                  </>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="h-6 w-40 animate-pulse rounded-[6px] bg-surface-elevated" />
+                    <div className="h-9 w-24 animate-pulse rounded-[6px] bg-surface-elevated" />
+                    <div className="h-10 w-full animate-pulse rounded-[6px] bg-surface-elevated" />
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        </div>
       </section>
 
-      {/* Live numbers */}
-      <section className="border-y border-border-subtle py-10">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          <Stat value={data ? data.total.toLocaleString() : null} label={`Agents registered on ${chain.name}`} />
-          <Stat value={data ? data.withTrackRecord.toLocaleString() : null} label={data?.withTrackRecord === 1 ? "Agent with a track record" : "Agents with a track record"} />
+      {/* Network state */}
+      <section className="border-y border-border-subtle py-8">
+        <div className="flex items-center gap-2">
+          <Circle size={8} strokeWidth={0} fill="currentColor" className="text-success" />
+          <Label>Live on {chain.name}</Label>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-8 md:grid-cols-4">
+          <Stat value={data ? data.total.toLocaleString() : null} label="Agents registered" />
+          <Stat
+            value={data ? data.withTrackRecord.toLocaleString() : null}
+            label={data?.withTrackRecord === 1 ? "Agent with a track record" : "Agents with a track record"}
+          />
           <Stat value={data ? data.totalStamps.toLocaleString() : null} label="Verified actions" />
           <Stat value={example ? formatUsdc(usdc) : data ? "$0.00" : null} label="USDC settled" testnet />
         </div>
-        <p className="mt-4 text-xs text-tertiary">Live {chain.name} activity, read from the ERC-8004 registry and KleosStamps. No mock numbers, ever.</p>
+        <p className="mt-4 text-xs text-tertiary">Read from the ERC-8004 registry and KleosStamps. No mock numbers, ever.</p>
       </section>
 
-      {/* Stamp */}
+      {/* A stamp */}
       <section className="grid gap-10 py-20 md:grid-cols-2 md:items-center md:py-28">
         <div>
           <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a mark.</h2>
-          <p className="mt-4 text-secondary">
-            An x402 payment proves the action happened. Kleos signs a receipt for it, seals the answer to the owner&apos;s
-            passkey, and anchors the hash on Monad next to the settlement. That is a stamp.
-          </p>
-          <p className="mt-4 text-secondary">
-            Anyone can verify a stamp from chain. Only the owner can read what was inside.
-          </p>
+          <ol className="mt-8">
+            {[
+              ["Payment settles.", "An x402 payment lands on Monad. That is the proof the action happened."],
+              ["Receipt is signed.", "The runtime signs what it bought and seals the answer to the owner's passkey."],
+              ["Stamp is anchored.", "The receipt hash goes on chain next to the settlement. Anyone can check it."],
+            ].map(([t, b], i, arr) => (
+              <li key={t} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <span className="mt-1.5 block h-2 w-2 rounded-full bg-primary" />
+                  {i < arr.length - 1 && <span className="my-1 block w-px flex-1 bg-border" />}
+                </div>
+                <div className="pb-6">
+                  <div className="text-[15px] font-medium text-primary">{t}</div>
+                  <div className="mt-1 text-sm text-secondary">{b}</div>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
-        {latest && example ? (
-          <Card className="p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-sm font-medium text-primary">{latest.receipt.tool}</div>
-                <div className="mt-0.5 text-xs text-tertiary">{latest.receipt.platform}</div>
+
+        <Card className="overflow-hidden">
+          <Chrome path="STAMP" />
+          {latest && example ? (
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-4">
+                <VerifiedBadge />
+                <Mark size={16} className="text-tertiary" />
               </div>
-              <VerifiedBadge />
-            </div>
-            <div className="mt-6 flex items-end justify-between">
-              <div>
-                <div className="metric">{formatUsdc(BigInt(latest.receipt.amount))}</div>
-                <Label className="mt-1">USDC</Label>
+              <div className="mt-5">
+                <div className="text-lg font-semibold leading-tight">{latest.receipt.tool}</div>
+                <div className="mt-0.5 text-sm text-tertiary">{latest.receipt.platform}</div>
               </div>
-              <div className="text-right">
-                <Mono className="block text-secondary">{shortHex(latest.receipt.settlementTx, 8, 6)}</Mono>
-                <Label className="mt-1">Settlement on Monad</Label>
+              <div className="mt-6 flex items-end justify-between gap-4">
+                <div>
+                  <div className="metric">{formatUsdc(BigInt(latest.receipt.amount))}</div>
+                  <Label className="mt-1">USDC</Label>
+                </div>
+                <div className="text-right">
+                  <a
+                    href={`${chain.blockExplorers.default.url}/tx/${latest.receipt.settlementTx}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block font-mono text-[13px] text-secondary underline-offset-2 hover:text-primary hover:underline"
+                  >
+                    {shortHex(latest.receipt.settlementTx, 8, 6)}
+                  </a>
+                  <Label className="mt-1">Settlement on Monad</Label>
+                </div>
+              </div>
+              <div className="mt-5 flex items-center justify-between border-t border-border-subtle pt-4">
+                <span className="text-xs text-tertiary">{timeAgo(latest.receipt.timestamp)}</span>
+                <Link href={`/a/${example.id}`} className="inline-flex items-center gap-1 text-sm text-secondary hover:text-primary">
+                  Agent #{example.id} <ArrowRight size={14} strokeWidth={1.5} />
+                </Link>
               </div>
             </div>
-            <div className="mt-5 border-t border-border-subtle pt-4">
-              <Link href={`/a/${example.id}`} className="inline-flex items-center gap-1 text-sm text-secondary hover:text-primary">
-                {example.name} <ArrowRight size={14} strokeWidth={1.5} />
-              </Link>
-            </div>
-          </Card>
-        ) : (
-          <Card className="p-5">
-            <div className="text-sm text-tertiary">No stamps yet. The first one will appear here.</div>
-          </Card>
-        )}
+          ) : (
+            <div className="p-5 text-sm text-tertiary">No stamps yet. The first one will appear here.</div>
+          )}
+        </Card>
       </section>
 
-      {/* How it works */}
+      {/* How it works: a chain, not four tiles */}
       <section className="border-t border-border-subtle py-20 md:py-28">
         <Label>How it works</Label>
-        <div className="mt-8 grid gap-8 md:grid-cols-4">
-          <Step n="01" icon={<Fingerprint size={20} strokeWidth={1.5} />} title="Register" body="One passkey ceremony gives your agent an on-chain identity. No seed phrase, no wallet, no account." />
-          <Step n="02" icon={<Link2 size={20} strokeWidth={1.5} />} title="Connect" body="Pair the runtime that actually runs your agent. It gets its own key; it never sees yours." />
-          <Step n="03" icon={<Zap size={20} strokeWidth={1.5} />} title="Act" body="Your agent discovers tools and pays for them with x402. OnchainRouter is the first place it can." />
-          <Step n="04" icon={<StampIcon size={20} strokeWidth={1.5} />} title="Build a record" body="Every paid action becomes a stamp. The record is yours, portable, and provable by anyone." />
-        </div>
-        <p className="mt-10 text-[24px] font-semibold tracking-tight">No platform owns the record.</p>
+        <ol className="mt-8 grid gap-6 md:grid-cols-4 md:gap-0">
+          {[
+            ["01", "Register", "ERC-8004 identity", "One passkey ceremony. No seed phrase, no wallet, no account."],
+            ["02", "Connect", "Runtime wallet", "Pair the software that runs your agent. It gets its own key; it never sees yours."],
+            ["03", "Act", "x402 payment", "Your agent discovers tools and pays for them. OnchainRouter is the first place it can."],
+            ["04", "Stamp", "Portable record", "Every paid action becomes a stamp. Yours, portable, provable by anyone."],
+          ].map(([n, t, sub, body], i, arr) => (
+            <li key={n} className="md:pr-8">
+              <div className="flex items-center gap-3">
+                <Mono className="text-tertiary">{n}</Mono>
+                {i < arr.length - 1 && <span className="hidden h-px flex-1 bg-border md:block" />}
+              </div>
+              <div className="mt-4 text-lg font-semibold">{t}</div>
+              <Mono className="mt-0.5 block text-secondary">{sub}</Mono>
+              <p className="mt-3 max-w-[28ch] text-sm text-secondary">{body}</p>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-12 text-[24px] font-semibold tracking-tight">No platform owns the record.</p>
       </section>
 
-      {/* Example agent */}
+      {/* Profile preview: the product's core page, real */}
       {example && (
         <section className="border-t border-border-subtle py-20 md:py-28">
-          <Label>A real agent</Label>
-          <Card className="mt-6 p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div className="text-[24px] font-semibold leading-tight">{example.name}</div>
-                <Mono className="mt-1 block text-secondary">Agent #{example.id}</Mono>
-              </div>
-              <TestnetBadge />
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <Label>A real agent</Label>
+              <p className="mt-2 max-w-md text-sm text-secondary">
+                This is what a track record looks like. Open it and verify it yourself, in your browser, against Monad.
+              </p>
             </div>
-            <div className="mt-6 grid grid-cols-3 gap-6 md:max-w-lg">
-              <div>
-                <div className="metric">{example.stamps.length}</div>
-                <Label className="mt-1">Verified actions</Label>
+            <Link href={`/a/${example.id}`} className="hidden items-center gap-1 text-sm text-secondary hover:text-primary md:inline-flex">
+              Open profile <ArrowRight size={14} strokeWidth={1.5} />
+            </Link>
+          </div>
+          <Card className="mt-6 overflow-hidden">
+            <Chrome path={`AGENT #${example.id}`} />
+            <div className="p-6">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <div className="text-[24px] font-semibold leading-tight">{example.name}</div>
+                  <div className="mt-2 flex items-center gap-3">
+                    <Mono className="text-secondary">Agent #{example.id}</Mono>
+                    {example.wallet && <ConnectedPill label="Active" />}
+                  </div>
+                </div>
+                <TestnetBadge />
               </div>
-              <div>
-                <div className="metric">{formatUsdc(usdc)}</div>
-                <Label className="mt-1">USDC settled</Label>
-              </div>
-              <div>
-                <div className="metric">{new Set(example.stamps.map((s) => s.receipt.tool)).size}</div>
-                <Label className="mt-1">Tools</Label>
+              <div className="mt-6 grid grid-cols-3 gap-6 md:max-w-md">
+                <div>
+                  <div className="metric">{example.stamps.length}</div>
+                  <Label className="mt-1">Verified actions</Label>
+                </div>
+                <div>
+                  <div className="metric">{formatUsdc(usdc)}</div>
+                  <Label className="mt-1">USDC settled</Label>
+                </div>
+                <div>
+                  <div className="metric">{tools}</div>
+                  <Label className="mt-1">{tools === 1 ? "Tool" : "Tools"}</Label>
+                </div>
               </div>
             </div>
-            <div className="mt-6">
-              <Link href={`/a/${example.id}`} className="inline-flex items-center gap-1 text-sm text-secondary hover:text-primary">
-                View track record <ArrowRight size={14} strokeWidth={1.5} />
+            <ul className="divide-y divide-border-subtle border-t border-border-subtle">
+              {example.stamps.slice(0, 3).map((s) => (
+                <li key={s.receiptHash} className="flex items-center gap-4 px-6 py-3.5">
+                  <Check size={14} strokeWidth={2} className="shrink-0 text-success" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm text-primary">{s.receipt.tool}</div>
+                    <div className="text-xs text-tertiary">{s.receipt.platform}</div>
+                  </div>
+                  <Mono className="text-primary">{formatUsdc(BigInt(s.receipt.amount))}</Mono>
+                  <span className="hidden w-20 text-right text-xs text-tertiary sm:block">{timeAgo(s.receipt.timestamp)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle px-6 py-4">
+              <span className="text-xs text-tertiary">Kleos does not decide whether this record is valid. Your browser does.</span>
+              <Link href={`/a/${example.id}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                Verify this profile <ArrowRight size={14} strokeWidth={1.5} />
               </Link>
             </div>
           </Card>
@@ -186,7 +351,9 @@ export default function Home() {
       </section>
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle py-8 text-xs text-tertiary">
-        <span className="inline-flex items-center gap-2"><Mark size={14} /> Kleos · a portable track record for AI agents</span>
+        <span className="inline-flex items-center gap-2">
+          <Mark size={14} /> Kleos · a portable track record for AI agents
+        </span>
         <span>Built on Monad · ERC-8004 · x402</span>
       </footer>
     </main>
@@ -205,19 +372,6 @@ function Stat({ value, label, testnet }: { value: string | null; label: string; 
         </div>
       )}
       <Label className="mt-1">{label}</Label>
-    </div>
-  );
-}
-
-function Step({ n, icon, title, body }: { n: string; icon: React.ReactNode; title: string; body: string }) {
-  return (
-    <div>
-      <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-secondary">{icon}</span>
-        <Mono className="text-tertiary">{n}</Mono>
-      </div>
-      <div className="mt-4 text-lg font-semibold">{title}</div>
-      <p className="mt-2 text-sm text-secondary">{body}</p>
     </div>
   );
 }
