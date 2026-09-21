@@ -179,29 +179,30 @@ export default function ExplorePage() {
             ))}
           </ul>
           {rows.length > PAGE && (
-            <div className="flex items-center justify-between border-t border-border-subtle px-5 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle px-5 py-3">
               <span className="text-xs text-tertiary">
-                {current * PAGE + 1}–{Math.min(rows.length, (current + 1) * PAGE)} of {rows.length}
+                Showing {(current * PAGE + 1).toLocaleString()}–{Math.min(rows.length, (current + 1) * PAGE).toLocaleString()} of{" "}
+                {rows.length.toLocaleString()} agents
               </span>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <button
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-secondary hover:bg-surface-hover hover:text-primary disabled:opacity-40"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-transparent"
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
                   disabled={current === 0}
-                  aria-label="Previous page"
                 >
-                  <ChevronLeft size={16} strokeWidth={1.5} />
+                  <ChevronLeft size={14} strokeWidth={1.5} />
+                  Previous
                 </button>
                 <Mono className="w-16 text-center text-xs text-secondary">
                   {current + 1} / {pages}
                 </Mono>
                 <button
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-secondary hover:bg-surface-hover hover:text-primary disabled:opacity-40"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-transparent"
                   onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}
                   disabled={current >= pages - 1}
-                  aria-label="Next page"
                 >
-                  <ChevronRight size={16} strokeWidth={1.5} />
+                  Next
+                  <ChevronRight size={14} strokeWidth={1.5} />
                 </button>
               </div>
             </div>
