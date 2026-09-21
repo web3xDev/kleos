@@ -63,4 +63,4 @@ Lucide, 1.5px stroke. 16px UI, 18px buttons, 20px nav, 24px feature states. No e
 
 ## Accent rule (decided 2026-09-21)
 
-Accent values: `#3C096C`, hover `#4A1085` (his pick; `#8B5CF6`, `#7C3AED`, `#6D28D9` all read too light on the dark surface). Purple is for the one action on a page that writes to chain (Register agent, Connect runtime). Everything else is white primary, secondary or ghost. One purple button per page.
+No purple buttons. The primary action (Register agent, Connect runtime) is the white primary button, like every other primary. Purple stays only as the input focus ring and small accent details; several purples were tried on the dark surface and none earned its place.

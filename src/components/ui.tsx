@@ -21,7 +21,7 @@ export function Button({ variant = "primary", size = "md", loading, className, c
   const sizes = { md: "h-10 px-4 text-sm", lg: "h-12 px-5 text-[15px]" };
   const variants = {
     primary: "bg-primary text-background hover:bg-white",
-    accent: "bg-accent text-white hover:bg-accent-hover",
+    accent: "border border-accent bg-transparent text-accent-text hover:bg-accent-muted",
     secondary: "border border-border bg-transparent text-primary hover:border-border-hover hover:bg-surface-hover",
     ghost: "text-secondary hover:bg-surface-hover hover:text-primary",
   };
