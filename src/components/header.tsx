@@ -39,7 +39,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Mono className="text-xs text-warning/70">Testnet</Mono>
+          <span className="inline-flex h-6 items-center rounded-full bg-warning-muted px-2.5 font-mono text-xs text-warning">Testnet</span>
           {session ? (
             <Link
               href="/me"
