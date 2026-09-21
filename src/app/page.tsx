@@ -331,7 +331,7 @@ export default function Home() {
               Open profile <ArrowRight size={14} strokeWidth={1.5} />
             </Link>
           </div>
-          <MascotHost side="left" top="30%" className="mt-6">
+          <MascotHost side="top" className="mt-6">
           <Card className="overflow-hidden">
             <Chrome path={`AGENT #${example.id} / VERIFY`} />
             <div className="grid md:grid-cols-[1fr_1fr]">

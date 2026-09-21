@@ -14,7 +14,7 @@ export function MascotHost({
   children,
   className = "",
 }: {
-  side?: "left" | "right";
+  side?: "left" | "right" | "top";
   top?: string;
   children: ReactNode;
   className?: string;
@@ -22,6 +22,32 @@ export function MascotHost({
   const [ref, inView] = useInView<HTMLDivElement>("0px 0px -12% 0px");
   const [hover, setHover] = useState(false);
   const left = side === "left";
+
+  if (side === "top") {
+    // Rises from behind the card's top edge, over its right half. The hand
+    // grips the edge from above.
+    const on = inView;
+    const up = hover ? "translateY(-10px)" : "translateY(0)";
+    const down = "translateY(70px)";
+    return (
+      <div ref={ref} className={`relative ${className}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+        <div className="absolute right-[22%] z-0 hidden md:block" style={{ top: -66 }} aria-hidden>
+          <Mascot size={112} className="transition-transform duration-[360ms] ease-out" style={{ transform: on ? up : down }} />
+        </div>
+        <MascotHand
+          size={24}
+          className="absolute z-20 hidden transition-[opacity,transform] duration-[220ms] md:block"
+          style={{
+            right: "calc(22% + 44px)",
+            top: -8,
+            opacity: on ? 1 : 0,
+            transform: `rotate(90deg) ${on && hover ? "translateX(-4px)" : ""}`,
+          }}
+        />
+        <div className="relative z-10">{children}</div>
+      </div>
+    );
+  }
 
   // The wrapper mirrors the sprite for the right side; inside it the motion
   // is always "peek from the left". In = 72px towards the card, fully behind.
