@@ -63,4 +63,4 @@ Lucide, 1.5px stroke. 16px UI, 18px buttons, 20px nav, 24px feature states. No e
 
 ## Accent rule (decided 2026-09-21)
 
-Purple is for the one action on a page that writes to chain (Register agent, Connect runtime). Everything else is white primary, secondary or ghost. One purple button per page.
+Accent values: `#7C3AED`, hover `#6D28D9` (the lighter `#8B5CF6` read as pastel on the dark surface). Purple is for the one action on a page that writes to chain (Register agent, Connect runtime). Everything else is white primary, secondary or ghost. One purple button per page.
