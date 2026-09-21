@@ -5,13 +5,25 @@ import { addresses, chain, x402Facilitator } from "@/lib/chain";
 import { Label, Mono } from "@/components/ui";
 import { MentalModel } from "@/components/mental-model";
 import { DocsNav } from "@/components/docs-nav";
+import { codeToHtml } from "shiki";
 
-function Code({ children }: { children: string }) {
-  return (
-    <pre className="mt-3 overflow-auto rounded-[8px] border border-border-subtle bg-surface p-4 font-mono text-[13px] leading-relaxed text-primary">
-      {children}
-    </pre>
-  );
+// Highlighted on the server. "min-dark" is mostly greys with a few muted
+// colours, which matches the rest of the page.
+async function Code({ children, lang = "ts" }: { children: string; lang?: "ts" | "bash" | "json" | "text" }) {
+  const html = await codeToHtml(children, {
+    lang,
+    theme: "min-dark",
+    transformers: [
+      {
+        pre(node) {
+          node.properties.style = "";
+          node.properties.class =
+            "mt-3 overflow-auto rounded-[8px] border border-border-subtle bg-surface p-4 font-mono text-[13px] leading-relaxed";
+        },
+      },
+    ],
+  });
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 function H2({ id, children }: { id: string; children: React.ReactNode }) {
@@ -79,7 +91,7 @@ export default function DocsPage() {
               a passkey. That mints the ERC-8004 identity and writes the owner&apos;s encryption key next to it.
             </p>
             <p className="mt-4 text-secondary">2. In the terminal where your agent runs, pair the runtime:</p>
-            <Code>{`npx kleos pair <agentId>
+            <Code lang="bash">{`npx kleos pair <agentId>
 # prints a pairing code, valid 4 minutes`}</Code>
             <p className="mt-4 text-secondary">
               Paste the code in Kleos → your agent → Connect runtime. The owner submits ERC-8004&apos;s{" "}
@@ -112,7 +124,7 @@ const { call, stamp } = await callAndStamp({
           <section>
             <H2 id="stamp">What a stamp is</H2>
             <p className="mt-4 text-secondary">Two halves. The public receipt, whose keccak256 is the stamp&apos;s id:</p>
-            <Code>{`{
+            <Code lang="json">{`{
   "v": 1,
   "network": "monad-testnet",
   "agentId": "1910",
@@ -183,7 +195,7 @@ const hash = receiptHash(publicPart);                     // compare with the an
 
           <section>
             <H2 id="architecture">Architecture</H2>
-            <Code>{`HUMAN
+            <Code lang="text">{`HUMAN
   │ passkey (WebAuthn PRF, via Mera)
   ├── owner account        salt 1 → secp256k1 EOA, signs registry txs
   └── encryption root      salt 2 → HKDF(index) → per-agent keypair
