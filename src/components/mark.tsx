@@ -11,7 +11,7 @@ export function Mark({ size = 20, landing = false, className }: { size?: number;
       stroke="currentColor"
       strokeWidth={size <= 20 ? 6.5 : 5}
       strokeLinecap="round"
-      className={className}
+      className={`block shrink-0 ${className ?? ""}`}
       aria-hidden="true"
     >
       <line x1="14" y1="14" x2="14" y2="50" />
@@ -27,7 +27,7 @@ export function Wordmark({ size = 24 }: { size?: number }) {
   return (
     <span className="inline-flex items-center gap-2 text-primary">
       <Mark size={size} className="text-accent" />
-      <span className="text-sm font-semibold tracking-[0.18em]">KLEOS</span>
+      <span className="text-sm font-semibold leading-none tracking-[0.18em]">KLEOS</span>
     </span>
   );
 }
