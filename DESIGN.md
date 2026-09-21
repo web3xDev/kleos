@@ -72,3 +72,7 @@ The wordmark in the header is static. The hero tally lands its fifth stroke once
 ## Section dividers (decided 2026-09-21)
 
 Sections are separated by space and typography, not rules. A 1px rule appears only where it carries meaning: the network-state data strip (top and bottom), the pipeline rail, card edges, the footer's top edge.
+
+## Purple, final rule (decided 2026-09-21)
+
+Accent `#6355B8` (hover `#6D5ACF`) is Kleos's signature, used in exactly these places: the tally in the header, footer and favicon; the "Register your agent" CTA on the landing; the pipeline rail, nodes and head while it draws; the connector line in the stamp section; the mascot; and the atmosphere under the closing (radial ellipse 70%×55% at bottom center, 0.16 → 0.06 → transparent, fading into the footer rule). Nowhere else: no purple inputs, badges, links or other buttons. The closing section is the one centered block on the page.
