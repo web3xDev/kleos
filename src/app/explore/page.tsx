@@ -27,7 +27,7 @@ export default function ExplorePage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [page, setPage] = useState(0);
-  const PAGE = 25;
+  const PAGE = 12;
 
   useEffect(() => {
     fetch("/api/explore")
