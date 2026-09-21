@@ -145,3 +145,12 @@ textarea,
   transform: none;
   transition: opacity 360ms cubic-bezier(0.2, 0, 0, 1), transform 360ms cubic-bezier(0.2, 0, 0, 1);
 }
+
+/* Section eyebrow: bigger than a metric label, still quiet. */
+.eyebrow {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}

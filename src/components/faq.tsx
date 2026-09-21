@@ -5,7 +5,6 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Label } from "@/components/ui";
 
 const items: [string, string][] = [
   [
@@ -38,7 +37,7 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <div>
-      <Label>FAQ</Label>
+      <div className="eyebrow">FAQ</div>
       <ul className="mt-6 divide-y divide-border-subtle border-y border-border-subtle">
         {items.map(([q, a], i) => {
           const on = open === i;

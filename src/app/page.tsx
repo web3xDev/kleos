@@ -302,8 +302,8 @@ export default function Home() {
       {/* How it works: one pipeline, ending in a real stamp */}
       <Reveal>
       <section className="py-20 md:py-36">
-        <Label>How it works</Label>
-        <h2 className="mt-3 max-w-2xl text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">
+        <div className="eyebrow">How it works</div>
+        <h2 className="mt-4 max-w-2xl text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">
           One paid action becomes a permanent record.
         </h2>
 
@@ -319,8 +319,8 @@ export default function Home() {
         <section className="py-20 md:py-36">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <Label>Verify a real record</Label>
-              <p className="mt-2 max-w-md text-sm text-secondary">
+              <div className="eyebrow">Verify a real record</div>
+              <p className="mt-3 max-w-md text-sm text-secondary">
                 This record is being verified right now, in your browser, directly against Monad. No Kleos API is consulted.
               </p>
             </div>
