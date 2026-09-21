@@ -121,7 +121,7 @@ export default function Home() {
         <div className="group relative md:w-full md:max-w-sm md:justify-self-end">
           <Mascot
             size={52}
-            className="absolute -top-[30px] left-8 z-0 transition-transform duration-[180ms] group-hover:-translate-y-0.5"
+            className="absolute -left-[26px] top-[38%] z-0 transition-transform duration-[180ms] group-hover:-translate-x-0.5"
           />
           <Card className="relative z-10 overflow-hidden">
             <Chrome path={example ? `AGENT #${example.id}` : "AGENT"} />
