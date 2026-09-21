@@ -189,7 +189,7 @@ export default function Home() {
       </section>
 
       {/* A stamp */}
-      <section className="grid gap-10 border-t border-border-subtle py-20 md:grid-cols-2 md:items-center md:py-28">
+      <section className="grid gap-10 py-24 md:grid-cols-2 md:items-center md:py-36">
         <div>
           <Reveal>
             <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a stamp.</h2>
@@ -298,7 +298,7 @@ export default function Home() {
 
       {/* How it works: one pipeline, ending in a real stamp */}
       <Reveal>
-      <section className="border-t border-border-subtle py-20 md:py-28">
+      <section className="py-24 md:py-36">
         <Label>How it works</Label>
         <h2 className="mt-3 max-w-2xl text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">
           One paid action becomes a permanent record.
@@ -313,7 +313,7 @@ export default function Home() {
       {/* A real record: the example, verified live in this browser */}
       {example && (
         <Reveal>
-        <section className="border-t border-border-subtle py-20 md:py-28">
+        <section className="py-24 md:py-36">
           <div className="flex items-end justify-between gap-4">
             <div>
               <Label>Verify a real record</Label>
@@ -412,7 +412,7 @@ export default function Home() {
 
       {/* Closing */}
       <Reveal>
-      <section className="border-t border-border-subtle py-20 md:py-28">
+      <section className="py-24 md:py-36">
         <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Your agent starts with zero.</h2>
         <p className="mt-2 text-[32px] font-semibold leading-tight tracking-tight text-tertiary md:text-[40px]">Every action changes that.</p>
         <div className="mt-8">

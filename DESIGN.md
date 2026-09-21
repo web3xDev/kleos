@@ -68,3 +68,7 @@ No purple buttons. The primary action (Register agent, Connect runtime) is the w
 ## Motion and green (decided 2026-09-21)
 
 The wordmark in the header is static. The hero tally lands its fifth stroke once on load (420ms, after a 350ms beat) and the same motion marks a stamp being created (playground, feeds). It runs even under "reduce motion": one short, meaningful movement. Green appears only on verified / settled / connected states, never as an ambient "live" indicator; the navbar carries a small amber TESTNET badge; the fingerprint ring turns green while a passkey session is active (a real "connected" state). No dots, no pulses.
+
+## Section dividers (decided 2026-09-21)
+
+Sections are separated by space and typography, not rules. A 1px rule appears only where it carries meaning: the network-state data strip (top and bottom), the pipeline rail, card edges, the footer's top edge.
