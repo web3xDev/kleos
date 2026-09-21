@@ -14,6 +14,7 @@ const nav = [
 
 export function Header() {
   const pathname = usePathname();
+  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   const { session, secondsLeft } = useSession();
 
   return (
@@ -29,7 +30,7 @@ export function Header() {
               key={n.href}
               href={n.href}
               className={`rounded-[8px] px-3 py-1.5 text-sm ${
-                pathname.startsWith(n.href) ? "text-primary hover:bg-surface-hover" : "text-secondary hover:bg-surface-hover hover:text-primary"
+                isActive(n.href) ? "text-primary hover:bg-surface-hover" : "text-secondary hover:bg-surface-hover hover:text-primary"
               }`}
             >
               {n.label}
@@ -63,7 +64,7 @@ export function Header() {
             key={n.href}
             href={n.href}
             className={`shrink-0 rounded-[8px] px-3 py-1.5 text-sm ${
-              pathname.startsWith(n.href) ? "text-primary hover:bg-surface-hover" : "text-secondary hover:bg-surface-hover hover:text-primary"
+              isActive(n.href) ? "text-primary hover:bg-surface-hover" : "text-secondary hover:bg-surface-hover hover:text-primary"
             }`}
           >
             {n.label}
