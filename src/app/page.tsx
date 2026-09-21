@@ -214,8 +214,8 @@ export default function Home() {
               <li key={n}>
                 <Reveal className="flex gap-4" delay={90 + i * 100}>
                   <div className="flex flex-col items-center">
-                    <Mono className="mt-0.5 w-6 text-tertiary">{n}</Mono>
-                    {i < arr.length - 1 && <span className="my-2 block w-px flex-1 bg-border" />}
+                    <Mono className="mt-0.5 w-6 text-accent-text">{n}</Mono>
+                    {i < arr.length - 1 && <span className="my-2 block w-px flex-1 bg-accent/60" />}
                   </div>
                   <div className="pb-7">
                     <div className="text-[15px] font-medium text-primary">{t}</div>
