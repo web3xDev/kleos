@@ -185,7 +185,7 @@ export default function Home() {
       </section>
 
       {/* A stamp */}
-      <section className="grid gap-10 py-20 md:grid-cols-2 md:items-center md:py-28">
+      <section className="grid gap-10 border-t border-border-subtle py-20 md:grid-cols-2 md:items-center md:py-28">
         <div>
           <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a stamp.</h2>
           <ol className="mt-8">
