@@ -67,7 +67,7 @@ export function Badge({ tone = "neutral", children, className }: BadgeProps) {
     success: "bg-success-muted text-success",
     error: "bg-error-muted text-error",
     warning: "bg-warning-muted text-warning",
-    accent: "border border-border-hover text-secondary",
+    accent: "bg-accent-muted text-accent-text",
   };
   return (
     <span
