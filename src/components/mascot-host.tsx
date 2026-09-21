@@ -28,10 +28,10 @@ export function MascotHost({
     // grips the edge from above.
     const on = inView;
     const up = hover ? "translateY(-34px)" : "translateY(0)";
-    const down = "translateY(76px)";
+    const down = "translateY(86px)";
     return (
       <div ref={ref} className={`relative ${className}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-        <div className="absolute right-[22%] z-0 hidden md:block" style={{ top: -72 }} aria-hidden>
+        <div className="absolute right-[22%] z-0 hidden md:block" style={{ top: -82 }} aria-hidden>
           <Mascot size={112} className="transition-transform duration-[360ms] ease-out" style={{ transform: on ? up : down }} />
         </div>
         {/* two hands on the edge, one each side of the head */}
