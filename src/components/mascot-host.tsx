@@ -105,8 +105,18 @@ export function MascotHost({
       </div>
       <MascotHand
         size={24}
-        className={`absolute z-20 transition-opacity duration-[200ms] ${left ? "-left-[6px]" : "-right-[6px] -scale-x-100"}`}
-        style={{ top: `calc(${top} + 100px)`, opacity: on ? 1 : 0 }}
+        className={`absolute z-20 transition-[opacity,transform] duration-[220ms] ${left ? "-left-[6px]" : "-right-[6px]"}`}
+        style={{
+          top: `calc(${top} + 100px)`,
+          opacity: on ? 1 : 0,
+          transform: left
+            ? on && hover
+              ? "translateX(-4px)"
+              : "translateX(0)"
+            : on && hover
+              ? "translateX(4px) scaleX(-1)"
+              : "scaleX(-1)",
+        }}
       />
       <div className="relative z-10">{children}</div>
     </div>
