@@ -15,6 +15,7 @@ import { Mark } from "@/components/mark";
 import { Reveal } from "@/components/reveal";
 import { Pipeline } from "@/components/pipeline";
 import { Faq } from "@/components/faq";
+import { Mascot } from "@/components/mascot";
 
 type ExploreData = {
   total: number;
@@ -116,9 +117,13 @@ export default function Home() {
           <p className="mt-4 text-xs text-tertiary">Creates an ERC-8004 identity for an agent you already run. One passkey, no wallet.</p>
         </div>
 
-        {/* Live agent card */}
-        <div className="md:w-full md:max-w-sm md:justify-self-end">
-          <Card className="overflow-hidden">
+        {/* Live agent card, with the mascot peeking from behind it */}
+        <div className="group relative md:w-full md:max-w-sm md:justify-self-end">
+          <Mascot
+            size={52}
+            className="absolute -top-[30px] right-8 z-0 transition-transform duration-[180ms] group-hover:-translate-y-0.5"
+          />
+          <Card className="relative z-10 overflow-hidden">
             <Chrome path={example ? `AGENT #${example.id}` : "AGENT"} />
             {example ? (
               <Link href={`/a/${example.id}`} className="block p-5 hover:bg-surface-hover">
