@@ -274,7 +274,10 @@ export default function MePage() {
                   <Mono className="mt-1 block text-secondary">Agent #{String(a.id)}</Mono>
                 </div>
                 {a.wallet ? (
-                  <Badge tone="success">Runtime connected</Badge>
+                  <Badge tone="success">
+                    <Check size={12} strokeWidth={2} />
+                    Runtime connected
+                  </Badge>
                 ) : (
                   <Badge>Not connected</Badge>
                 )}
