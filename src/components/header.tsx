@@ -30,7 +30,7 @@ export function Header() {
               key={n.href}
               href={n.href}
               className={`rounded-[8px] px-3 py-1.5 text-sm ${
-                isActive(n.href) ? "text-primary hover:bg-surface-hover" : "text-secondary hover:bg-surface-hover hover:text-primary"
+                isActive(n.href) ? "bg-surface-hover text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
               }`}
             >
               {n.label}
@@ -64,7 +64,7 @@ export function Header() {
             key={n.href}
             href={n.href}
             className={`shrink-0 rounded-[8px] px-3 py-1.5 text-sm ${
-              isActive(n.href) ? "text-primary hover:bg-surface-hover" : "text-secondary hover:bg-surface-hover hover:text-primary"
+              isActive(n.href) ? "bg-surface-hover text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
             }`}
           >
             {n.label}
