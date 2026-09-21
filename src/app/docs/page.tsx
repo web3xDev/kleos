@@ -5,6 +5,7 @@ import { addresses, chain, x402Facilitator } from "@/lib/chain";
 import { Label, Mono } from "@/components/ui";
 import { MentalModel } from "@/components/mental-model";
 import { DocsNav } from "@/components/docs-nav";
+import { Architecture } from "@/components/architecture";
 import { codeToHtml } from "shiki";
 
 // Highlighted on the server. "min-dark" is mostly greys with a few muted
@@ -195,31 +196,9 @@ const hash = receiptHash(publicPart);                     // compare with the an
 
           <section>
             <H2 id="architecture">Architecture</H2>
-            <Code lang="text">{`HUMAN
-  │ passkey (WebAuthn PRF, via Mera)
-  ├── owner account        salt 1 → secp256k1 EOA, signs registry txs
-  └── encryption root      salt 2 → HKDF(index) → per-agent keypair
-        │
-        ▼
-ERC-8004 IDENTITY REGISTRY (Monad)
-  agent token, owner = human's account
-  metadata: kleos.encryptionKey, kleos.keyIndex
-  agentWallet = runtime key (setAgentWallet / unsetAgentWallet)
-        │
-        ▼
-AGENT RUNTIME (the software that runs the agent)
-  own key, paired once, revocable
-  ├── OnchainRouter wallet MCP        first integration
-  └── any x402-paying runtime
-        │  tool call → x402 payment → settlement on Monad
-        ▼
-STAMP
-  receipt signed by runtime, body sealed to owner
-  hash anchored in KleosStamps next to the settlement
-        │
-        ▼
-TRACK RECORD
-  read from chain by anyone (explore, profile, verify in browser)`}</Code>
+            <div className="mt-4">
+              <Architecture />
+            </div>
             <p className="mt-4 text-secondary">
               Two things never exist: a Kleos-held key, and a stamp without a payment. The store (receipt bodies) is
               untrusted; the registry and KleosStamps are the source of truth.
