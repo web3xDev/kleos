@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { Badge, Card, Input, Label, Mono, TestnetBadge, shortHex } from "@/components/ui";
 
@@ -26,6 +26,8 @@ export default function ExplorePage() {
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [page, setPage] = useState(0);
+  const PAGE = 25;
 
   useEffect(() => {
     fetch("/api/explore")
@@ -42,9 +44,14 @@ export default function ExplorePage() {
     return data.agents
       .filter((a) => (filter === "record" ? a.stamps > 0 : filter === "kleos" ? a.kleos : true))
       .filter((a) => !needle || String(a.id) === needle || a.name?.toLowerCase().includes(needle) || a.owner.toLowerCase().includes(needle))
-      .sort((a, b) => b.stamps - a.stamps || b.id - a.id)
-      .slice(0, 200);
+      .sort((a, b) => b.stamps - a.stamps || b.id - a.id);
   }, [data, q, filter]);
+
+  const pages = Math.max(1, Math.ceil(rows.length / PAGE));
+  const current = Math.min(page, pages - 1);
+  const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
+
+  useEffect(() => setPage(0), [q, filter]);
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 py-12 md:px-8">
@@ -109,7 +116,7 @@ export default function ExplorePage() {
           </div>
           {rows.length === 0 && <div className="px-5 py-10 text-center text-sm text-tertiary">No agents match.</div>}
           <ul className="divide-y divide-border-subtle">
-            {rows.map((a) => (
+            {visible.map((a) => (
               <li key={a.id}>
                 <Link
                   href={`/a/${a.id}`}
@@ -139,9 +146,32 @@ export default function ExplorePage() {
               </li>
             ))}
           </ul>
-          {data.agents.length > rows.length && filter === "all" && !q && (
-            <div className="border-t border-border-subtle px-5 py-3 text-xs text-tertiary">
-              Showing {rows.length} of {data.total}. Search to find a specific agent.
+          {rows.length > PAGE && (
+            <div className="flex items-center justify-between border-t border-border-subtle px-5 py-3">
+              <span className="text-xs text-tertiary">
+                {current * PAGE + 1}–{Math.min(rows.length, (current + 1) * PAGE)} of {rows.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-secondary hover:bg-surface-hover hover:text-primary disabled:opacity-40"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={current === 0}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={16} strokeWidth={1.5} />
+                </button>
+                <Mono className="w-16 text-center text-xs text-secondary">
+                  {current + 1} / {pages}
+                </Mono>
+                <button
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] text-secondary hover:bg-surface-hover hover:text-primary disabled:opacity-40"
+                  onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}
+                  disabled={current >= pages - 1}
+                  aria-label="Next page"
+                >
+                  <ChevronRight size={16} strokeWidth={1.5} />
+                </button>
+              </div>
             </div>
           )}
         </Card>
