@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Circle } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { fetchStamps, formatUsdc, type Stamp } from "@/lib/stamps";
 import { Button, Card, Label, Mono, TestnetBadge, VerifiedBadge, shortHex } from "@/components/ui";
@@ -41,9 +41,7 @@ function Chrome({ path }: { path: string }) {
 
 function ConnectedPill({ label }: { label: string }) {
   return (
-    <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-muted px-2.5 text-xs font-medium text-success">
-      <Circle size={8} strokeWidth={0} fill="currentColor" /> {label}
-    </span>
+    <span className="inline-flex h-6 items-center rounded-full bg-success-muted px-2.5 text-xs font-medium text-success">{label}</span>
   );
 }
 

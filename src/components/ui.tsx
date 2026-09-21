@@ -3,7 +3,7 @@
 // Small primitives on top of the tokens in globals.css. See DESIGN.md.
 
 import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
-import { Check, Circle, Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 
 function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
@@ -92,12 +92,7 @@ export function VerifiedBadge({ children = "Verified" }: { children?: ReactNode 
 }
 
 export function ActiveBadge({ children = "Active" }: { children?: ReactNode }) {
-  return (
-    <Badge tone="success">
-      <Circle size={8} strokeWidth={0} fill="currentColor" />
-      {children}
-    </Badge>
-  );
+  return <Badge tone="success">{children}</Badge>;
 }
 
 export function TestnetBadge() {
