@@ -55,3 +55,27 @@ export function MascotHand({ size = 28, className = "", style }: { size?: number
     </svg>
   );
 }
+
+
+/** A small pixel trophy, held up next to the head. */
+export function MascotTrophy({ size = 30, className = "", style }: { size?: number; className?: string; style?: React.CSSProperties }) {
+  // 7 x 8. 1 = cup (light), 2 = shade, 3 = handles (accent)
+  const rows = [
+    "3111113",
+    "3111113",
+    "3111113",
+    "0111110",
+    "0022200",
+    "0002000",
+    "0002000",
+    "0122210",
+  ];
+  const fill: Record<string, string> = { "1": "var(--text-primary)", "2": "var(--text-secondary)", "3": "var(--accent-hover)" };
+  return (
+    <svg width={size} height={(size / 7) * 8} viewBox="0 0 7 8" shapeRendering="crispEdges" className={className} style={style} aria-hidden="true">
+      {rows.flatMap((row, y) =>
+        [...row].map((c, x) => (c === "0" ? null : <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={fill[c]} />)),
+      )}
+    </svg>
+  );
+}
