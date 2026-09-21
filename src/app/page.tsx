@@ -421,7 +421,7 @@ export default function Home() {
 
       {/* Closing */}
       <Reveal>
-      <section className="grid gap-12 py-20 md:grid-cols-[1.2fr_1fr] md:items-center md:py-36">
+      <section className="py-20 md:py-36">
         <div>
         <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Your agent starts with zero.</h2>
         <p className="mt-2 text-[32px] font-semibold leading-tight tracking-tight text-tertiary md:text-[40px]">Every action changes that.</p>
@@ -436,28 +436,6 @@ export default function Home() {
         <p className="mt-6 text-sm text-tertiary">No platform owns the record. No reputation score. Just a verifiable history.</p>
         </div>
 
-        {/* zero → actions → history, from the example's real stamps */}
-        {example && (
-          <ol className="md:justify-self-end">
-            {[
-              { v: "0", l: "actions", dim: true },
-              { v: "1", l: "verified action", dim: false },
-              ...(example.stamps.length > 1 ? [{ v: String(example.stamps.length), l: "verified actions", dim: false }] : []),
-              { v: formatUsdc(usdc), l: "USDC settled", dim: false },
-            ].map((row, i, arr) => (
-              <li key={i} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <span className={`mt-2 block h-[7px] w-[7px] rounded-full ${row.dim ? "bg-border-hover" : "bg-primary"}`} />
-                  {i < arr.length - 1 && <span className="my-1 block w-px flex-1 bg-border" />}
-                </div>
-                <div className="pb-5">
-                  <span className={`metric text-[24px] ${row.dim ? "text-tertiary" : ""}`}>{row.v}</span>
-                  <Label className="mt-0.5">{row.l}</Label>
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
       </section>
       </Reveal>
 
