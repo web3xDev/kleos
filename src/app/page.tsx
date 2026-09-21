@@ -204,7 +204,7 @@ export default function Home() {
       </section>
 
       {/* A stamp */}
-      <section className="grid gap-10 py-20 md:grid-cols-2 md:items-center md:py-36">
+      <section className="grid gap-10 py-16 md:grid-cols-2 md:items-center md:py-28">
         <div>
           <Reveal>
             <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a stamp.</h2>
@@ -313,7 +313,7 @@ export default function Home() {
 
       {/* How it works: one pipeline, ending in a real stamp */}
       <Reveal>
-      <section className="py-20 md:py-36">
+      <section className="py-16 md:py-28">
         <div className="eyebrow">How it works</div>
         <h2 className="mt-4 max-w-2xl text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">
           One paid action becomes a permanent record.
@@ -328,7 +328,7 @@ export default function Home() {
       {/* A real record: the example, verified live in this browser */}
       {example && (
         <Reveal>
-        <section className="py-20 md:py-36">
+        <section className="py-16 md:py-28">
           <div className="flex items-end justify-between gap-4">
             <div>
               <div className="eyebrow">Verify a real record</div>
@@ -434,14 +434,14 @@ export default function Home() {
 
       {/* FAQ */}
       <Reveal>
-      <section className="py-20 md:py-36">
+      <section className="py-16 md:py-28">
         <Faq />
       </section>
       </Reveal>
 
       {/* Closing: centered, with a faint purple atmosphere rising from the bottom */}
       <Reveal>
-      <section className="relative pt-20 pb-28 md:pt-36 md:pb-44">
+      <section className="relative pt-16 pb-24 md:pt-28 md:pb-36">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-[-32px] bottom-0 top-1/4 md:inset-x-[-120px]"
