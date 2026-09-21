@@ -31,10 +31,10 @@ const ROWS = [
   "0000111111110000",
 ];
 
-export function Mascot({ size = 112, className = "" }: { size?: number; className?: string }) {
+export function Mascot({ size = 112, className = "", style }: { size?: number; className?: string; style?: React.CSSProperties }) {
   const n = ROWS.length;
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${n} ${n}`} shapeRendering="crispEdges" className={className} aria-hidden="true">
+    <svg width={size} height={size} viewBox={`0 0 ${n} ${n}`} shapeRendering="crispEdges" className={className} style={style} aria-hidden="true">
       {ROWS.flatMap((row, y) =>
         [...row].map((c, x) =>
           c === "0" ? null : <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={PALETTE[c]} />,

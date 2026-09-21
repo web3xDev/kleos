@@ -15,7 +15,7 @@ import { Mark } from "@/components/mark";
 import { Reveal } from "@/components/reveal";
 import { Pipeline } from "@/components/pipeline";
 import { Faq } from "@/components/faq";
-import { Mascot, MascotHand } from "@/components/mascot";
+import { MascotHost, MascotProvider } from "@/components/mascot-host";
 
 type ExploreData = {
   total: number;
@@ -90,6 +90,7 @@ export default function Home() {
   const tools = example ? new Set(example.stamps.map((s) => s.receipt.tool)).size : 0;
 
   return (
+    <MascotProvider>
     <main className="mx-auto w-full max-w-[1200px] px-4 md:px-8">
       {/* Hero: copy on the left, the real product on the right */}
       <section className="grid gap-12 pt-24 pb-20 md:grid-cols-[1.2fr_1fr] md:items-center md:pt-40 md:pb-36">
@@ -118,19 +119,8 @@ export default function Home() {
         </div>
 
         {/* Live agent card, with the mascot peeking from behind it */}
-        <div className="group relative md:w-full md:max-w-sm md:justify-self-end">
-          {/* peeking from behind the card's left edge: pivot at the bottom-right,
-              body hidden behind the card, head leaning out */}
-          <Mascot
-            size={112}
-            className="absolute -left-[66px] top-[22%] z-0 origin-bottom-right -rotate-[10deg] transition-transform duration-[220ms] group-hover:-rotate-[16deg] group-hover:-translate-x-5"
-          />
-          <MascotHand
-            size={24}
-            className="absolute -left-[6px] z-20 transition-transform duration-[220ms] group-hover:-translate-x-1"
-            style={{ top: "calc(22% + 100px)" }}
-          />
-          <Card className="relative z-10 overflow-hidden">
+        <MascotHost id="hero" side="left" top="22%" className="md:w-full md:max-w-sm md:justify-self-end">
+          <Card className="overflow-hidden">
             <Chrome path={example ? `AGENT #${example.id}` : "AGENT"} />
             {example ? (
               <Link href={`/a/${example.id}`} className="block p-5 hover:bg-surface-hover">
@@ -200,7 +190,7 @@ export default function Home() {
               </div>
             )}
           </Card>
-        </div>
+        </MascotHost>
       </section>
 
       {/* A stamp */}
@@ -232,6 +222,7 @@ export default function Home() {
         </div>
 
         <Reveal delay={380}>
+        <MascotHost id="stamp" side="right" top="30%">
         <Card className="overflow-hidden">
           <Chrome path="STAMP" />
           {latest && example ? (
@@ -272,6 +263,7 @@ export default function Home() {
             <div className="p-5 text-sm text-tertiary">No stamps yet. The first one will appear here.</div>
           )}
         </Card>
+        </MascotHost>
         </Reveal>
       </section>
 
@@ -340,7 +332,8 @@ export default function Home() {
               Open profile <ArrowRight size={14} strokeWidth={1.5} />
             </Link>
           </div>
-          <Card className="mt-6 overflow-hidden">
+          <MascotHost id="verify" side="left" top="30%" className="mt-6">
+          <Card className="overflow-hidden">
             <Chrome path={`AGENT #${example.id} / VERIFY`} />
             <div className="grid md:grid-cols-[1fr_1fr]">
               <div className="p-6 md:border-r md:border-border-subtle">
@@ -428,6 +421,7 @@ export default function Home() {
               </Link>
             </div>
           </Card>
+          </MascotHost>
         </section>
         </Reveal>
       )}
@@ -466,6 +460,7 @@ export default function Home() {
       </section>
       </Reveal>
     </main>
+    </MascotProvider>
   );
 }
 
