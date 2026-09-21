@@ -25,7 +25,7 @@ export function Mark({ size = 20, landing = false, className }: { size?: number;
 
 export function Wordmark({ size = 20 }: { size?: number }) {
   return (
-    <span className="inline-flex items-center gap-2.5 text-primary">
+    <span className="inline-flex items-center gap-3 text-primary">
       <Mark size={size} />
       <span className="text-sm font-semibold tracking-[0.18em]">KLEOS</span>
     </span>

@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import { Fingerprint } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { Wordmark } from "@/components/mark";
-import { TestnetBadge } from "@/components/ui";
+import { Mono } from "@/components/ui";
 
 const nav = [
   { href: "/explore", label: "Explore" },
-  { href: "/try", label: "Try it" },
+  { href: "/try", label: "Try" },
   { href: "/docs", label: "Docs" },
 ];
 
@@ -39,7 +39,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <TestnetBadge />
+          <Mono className="text-[11px] tracking-[0.12em] text-warning/70">· TESTNET</Mono>
           {session ? (
             <>
               <Link
@@ -60,11 +60,10 @@ export function Header() {
           ) : (
             <Link
               href="/me"
-              className={`inline-flex items-center gap-2 rounded-[8px] border border-border px-3 py-1.5 text-sm ${
-                pathname.startsWith("/me") ? "text-primary" : "text-secondary hover:border-border-hover hover:text-primary"
+              className={`rounded-[8px] px-3 py-1.5 text-sm ${
+                pathname.startsWith("/me") ? "text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
               }`}
             >
-              <Fingerprint size={15} strokeWidth={1.5} />
               Sign in
             </Link>
           )}
