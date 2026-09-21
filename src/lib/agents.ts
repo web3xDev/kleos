@@ -16,7 +16,9 @@ export type Agent = {
   id: bigint;
   name: string;
   owner: `0x${string}`;
-  wallet: `0x${string}` | null; // ERC-8004 agentWallet; null when unset
+  // ERC-8004 agentWallet. register() defaults it to the owner, which is not a
+  // runtime; we report null until the owner pairs a distinct signer.
+  wallet: `0x${string}` | null;
   encryptionKey: `0x${string}` | null;
   keyIndex: number | null;
 };
@@ -119,7 +121,7 @@ export async function loadAgent(publicClient: PublicClient, id: bigint): Promise
     id,
     name: card?.name ?? `Agent #${id}`,
     owner,
-    wallet: wallet === ZERO ? null : wallet,
+    wallet: wallet === ZERO || wallet.toLowerCase() === owner.toLowerCase() ? null : wallet,
     encryptionKey: encKey === "0x" ? null : encKey,
     keyIndex: keyIndex === "0x" ? null : Number(hexToUtf8(keyIndex)),
   };
