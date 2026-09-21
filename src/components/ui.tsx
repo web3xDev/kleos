@@ -21,7 +21,7 @@ export function Button({ variant = "primary", size = "md", loading, className, c
   const sizes = { md: "h-10 px-4 text-sm", lg: "h-12 px-5 text-[15px]" };
   const variants = {
     primary: "bg-primary text-background hover:bg-white",
-    accent: "border border-accent bg-transparent text-accent-text hover:bg-accent-muted",
+    accent: "bg-accent text-white hover:bg-accent-hover",
     secondary: "border border-border bg-transparent text-primary hover:border-border-hover hover:bg-surface-hover",
     ghost: "text-secondary hover:bg-surface-hover hover:text-primary",
   };
@@ -38,7 +38,7 @@ export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputEleme
     <input
       className={cx(
         "h-10 w-full rounded-[8px] border border-border bg-background px-3 text-sm text-primary placeholder:text-tertiary",
-        "focus:border-accent focus:outline-none disabled:opacity-50",
+        "focus:border-border-hover focus:outline-none disabled:opacity-50",
         className,
       )}
       {...rest}
@@ -67,7 +67,7 @@ export function Badge({ tone = "neutral", children, className }: BadgeProps) {
     success: "bg-success-muted text-success",
     error: "bg-error-muted text-error",
     warning: "bg-warning-muted text-warning",
-    accent: "bg-accent-muted text-accent",
+    accent: "border border-border-hover text-secondary",
   };
   return (
     <span

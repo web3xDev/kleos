@@ -102,7 +102,7 @@ export default function Home() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/me">
-              <Button size="lg">
+              <Button size="lg" variant="accent">
                 Register your agent
                 <ArrowRight size={16} strokeWidth={1.5} />
               </Button>
@@ -435,7 +435,7 @@ export default function Home() {
         <p className="mt-2 text-[32px] font-semibold leading-tight tracking-tight text-tertiary md:text-[40px]">Every action changes that.</p>
         <div className="mt-8">
           <Link href="/me">
-            <Button size="lg">
+            <Button size="lg" variant="accent">
               Register your agent
               <ArrowRight size={16} strokeWidth={1.5} />
             </Button>

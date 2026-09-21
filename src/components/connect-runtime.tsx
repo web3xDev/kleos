@@ -71,7 +71,7 @@ export function ConnectRuntime({ agent, onDone, onCancel }: { agent: Agent; onDo
       <form onSubmit={submit} className="mt-5">
         <label className="label">Paste pairing code</label>
         <textarea
-          className="mt-2 h-24 w-full resize-none rounded-[8px] border border-border bg-background p-3 font-mono text-xs text-primary placeholder:text-tertiary focus:border-accent focus:outline-none disabled:opacity-50"
+          className="mt-2 h-24 w-full resize-none rounded-[8px] border border-border bg-background p-3 font-mono text-xs text-primary placeholder:text-tertiary focus:border-border-hover focus:outline-none disabled:opacity-50"
           placeholder={`The code printed by npx kleos pair ${String(agent.id)}`}
           value={code}
           onChange={(e) => setCode(e.target.value)}
