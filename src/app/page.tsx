@@ -286,28 +286,57 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it works: a chain, not four tiles */}
+      {/* How it works: one pipeline, ending in a real stamp */}
       <section className="border-t border-border-subtle py-20 md:py-28">
         <Label>How it works</Label>
-        <ol className="mt-8 grid gap-6 md:grid-cols-4 md:gap-0">
+        <h2 className="mt-3 max-w-2xl text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">
+          One paid action becomes a permanent record.
+        </h2>
+
+        <ol className="relative mt-12 grid gap-10 md:grid-cols-4 md:gap-6">
+          {/* the rail: one line through all four steps on desktop */}
+          <span aria-hidden className="absolute top-[3px] left-0 hidden h-px w-full bg-border md:block" />
           {[
-            ["01", "Register", "ERC-8004 identity", "One passkey ceremony. No seed phrase, no wallet, no account."],
-            ["02", "Connect", "Runtime wallet", "Pair the software that runs your agent. It gets its own key; it never sees yours."],
-            ["03", "Act", "x402 payment", "Your agent discovers tools and pays for them. OnchainRouter is the first place it can."],
-            ["04", "Stamp", "Portable record", "Every paid action becomes a stamp. Yours, portable, provable by anyone."],
-          ].map(([n, t, sub, body], i, arr) => (
-            <li key={n} className="md:pr-8">
-              <div className="flex items-center gap-3">
-                <Mono className="text-tertiary">{n}</Mono>
-                {i < arr.length - 1 && <span className="hidden h-px flex-1 bg-border md:block" />}
+            { n: "01", t: "Register", who: "Human", sub: "ERC-8004 identity", out: "identity", body: "One passkey ceremony. No seed phrase, no wallet." },
+            { n: "02", t: "Connect", who: "Human + runtime", sub: "Runtime wallet", out: "paired key", body: "The software that runs the agent gets its own key. It never sees yours." },
+            { n: "03", t: "Act", who: "Agent + runtime", sub: "x402 payment", out: "settlement", body: "The agent buys a tool. The payment settles on Monad." },
+            { n: "04", t: "Stamp", who: "Kleos", sub: "Portable record", out: "anchored", body: "A signed receipt, anchored next to the payment. Provable by anyone." },
+          ].map((st, i) => (
+            <li key={st.n} className="relative md:pt-6">
+              {/* node on the rail */}
+              <span aria-hidden className="absolute top-0 left-0 hidden h-[7px] w-[7px] rounded-full bg-primary md:block" />
+              {i === 3 && (
+                <span aria-hidden className="absolute top-[3px] right-0 hidden h-px w-3 bg-background md:block" />
+              )}
+              <div className="flex items-baseline gap-3">
+                <Mono className="text-tertiary">{st.n}</Mono>
+                <span className="text-lg font-semibold">{st.t}</span>
               </div>
-              <div className="mt-4 text-lg font-semibold">{t}</div>
-              <Mono className="mt-0.5 block text-secondary">{sub}</Mono>
-              <p className="mt-3 max-w-[28ch] text-sm text-secondary">{body}</p>
+              <Label className="mt-1">{st.who}</Label>
+              <Mono className="mt-4 block text-secondary">{st.sub}</Mono>
+              <p className="mt-2 max-w-[26ch] text-sm text-secondary">{st.body}</p>
+              <div className="mt-4 flex items-center gap-2">
+                <ArrowRight size={12} strokeWidth={1.5} className="text-tertiary" />
+                <Mono className="text-xs text-tertiary">{st.out}</Mono>
+              </div>
+
+              {i === 3 && latest && example && (
+                <Link href={`/a/${example.id}`} className="mt-5 block">
+                  <Card hover className="p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <VerifiedBadge />
+                      <Mark size={14} className="text-tertiary" />
+                    </div>
+                    <div className="mt-3 text-lg font-semibold leading-tight">{formatUsdc(BigInt(latest.receipt.amount))} USDC</div>
+                    <Mono className="mt-1 block text-secondary">Agent #{example.id}</Mono>
+                  </Card>
+                </Link>
+              )}
             </li>
           ))}
         </ol>
-        <p className="mt-12 text-[24px] font-semibold tracking-tight">No platform owns the record.</p>
+
+        <p className="mt-14 text-[24px] font-semibold tracking-tight">No platform owns the record.</p>
       </section>
 
       {/* A real record: the example, verified live in this browser */}
