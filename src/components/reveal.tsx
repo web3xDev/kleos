@@ -14,8 +14,8 @@ export function Reveal({ children, className = "", delay = 0 }: { children: Reac
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Already on screen at load: never hide it.
-    if (el.getBoundingClientRect().top < window.innerHeight * 0.9) {
+    // Clearly on screen at load (top half of the viewport): never hide it.
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.5) {
       setShown(true);
       return;
     }
@@ -27,7 +27,7 @@ export function Reveal({ children, className = "", delay = 0 }: { children: Reac
           io.disconnect();
         }
       },
-      { rootMargin: "0px 0px -10% 0px" },
+      { rootMargin: "0px 0px -15% 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
