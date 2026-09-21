@@ -123,11 +123,11 @@ export default function Home() {
               body hidden behind the card, head leaning out */}
           <Mascot
             size={112}
-            className="absolute -left-[66px] top-[22%] z-0 origin-bottom-right -rotate-[10deg] transition-transform duration-[180ms] group-hover:-rotate-[14deg] group-hover:-translate-x-1"
+            className="absolute -left-[66px] top-[22%] z-0 origin-bottom-right -rotate-[10deg] transition-transform duration-[220ms] group-hover:-rotate-[16deg] group-hover:-translate-x-5"
           />
           <MascotHand
             size={24}
-            className="absolute -left-[6px] z-20 transition-transform duration-[180ms] group-hover:-translate-x-0.5"
+            className="absolute -left-[6px] z-20 transition-transform duration-[220ms] group-hover:-translate-x-1"
             style={{ top: "calc(22% + 100px)" }}
           />
           <Card className="relative z-10 overflow-hidden">
