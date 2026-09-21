@@ -41,28 +41,18 @@ export function Header() {
         <div className="flex items-center gap-2">
           <Mono className="text-[11px] tracking-[0.14em] text-warning/60">TESTNET</Mono>
           {session ? (
-            <>
-              <Link
-                href="/me"
-                className={`rounded-[8px] px-3 py-1.5 text-sm ${
-                  pathname.startsWith("/me") ? "text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
-                }`}
-              >
-                My agents
-              </Link>
-              <span
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-success/40 text-success"
-                title={`Session ends in ${Math.ceil(secondsLeft / 60)} min`}
-              >
-                <Fingerprint size={16} strokeWidth={1.5} />
-              </span>
-            </>
+            <Link
+              href="/me"
+              className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-border px-3.5 text-sm text-primary hover:border-border-hover hover:bg-surface-hover"
+              title={`Session ends in ${Math.ceil(secondsLeft / 60)} min`}
+            >
+              My agents
+              <Fingerprint size={14} strokeWidth={1.5} className="text-success" />
+            </Link>
           ) : (
             <Link
               href="/me"
-              className={`rounded-[8px] px-3 py-1.5 text-sm ${
-                pathname.startsWith("/me") ? "text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
-              }`}
+              className="inline-flex h-9 items-center rounded-[8px] border border-border px-3.5 text-sm text-primary hover:border-border-hover hover:bg-surface-hover"
             >
               Sign in
             </Link>
