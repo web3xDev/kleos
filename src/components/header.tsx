@@ -38,22 +38,34 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/me"
-            className={`rounded-[8px] px-3 py-1.5 text-sm ${
-              pathname.startsWith("/me") ? "text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
-            }`}
-          >
-            My agents
-          </Link>
-          <span
-            className={`inline-flex h-8 w-8 items-center justify-center rounded-full border ${
-              session ? "border-success/40 text-success" : "border-border text-tertiary"
-            }`}
-            title={session ? `Session ends in ${Math.ceil(secondsLeft / 60)} min` : "Not signed in"}
-          >
-            <Fingerprint size={16} strokeWidth={1.5} />
-          </span>
+          {session ? (
+            <>
+              <Link
+                href="/me"
+                className={`rounded-[8px] px-3 py-1.5 text-sm ${
+                  pathname.startsWith("/me") ? "text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
+                }`}
+              >
+                My agents
+              </Link>
+              <span
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-success/40 text-success"
+                title={`Session ends in ${Math.ceil(secondsLeft / 60)} min`}
+              >
+                <Fingerprint size={16} strokeWidth={1.5} />
+              </span>
+            </>
+          ) : (
+            <Link
+              href="/me"
+              className={`inline-flex items-center gap-2 rounded-[8px] border border-border px-3 py-1.5 text-sm ${
+                pathname.startsWith("/me") ? "text-primary" : "text-secondary hover:border-border-hover hover:text-primary"
+              }`}
+            >
+              <Fingerprint size={15} strokeWidth={1.5} />
+              Sign in
+            </Link>
+          )}
         </div>
       </div>
       <nav className="flex items-center gap-1 overflow-x-auto border-t border-border-subtle px-3 py-1.5 md:hidden">
