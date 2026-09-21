@@ -9,6 +9,7 @@ import { toViemAccount } from "@category-labs/mera/viem";
 import { createPublicClient, createWalletClient, http, type PublicClient, type WalletClient } from "viem";
 import { chain } from "./chain";
 import { createOwner, signInOwner, type SignInResult } from "./passkey";
+import { useToast } from "@/components/toast";
 
 export const SESSION_MINUTES = 15;
 
@@ -52,6 +53,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const sessionRef = useRef<Session | null>(null);
+  const { notify } = useToast();
 
   const end = useCallback(() => {
     sessionRef.current?.keys.owner.session.end();
@@ -81,13 +83,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         } catch {
           // untrusted storage
         }
+        notify(
+          `Signed in for ${SESSION_MINUTES} minutes`,
+          "Your keys live only in memory. Reloading the page ends the session; your passkey brings it straight back.",
+        );
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
       } finally {
         setBusy(false);
       }
     },
-    [end],
+    [end, notify],
   );
 
   const signIn = useCallback(() => start(signInOwner), [start]);
