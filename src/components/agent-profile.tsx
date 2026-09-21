@@ -17,7 +17,7 @@ import {
   type Check as VerifyCheck,
   type Stamp,
 } from "@/lib/stamps";
-import { ActiveBadge, Badge, Button, Card, Label, Mono, TestnetBadge, VerifiedBadge, shortHex } from "@/components/ui";
+import { ActiveBadge, Badge, Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components/ui";
 
 type Verification = { running: boolean; results: Map<string, VerifyCheck[]>; done: number; total: number };
 
@@ -108,7 +108,6 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <Mono className="text-secondary">Agent #{String(agentId)}</Mono>
             {agent?.wallet ? <ActiveBadge /> : agent ? <Badge>No runtime</Badge> : null}
-            <TestnetBadge />
           </div>
           <p className="mt-3 text-sm text-tertiary">
             Owned by a verified passkey{isOwner ? " (you)" : ""}. ERC-8004 identity on {chain.name}.

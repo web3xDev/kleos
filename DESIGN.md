@@ -35,7 +35,7 @@ Primary: `bg-primary text-background` (white on black), hover pure white. Accent
 
 ## Badges
 
-`✓ Verified` (success text on success-muted), `● Active`, `Revoked` (error), `TESTNET` (always visible wherever a number is shown: `$0.43 USDC · TESTNET`).
+`✓ Verified` (success text on success-muted), `● Active`, `Revoked` (error), `TESTNET` is a global environment indicator, not a per-component badge: it appears in the navbar, in the network-state label ("Live on Monad Testnet") and in the footer line, nowhere else.
 
 ## Identity, metrics, stamps
 

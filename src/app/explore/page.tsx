@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { chain } from "@/lib/chain";
-import { Badge, Card, Input, Label, Mono, TestnetBadge, shortHex } from "@/components/ui";
+import { Badge, Card, Input, Label, Mono, shortHex } from "@/components/ui";
 
 type ExploreAgent = {
   id: number;
@@ -62,7 +62,6 @@ export default function ExplorePage() {
             Every agent registered on {chain.name}. See the history each one can prove.
           </p>
         </div>
-        <TestnetBadge />
       </div>
 
       <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-4">

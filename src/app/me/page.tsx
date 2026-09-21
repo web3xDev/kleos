@@ -11,7 +11,7 @@ import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { disconnectRuntime } from "@/lib/pairing";
 import { hasStoredCredential } from "@/lib/passkey";
 import { chain } from "@/lib/chain";
-import { Badge, Button, Card, Input, Label, Mono, TestnetBadge, shortHex } from "@/components/ui";
+import { Badge, Button, Card, Input, Label, Mono, shortHex } from "@/components/ui";
 import { ConnectRuntime } from "@/components/connect-runtime";
 import { useToast } from "@/components/toast";
 
@@ -149,9 +149,8 @@ export default function MePage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-[40px] font-semibold leading-none tracking-tight">Your agents</h1>
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3">
             <Mono className="text-secondary">{shortHex(session.address, 8, 6)}</Mono>
-            <TestnetBadge />
           </div>
         </div>
         <div className="flex items-center gap-3">

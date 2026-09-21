@@ -10,7 +10,7 @@ import { ArrowRight, ArrowUpRight, Check, Loader2, X } from "lucide-react";
 import { addresses, chain } from "@/lib/chain";
 import { useSession } from "@/lib/session";
 import { fetchStamps, formatUsdc, verifyStamp, type Check as VerifyCheck, type Stamp } from "@/lib/stamps";
-import { Button, Card, Label, Mono, TestnetBadge, VerifiedBadge, shortHex } from "@/components/ui";
+import { Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components/ui";
 import { Mark } from "@/components/mark";
 
 type ExploreData = {
@@ -283,7 +283,7 @@ export default function Home() {
             label={data?.withTrackRecord === 1 ? "Agent with a track record" : "Agents with a track record"}
           />
           <Stat value={data ? data.totalStamps.toLocaleString() : null} label="Verified actions" />
-          <Stat value={example ? formatUsdc(usdc) : data ? "$0.00" : null} label="USDC settled" testnet />
+          <Stat value={example ? formatUsdc(usdc) : data ? "$0.00" : null} label="USDC settled" />
         </div>
       </section>
 
@@ -406,17 +406,10 @@ export default function Home() {
   );
 }
 
-function Stat({ value, label, testnet }: { value: string | null; label: string; testnet?: boolean }) {
+function Stat({ value, label }: { value: string | null; label: string }) {
   return (
     <div>
-      {value === null ? (
-        <div className="h-9 w-24 animate-pulse rounded-[6px] bg-surface-elevated" />
-      ) : (
-        <div className="flex items-baseline gap-2">
-          <div className="metric">{value}</div>
-          {testnet && <TestnetBadge />}
-        </div>
-      )}
+      {value === null ? <div className="h-9 w-24 animate-pulse rounded-[6px] bg-surface-elevated" /> : <div className="metric">{value}</div>}
       <Label className="mt-1">{label}</Label>
     </div>
   );

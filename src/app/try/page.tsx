@@ -7,7 +7,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Loader2, Play, X } from "lucide-react";
 import { chain } from "@/lib/chain";
-import { Button, Card, Label, Mono, TestnetBadge, shortHex } from "@/components/ui";
+import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 
 type Status = "idle" | "start" | "done" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
@@ -84,7 +84,6 @@ export default function TryPage() {
             settles, the receipt is anchored, and the profile updates.
           </p>
         </div>
-        <TestnetBadge />
       </div>
 
       <Card className="mt-8 p-5">
