@@ -10,6 +10,7 @@ import { cachedAgentIds, ensureGas, loadAgent, registerAgent, type Agent } from 
 import { hasStoredCredential } from "@/lib/passkey";
 import { chain } from "@/lib/chain";
 import { Badge, Button, Card, Input, Label, Mono, TestnetBadge, shortHex } from "@/components/ui";
+import { ConnectRuntime } from "@/components/connect-runtime";
 
 type Progress = "idle" | "gas" | "signing" | "done";
 
@@ -28,6 +29,7 @@ export default function MePage() {
   const [returning, setReturning] = useState(false);
   const [ended, setEnded] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [connecting, setConnecting] = useState<Agent | null>(null);
 
   useEffect(() => {
     setReturning(hasStoredCredential());
@@ -182,6 +184,19 @@ export default function MePage() {
         </Card>
       )}
 
+      {connecting && (
+        <div className="mt-8">
+          <ConnectRuntime
+            agent={connecting}
+            onCancel={() => setConnecting(null)}
+            onDone={() => {
+              setConnecting(null);
+              void refresh();
+            }}
+          />
+        </div>
+      )}
+
       <section className="mt-10">
         {loadingAgents && agents.length === 0 && (
           <div className="grid gap-4 md:grid-cols-2">
@@ -252,7 +267,7 @@ export default function MePage() {
 
               <div className="mt-5 flex items-center gap-2">
                 {!a.wallet && (
-                  <Button variant="secondary" disabled>
+                  <Button variant="secondary" onClick={() => setConnecting(a)}>
                     <Link2 size={16} strokeWidth={1.5} />
                     Connect runtime
                   </Button>
