@@ -60,3 +60,7 @@ Lucide, 1.5px stroke. 16px UI, 18px buttons, 20px nav, 24px feature states. No e
 ## Page hierarchy
 
 `/` hero → live real stats → example agent → how it works → recent stamps → CTA. `/me` your agents → cards → register. `/a/[id]` identity → metrics → platform/runtime → track record → verify. `/explore` "7,412 agents registered · 6 with track records" → search → filters → list. `/docs` clean, mostly text and code. `/try` the movie; a little more motion is allowed here. `/t/[id]` last.
+
+## Accent rule (decided 2026-09-21)
+
+Purple is for the one action on a page that writes to chain (Register agent, Connect runtime). Everything else is white primary, secondary or ghost. One purple button per page.
