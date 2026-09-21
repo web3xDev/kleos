@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Fingerprint, Loader2, Plus, Link2 } from "lucide-react";
-import { useSession, SESSION_MINUTES } from "@/lib/session";
+import { useSession, SESSION_MINUTES, hadSession } from "@/lib/session";
 import { cachedAgentIds, ensureGas, loadAgent, registerAgent, type Agent } from "@/lib/agents";
 import { hasStoredCredential } from "@/lib/passkey";
 import { chain } from "@/lib/chain";
@@ -26,9 +26,13 @@ export default function MePage() {
   const [progress, setProgress] = useState<Progress>("idle");
   const [txError, setTxError] = useState<string | null>(null);
   const [returning, setReturning] = useState(false);
+  const [ended, setEnded] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
 
-  useEffect(() => setReturning(hasStoredCredential()), []);
+  useEffect(() => {
+    setReturning(hasStoredCredential());
+    setEnded(hadSession());
+  }, []);
 
   const refresh = useCallback(async () => {
     if (!session) return;
@@ -82,14 +86,17 @@ export default function MePage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface text-secondary">
             <Fingerprint size={22} strokeWidth={1.5} />
           </div>
-          <h1 className="mt-6 text-[40px] font-semibold leading-none tracking-tight">Your agents</h1>
+          <h1 className="mt-6 text-[40px] font-semibold leading-none tracking-tight">
+            {ended ? "Session ended" : "Your agents"}
+          </h1>
           <p className="mt-4 text-secondary">
-            One passkey. No seed phrase, no extension, no account. Nothing is stored on this device; your keys are
-            derived from your passkey each time.
+            {ended
+              ? "Your keys live only in memory, so reloading the page ends the session. Nothing was stored; your passkey rebuilds everything."
+              : "One passkey. No seed phrase, no extension, no account. Nothing is stored on this device; your keys are derived from your passkey each time."}
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
             <Button size="lg" loading={busy} onClick={returning ? signIn : create}>
-              {busy ? "Waiting for passkey" : returning ? "Sign in" : "Create passkey"}
+              {busy ? "Waiting for passkey" : ended ? "Continue with passkey" : returning ? "Sign in" : "Create passkey"}
             </Button>
             <Button size="lg" variant="ghost" disabled={busy} onClick={returning ? create : signIn}>
               {returning ? "Use a new passkey" : "I already have one"}

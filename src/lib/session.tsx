@@ -12,6 +12,19 @@ import { createOwner, signInOwner, type SignInResult } from "./passkey";
 
 export const SESSION_MINUTES = 15;
 
+// Non-secret marker: "a session existed in this tab". Lets a reload explain
+// that the session ended instead of showing the first-visit screen. No key
+// material is ever stored.
+const HAD_SESSION = "kleos.hadSession";
+
+export function hadSession(): boolean {
+  try {
+    return sessionStorage.getItem(HAD_SESSION) === "1";
+  } catch {
+    return false;
+  }
+}
+
 type Session = {
   keys: SignInResult;
   address: `0x${string}`;
@@ -63,6 +76,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         };
         sessionRef.current = next;
         setSession(next);
+        try {
+          sessionStorage.setItem(HAD_SESSION, "1");
+        } catch {
+          // untrusted storage
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
       } finally {
