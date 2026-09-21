@@ -18,6 +18,7 @@ import {
   type Stamp,
 } from "@/lib/stamps";
 import { ActiveBadge, Badge, Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components/ui";
+import { JsonView } from "@/components/json-view";
 
 type Verification = { running: boolean; results: Map<string, VerifyCheck[]>; done: number; total: number };
 
@@ -307,9 +308,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                       {isOwner ? (
                         d ? (
                           <div className="mt-2">
-                            <pre className="max-h-64 overflow-auto rounded-[8px] border border-border-subtle bg-surface p-3 font-mono text-xs text-primary">
-                              {d.answer || "(could not decrypt)"}
-                            </pre>
+                            <JsonView value={d.answer || "(could not decrypt)"} className="max-h-64" />
                             <div className="mt-2 flex items-center gap-2 text-xs">
                               {d.hashMatches ? (
                                 <>

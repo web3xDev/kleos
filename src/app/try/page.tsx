@@ -8,6 +8,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Loader2, Play, X } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
+import { JsonView } from "@/components/json-view";
 
 type Status = "idle" | "start" | "done" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
@@ -142,7 +143,7 @@ export default function TryPage() {
       {answer && (
         <div className="mt-6">
           <Label>What the agent got back</Label>
-          <pre className="mt-2 overflow-auto rounded-[8px] border border-border-subtle bg-surface p-3 font-mono text-xs text-primary">{answer}</pre>
+          <JsonView value={answer} className="mt-2" />
           <p className="mt-2 text-xs text-tertiary">
             Shown here because this is the demo agent. On a real agent, the answer is sealed to its owner.
           </p>
