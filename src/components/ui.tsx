@@ -17,7 +17,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Button({ variant = "primary", size = "md", loading, className, children, disabled, ...rest }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-[8px] font-medium transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-50";
+    "inline-flex items-center justify-center gap-2 rounded-[8px] font-medium disabled:cursor-not-allowed disabled:opacity-50";
   const sizes = { md: "h-10 px-4 text-sm", lg: "h-12 px-5 text-[15px]" };
   const variants = {
     primary: "bg-primary text-background hover:bg-white",
@@ -38,7 +38,7 @@ export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputEleme
     <input
       className={cx(
         "h-10 w-full rounded-[8px] border border-border bg-background px-3 text-sm text-primary placeholder:text-tertiary",
-        "transition-colors duration-[120ms] focus:border-accent focus:outline-none disabled:opacity-50",
+        "focus:border-accent focus:outline-none disabled:opacity-50",
         className,
       )}
       {...rest}
@@ -51,7 +51,7 @@ export function Card({ className, hover, ...rest }: HTMLAttributes<HTMLDivElemen
     <div
       className={cx(
         "rounded-[10px] border border-border bg-surface",
-        hover && "transition-colors duration-[180ms] hover:border-border-hover hover:bg-surface-hover",
+        hover && "hover:border-border-hover hover:bg-surface-hover",
         className,
       )}
       {...rest}

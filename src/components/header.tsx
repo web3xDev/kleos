@@ -27,7 +27,7 @@ export function Header() {
             <Link
               key={n.href}
               href={n.href}
-              className={`rounded-[8px] px-3 py-1.5 text-sm transition-colors duration-[120ms] ${
+              className={`rounded-[8px] px-3 py-1.5 text-sm ${
                 pathname.startsWith(n.href) ? "text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
               }`}
             >
@@ -39,7 +39,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <Link
             href="/me"
-            className={`rounded-[8px] px-3 py-1.5 text-sm transition-colors duration-[120ms] ${
+            className={`rounded-[8px] px-3 py-1.5 text-sm ${
               pathname.startsWith("/me") ? "text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"
             }`}
           >
