@@ -33,9 +33,12 @@ export type OwnerKeys = {
 };
 
 export type EncryptionKeys = {
-  // Per-agent keypairs are derived from the encryption root with HKDF, so one
-  // ceremony covers every agent and agents stay unlinkable to each other.
-  forAgent: (agentId: string) => { privateKey: Uint8Array; publicKey: string };
+  // Per-agent keypairs are derived from the encryption root with HKDF over an
+  // owner-local index, so one ceremony covers every agent. The index is
+  // written to the agent's ERC-8004 metadata at registration, which is how a
+  // fresh device knows which key opens which agent's history. The agent id
+  // itself cannot be used: it is only known after the mint.
+  forIndex: (index: number) => { privateKey: Uint8Array; publicKey: `0x${string}` };
 };
 
 function rpId(): string {
@@ -77,9 +80,12 @@ function ownerFromPrf(prfOutput: Uint8Array) {
 
 function encryptionFromRoot(root: Uint8Array): EncryptionKeys {
   return {
-    forAgent(agentId: string) {
-      const privateKey = hkdf(sha256, root, utf8ToBytes("kleos.agent"), utf8ToBytes(agentId), 32);
-      return { privateKey, publicKey: bytesToHex(secp256k1.getPublicKey(privateKey, true)) };
+    forIndex(index: number) {
+      const privateKey = hkdf(sha256, root, utf8ToBytes("kleos.agent.v1"), utf8ToBytes(String(index)), 32);
+      return {
+        privateKey,
+        publicKey: `0x${bytesToHex(secp256k1.getPublicKey(privateKey, true))}`,
+      };
     },
   };
 }

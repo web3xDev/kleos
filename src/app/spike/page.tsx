@@ -42,9 +42,9 @@ export default function SpikePage() {
       );
       setOwner(keys);
       setAgentKeys(
-        ["agent-0", "agent-1", "agent-2"].map((id) => ({
-          id,
-          publicKey: keys.encryption.forAgent(id).publicKey,
+        [0, 1, 2].map((i) => ({
+          id: `key index ${i}`,
+          publicKey: keys.encryption.forIndex(i).publicKey,
         })),
       );
     } catch (e) {
