@@ -50,7 +50,7 @@ export function Card({ className, hover, ...rest }: HTMLAttributes<HTMLDivElemen
   return (
     <div
       className={cx(
-        "rounded-[10px] border border-border bg-surface",
+        "card rounded-[10px] border border-border bg-surface",
         hover && "hover:border-border-hover hover:bg-surface-hover",
         className,
       )}

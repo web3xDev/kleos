@@ -111,7 +111,11 @@ a[href] {
 /* Hover transitions: 180ms, ease-out. State changes, not decoration. */
 button,
 a,
-[role="button"] {
+summary,
+input,
+textarea,
+[role="button"],
+.card {
   transition-property: background-color, border-color, color, opacity;
   transition-duration: 180ms;
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
