@@ -155,10 +155,16 @@ textarea,
   color: var(--text-tertiary);
 }
 
-/* Arrow inside a button slides 2px right on hover. */
-.group\/btn:hover svg.lucide-arrow-right {
+/* Arrows inside any hovered link or button slide 2px along their direction. */
+svg.lucide-arrow-right,
+svg.lucide-arrow-up-right {
+  transition: transform 120ms ease-out;
+}
+a:hover svg.lucide-arrow-right,
+button:hover svg.lucide-arrow-right {
   transform: translateX(2px);
 }
-svg.lucide-arrow-right {
-  transition: transform 120ms ease-out;
+a:hover svg.lucide-arrow-up-right,
+button:hover svg.lucide-arrow-up-right {
+  transform: translate(1px, -1px);
 }
