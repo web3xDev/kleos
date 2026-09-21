@@ -4,6 +4,8 @@
 // handful of multicalls, cached for a minute. HyperSync can replace this
 // once an API token is configured.
 
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { createPublicClient, http } from "viem";
 import { addresses, chain } from "./chain";
 import { identityRegistryAbi, parseRegistration } from "./erc8004";
@@ -59,9 +61,32 @@ async function mc<T>(contracts: Parameters<typeof client.multicall>[0]["contract
   }
 }
 
-let cache: { data: ExploreData; at: number } | null = null;
-let inflight: Promise<ExploreData> | null = null;
+// Stale-while-revalidate. The last scan is kept in memory and on disk; a
+// request is answered from it immediately and a refresh runs in the
+// background when it is older than TTL. Nobody waits 25 seconds.
 const TTL = 60_000;
+const SNAPSHOT = join(process.cwd(), ".data", "explore.json");
+
+let cache: { data: ExploreData; at: number } | null = loadSnapshot();
+let inflight: Promise<ExploreData> | null = null;
+
+function loadSnapshot(): { data: ExploreData; at: number } | null {
+  try {
+    const data = JSON.parse(readFileSync(SNAPSHOT, "utf8")) as ExploreData;
+    return { data, at: data.scannedAt };
+  } catch {
+    return null;
+  }
+}
+
+function saveSnapshot(data: ExploreData): void {
+  try {
+    mkdirSync(join(process.cwd(), ".data"), { recursive: true });
+    writeFileSync(SNAPSHOT, JSON.stringify(data));
+  } catch {
+    // disk is a convenience; memory still has it
+  }
+}
 
 /**
  * Highest existing id. Ids are minted densely from 0 but tokens can be
@@ -124,12 +149,12 @@ async function scan(): Promise<ExploreData> {
   return { total: agents.length, withTrackRecord, totalStamps, agents, scannedAt: Date.now() };
 }
 
-export async function explore(): Promise<ExploreData> {
-  if (cache && Date.now() - cache.at < TTL) return cache.data;
+function refresh(): Promise<ExploreData> {
   if (!inflight) {
     inflight = scan()
       .then((data) => {
         cache = { data, at: Date.now() };
+        saveSnapshot(data);
         return data;
       })
       .finally(() => {
@@ -138,3 +163,14 @@ export async function explore(): Promise<ExploreData> {
   }
   return inflight;
 }
+
+export async function explore(): Promise<ExploreData> {
+  if (cache) {
+    if (Date.now() - cache.at >= TTL) void refresh().catch(() => null);
+    return cache.data;
+  }
+  return refresh();
+}
+
+// Warm the cache as soon as the server loads this module.
+void refresh().catch(() => null);
