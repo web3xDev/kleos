@@ -14,8 +14,9 @@ export function Reveal({ children, className = "", delay = 0 }: { children: Reac
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Clearly on screen at load (top half of the viewport): never hide it.
-    if (el.getBoundingClientRect().top < window.innerHeight * 0.5) {
+    // Anything on screen at load is never hidden; only what is below the
+    // fold reveals as it comes in.
+    if (el.getBoundingClientRect().top < window.innerHeight) {
       setShown(true);
       return;
     }
@@ -27,7 +28,7 @@ export function Reveal({ children, className = "", delay = 0 }: { children: Reac
           io.disconnect();
         }
       },
-      { rootMargin: "0px 0px -15% 0px" },
+      { rootMargin: "0px 0px -8% 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
