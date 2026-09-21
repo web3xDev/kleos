@@ -90,7 +90,7 @@ export default function Home() {
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 md:px-8">
       {/* Hero: copy on the left, the real product on the right */}
-      <section className="grid gap-12 pt-20 pb-16 md:grid-cols-[1.2fr_1fr] md:items-center md:pt-28 md:pb-24">
+      <section className="grid gap-12 pt-24 pb-20 md:grid-cols-[1.2fr_1fr] md:items-center md:pt-40 md:pb-36">
         <div>
           <h1 className="max-w-2xl text-[44px] font-semibold leading-[0.98] tracking-tight md:text-[64px]">
             Give your agent a track record.
