@@ -42,7 +42,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
       {/* the head of the drawn rail: a 3px point, no glow, gone when it arrives */}
       <span
         aria-hidden
-        className="absolute top-[2.5px] hidden h-[2px] w-[2px] rounded-full bg-primary md:block"
+        className="absolute top-[2.5px] hidden h-[2px] w-[2px] rounded-full bg-accent md:block"
         style={{
           left: inView ? "calc(75% + 18px)" : "0px",
           opacity: inView ? 0 : 1,
@@ -65,7 +65,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
               aria-hidden
               className="absolute top-0 left-0 hidden h-[7px] w-[7px] rounded-full md:block"
               style={{
-                background: active ? "var(--text-primary)" : "var(--border-hover)",
+                background: active ? "var(--accent)" : "var(--border-hover)",
                 transition: `background 300ms ${delay}ms`,
               }}
             />
