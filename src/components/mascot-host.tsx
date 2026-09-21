@@ -5,7 +5,7 @@
 // previous card and peeks out from the next, so it looks like it moved.
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Mascot, MascotHand, MascotTrophy } from "@/components/mascot";
+import { Mascot, MascotHand } from "@/components/mascot";
 
 type Registry = { active: string | null; register: (id: string, el: HTMLElement) => () => void };
 const Ctx = createContext<Registry | null>(null);
@@ -68,7 +68,7 @@ export function MascotHost({
   className = "",
 }: {
   id: string;
-  side?: "left" | "right" | "top";
+  side?: "left" | "right";
   top?: string;
   children: ReactNode;
   className?: string;
@@ -89,24 +89,6 @@ export function MascotHost({
   const outMore = "translateX(-22px) rotate(-16deg)";
   const inn = "translateX(72px) rotate(0deg)";
   const [hover, setHover] = useState(false);
-
-  if (side === "top") {
-    // Rises from behind the card's top edge, holding a trophy.
-    const up = hover ? "translateY(-8px)" : "translateY(0)";
-    const down = "translateY(64px)";
-    return (
-      <div ref={ref} className={`group relative ${className}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-        <div className="absolute right-10 z-0 hidden md:block" style={{ top: -78 }} aria-hidden>
-          <div className="relative transition-transform duration-[360ms] ease-out" style={{ transform: on ? up : down }}>
-            <Mascot size={112} />
-            <MascotHand size={22} className="absolute" style={{ left: -6, top: 56 }} />
-            <MascotTrophy size={30} className="absolute" style={{ left: -12, top: 18 }} />
-          </div>
-        </div>
-        <div className="relative z-10">{children}</div>
-      </div>
-    );
-  }
 
   return (
     <div ref={ref} className={`group relative ${className}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
