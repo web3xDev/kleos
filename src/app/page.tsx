@@ -14,6 +14,7 @@ import { Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components
 import { Mark } from "@/components/mark";
 import { Reveal } from "@/components/reveal";
 import { Pipeline } from "@/components/pipeline";
+import { Faq } from "@/components/faq";
 
 type ExploreData = {
   total: number;
@@ -418,6 +419,15 @@ export default function Home() {
         </section>
         </Reveal>
       )}
+
+      {/* FAQ */}
+      <Reveal>
+      <section className="py-20 md:py-36">
+        <div className="md:max-w-3xl">
+          <Faq />
+        </div>
+      </section>
+      </Reveal>
 
       {/* Closing */}
       <Reveal>
