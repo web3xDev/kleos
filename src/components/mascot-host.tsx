@@ -86,10 +86,12 @@ export function MascotHost({
   // "in" are always expressed as if peeking from the left, so the motion is
   // identical on both sides. In = 72px towards the card, fully behind it.
   const out = "translateX(0) rotate(-10deg)";
+  const outMore = "translateX(-22px) rotate(-16deg)";
   const inn = "translateX(72px) rotate(0deg)";
+  const [hover, setHover] = useState(false);
 
   return (
-    <div ref={ref} className={`group relative ${className}`}>
+    <div ref={ref} className={`group relative ${className}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       <div
         className={`absolute z-0 ${left ? "-left-[66px]" : "-right-[66px] -scale-x-100"}`}
         style={{ top }}
@@ -98,13 +100,13 @@ export function MascotHost({
         <Mascot
           size={112}
           className="origin-bottom-right transition-transform duration-[360ms] ease-out"
-          style={{ transform: on ? out : inn }}
+          style={{ transform: on ? (hover ? outMore : out) : inn }}
         />
       </div>
       <MascotHand
         size={24}
         className={`absolute z-20 transition-opacity duration-[200ms] ${left ? "-left-[6px]" : "-right-[6px] -scale-x-100"}`}
-        style={{ top: `calc(${top} + 100px)`, opacity: on ? 1 : 0 }}
+        style={{ top: `calc(${top} + 100px)`, opacity: on ? 1 : 0, transform: on && hover ? (left ? "translateX(-4px)" : "translateX(4px) scaleX(-1)") : undefined }}
       />
       <div className="relative z-10">{children}</div>
     </div>
