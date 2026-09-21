@@ -1,41 +1,56 @@
-// A small pixel creature in the accent color, peeking from behind the hero
-// card. The face sits on the left of the sprite so it stays visible while
-// the right side hides behind the card. Static; on hover it leans out a bit.
+// The Kleos creature: a pixel sprite in the accent color with the tally on
+// its forehead, two antennae, big eyes and a hand on the card's edge. It
+// peeks from behind the hero card; the face sits on the left of the sprite
+// so it stays visible while the body hides behind the card.
 
-export function Mascot({ size = 96, className = "" }: { size?: number; className?: string }) {
-  // 14 x 14 grid. 1 = body, 2 = eye, 3 = eye highlight, 0 = empty.
-  const rows = [
-    "00001111110000",
-    "00111111111100",
-    "01111111111110",
-    "01111111111110",
-    "11221111221111",
-    "12321111232111",
-    "11221111221111",
-    "11111111111111",
-    "11111111111111",
-    "11111100111111",
-    "11111111111111",
-    "01111111111110",
-    "01111111111110",
-    "00111111111100",
-  ];
-  const n = rows.length;
+const PALETTE: Record<string, string> = {
+  "1": "var(--accent)", // body
+  "2": "var(--background)", // eye
+  "3": "var(--text-primary)", // eye highlight
+  "4": "var(--accent-hover)", // lighter: forehead tally, cheeks
+  "5": "#4c419a", // darker: outline shade, mouth
+};
+
+// 16 x 16
+const ROWS = [
+  "0001000000010000",
+  "0001100000110000",
+  "0001111111100000",
+  "0011111111110000",
+  "0111414141111100",
+  "0111414141111100",
+  "0111111111111100",
+  "1122111112211110",
+  "1232111112321110",
+  "1122111112211110",
+  "1111111111111110",
+  "1111155511111110",
+  "1111111111111110",
+  "0111111111111100",
+  "0011111111111000",
+  "0001111111111000",
+];
+
+export function Mascot({ size = 112, className = "" }: { size?: number; className?: string }) {
+  const n = ROWS.length;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${n} ${n}`} shapeRendering="crispEdges" className={className} aria-hidden="true">
-      {rows.flatMap((row, y) =>
+      {ROWS.flatMap((row, y) =>
         [...row].map((c, x) =>
-          c === "0" ? null : (
-            <rect
-              key={`${x}-${y}`}
-              x={x}
-              y={y}
-              width={1}
-              height={1}
-              fill={c === "1" ? "var(--accent)" : c === "2" ? "var(--background)" : "var(--text-primary)"}
-            />
-          ),
+          c === "0" ? null : <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={PALETTE[c]} />,
         ),
+      )}
+    </svg>
+  );
+}
+
+/** Four fingers over the card edge, drawn separately so they sit above the card. */
+export function MascotHand({ size = 28, className = "" }: { size?: number; className?: string }) {
+  const rows = ["0110", "1111", "1111", "0111"];
+  return (
+    <svg width={size} height={size} viewBox="0 0 4 4" shapeRendering="crispEdges" className={className} aria-hidden="true">
+      {rows.flatMap((row, y) =>
+        [...row].map((c, x) => (c === "0" ? null : <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill="var(--accent)" />)),
       )}
     </svg>
   );

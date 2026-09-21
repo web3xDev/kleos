@@ -15,7 +15,7 @@ import { Mark } from "@/components/mark";
 import { Reveal } from "@/components/reveal";
 import { Pipeline } from "@/components/pipeline";
 import { Faq } from "@/components/faq";
-import { Mascot } from "@/components/mascot";
+import { Mascot, MascotHand } from "@/components/mascot";
 
 type ExploreData = {
   total: number;
@@ -122,9 +122,10 @@ export default function Home() {
           {/* peeking from behind the card's left edge: pivot at the bottom-right,
               body hidden behind the card, head leaning out */}
           <Mascot
-            size={96}
-            className="absolute -left-[58px] top-[26%] z-0 origin-bottom-right -rotate-[12deg] transition-transform duration-[180ms] group-hover:-rotate-[16deg] group-hover:-translate-x-1"
+            size={112}
+            className="absolute -left-[66px] top-[22%] z-0 origin-bottom-right -rotate-[10deg] transition-transform duration-[180ms] group-hover:-rotate-[14deg] group-hover:-translate-x-1"
           />
+          <MascotHand size={24} className="absolute -left-[6px] top-[52%] z-20 transition-transform duration-[180ms] group-hover:-translate-x-0.5" />
           <Card className="relative z-10 overflow-hidden">
             <Chrome path={example ? `AGENT #${example.id}` : "AGENT"} />
             {example ? (
