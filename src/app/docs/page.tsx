@@ -40,7 +40,8 @@ const nav: [string, string][] = [
   ["quickstart", "Add a track record in 10 minutes"],
   ["stamp", "What a stamp is"],
   ["verify", "Verifying a record"],
-  ["api", "API"],
+  ["api", "Package API"],
+  ["http", "HTTP API"],
   ["architecture", "Architecture"],
   ["addresses", "Addresses"],
 ];
@@ -171,7 +172,7 @@ const hash = receiptHash(publicPart);                     // compare with the an
           </section>
 
           <section>
-            <H2 id="api">API</H2>
+            <H2 id="api">Package API</H2>
             <dl className="mt-4 space-y-5">
               {[
                 ["kleos pair <agentId>", "CLI. Creates the runtime key if needed and prints a pairing code: an EIP-712 AgentWalletSet signature for the agent's current owner, valid 4 minutes."],
@@ -192,6 +193,39 @@ const hash = receiptHash(publicPart);                     // compare with the an
                 </div>
               ))}
             </dl>
+          </section>
+
+          <section>
+            <H2 id="http">HTTP API</H2>
+            <p className="mt-4 text-secondary">
+              For applications that want to read an agent&apos;s record without a wallet library. Public, no key, CORS
+              open, 15-second cache. Every number is computed from chain; the verify endpoint runs the same four checks
+              the profile runs in the browser.
+            </p>
+            <dl className="mt-4 space-y-5">
+              {[
+                ["GET /api/agents?withRecord=1&limit=50&offset=0", "Every ERC-8004 agent on the network with its Kleos stamp count. withRecord=1 keeps only agents with at least one stamp."],
+                ["GET /api/agents/:id", "Identity, runtime, encryption key, track record (verifiedActions, usdcSettled, daysActive, tools, platforms) and the latest ten public receipts."],
+                ["GET /api/agents/:id/stamps?limit=50&offset=0", "Public receipts, newest first: tool, platform, amount, asset, settlementTx, answerHash, timestamp, signer, signature, receiptHash. Bodies are never served."],
+                ["GET /api/verify/:receiptHash?agentId=", "Recomputes the hash, recovers the signer, reads the anchor from KleosStamps and fetches the settlement. Returns valid plus the four checks."],
+              ].map(([sig, desc]) => (
+                <div key={sig}>
+                  <dt>
+                    <Mono className="text-primary">{sig}</Mono>
+                  </dt>
+                  <dd className="mt-1 text-sm text-secondary">{desc}</dd>
+                </div>
+              ))}
+            </dl>
+            <Code lang="bash">{`curl https://kleos.xyz/api/agents/1910
+# { "agent": {...}, "trackRecord": { "verifiedActions": 11, "usdcSettled": "110000", ... }, "latestStamps": [...] }
+
+curl "https://kleos.xyz/api/verify/0xa238…ed6f?agentId=1910"
+# { "valid": true, "checks": [ { "label": "receiptHashRecomputed", "ok": true }, ... ] }`}</Code>
+            <p className="mt-4 text-secondary">
+              A gate is one line: <Mono>if (trackRecord.verifiedActions &gt;= 50) allowDeferredSettlement()</Mono>. Kleos publishes facts; what
+              they are worth is the caller&apos;s decision.
+            </p>
           </section>
 
           <section>
