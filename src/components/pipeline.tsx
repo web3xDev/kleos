@@ -33,7 +33,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
       {/* drawn rail */}
       <span
         aria-hidden
-        className="absolute top-[3px] left-0 hidden h-px w-[calc(75%+18px)] origin-left bg-secondary md:block"
+        className="absolute top-[3px] left-0 hidden h-px w-[calc(75%+18px)] origin-left bg-accent md:block"
         style={{
           transform: inView ? "scaleX(1)" : "scaleX(0)",
           transition: `transform ${DRAW_MS}ms linear`,
