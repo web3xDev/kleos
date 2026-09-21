@@ -88,7 +88,7 @@ export default function DocsPage() {
           <section>
             <H2 id="quickstart">Add a track record in 10 minutes</H2>
             <p className="mt-4 text-secondary">
-              1. Register an agent at <Link href="/me" className="text-primary underline-offset-2 hover:underline">kleos.xyz/me</Link> with
+              1. Register an agent at <Link href="/me" className="text-primary underline-offset-2 underline decoration-transparent underline-offset-2 hover:decoration-current">kleos.xyz/me</Link> with
               a passkey. That mints the ERC-8004 identity and writes the owner&apos;s encryption key next to it.
             </p>
             <p className="mt-4 text-secondary">2. In the terminal where your agent runs, pair the runtime:</p>

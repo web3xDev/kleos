@@ -357,7 +357,7 @@ function Row({ label, value, href }: { label: string; value: string; href?: stri
       </dt>
       <dd className="truncate">
         {href ? (
-          <a href={href} target="_blank" rel="noreferrer" className="font-mono text-[13px] text-primary underline-offset-2 hover:underline">
+          <a href={href} target="_blank" rel="noreferrer" className="font-mono text-[13px] text-primary underline-offset-2 underline decoration-transparent underline-offset-2 hover:decoration-current">
             {value}
           </a>
         ) : (

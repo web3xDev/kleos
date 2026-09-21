@@ -254,7 +254,7 @@ export default function Home() {
                     href={`${chain.blockExplorers.default.url}/tx/${latest.receipt.settlementTx}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="block font-mono text-[13px] text-secondary underline-offset-2 hover:text-primary hover:underline"
+                    className="block font-mono text-[13px] text-secondary underline decoration-transparent underline-offset-2 hover:text-primary hover:decoration-current"
                   >
                     {shortHex(latest.receipt.settlementTx, 8, 6)}
                   </a>
@@ -423,7 +423,7 @@ export default function Home() {
               <span className="text-xs text-tertiary">
                 {example.stamps.length} {example.stamps.length === 1 ? "stamp" : "stamps"} · each one recomputed, signature-checked, read from KleosStamps, settlement fetched
               </span>
-              <Link href={`/a/${example.id}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+              <Link href={`/a/${example.id}`} className="inline-flex items-center gap-1 text-sm text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">
                 Verify this profile <ArrowRight size={14} strokeWidth={1.5} />
               </Link>
             </div>

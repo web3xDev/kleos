@@ -117,7 +117,7 @@ input,
 textarea,
 [role="button"],
 .card {
-  transition-property: background-color, border-color, color, opacity;
+  transition-property: background-color, border-color, color, opacity, text-decoration-color;
   transition-duration: 180ms;
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }

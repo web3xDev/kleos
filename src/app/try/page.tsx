@@ -122,7 +122,7 @@ export default function TryPage() {
                       href={`${chain.blockExplorers.default.url}/tx/${r.detail}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="font-mono text-xs text-secondary underline-offset-2 hover:text-primary hover:underline"
+                      className="font-mono text-xs text-secondary underline decoration-transparent underline-offset-2 hover:text-primary hover:decoration-current"
                     >
                       {shortHex(r.detail, 12, 10)}
                     </a>
