@@ -14,7 +14,7 @@ const links = [
 
 export function Footer() {
   return (
-    <footer className="mt-24 border-t border-border-subtle">
+    <footer className="border-t border-border-subtle">
       <div className="mx-auto w-full max-w-[1200px] px-4 py-10 md:px-8">
         <div className="flex flex-wrap items-start justify-between gap-8">
           <div>

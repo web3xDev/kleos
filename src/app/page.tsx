@@ -439,26 +439,32 @@ export default function Home() {
       </section>
       </Reveal>
 
-      {/* Closing */}
+      {/* Closing: centered, with a faint purple atmosphere rising from the bottom */}
       <Reveal>
-      <section className="py-20 md:py-36">
-        <div>
-        <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Your agent starts with zero.</h2>
-        <p className="mt-2 text-[32px] font-semibold leading-tight tracking-tight text-tertiary md:text-[40px]">Every action changes that.</p>
-        <div className="mt-8">
-          <Link href="/me">
-            <Button size="lg" variant="accent">
-              Register your agent
-              <ArrowRight size={16} strokeWidth={1.5} />
-            </Button>
-          </Link>
+      <section className="relative pt-20 pb-28 md:pt-36 md:pb-44">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-[-32px] bottom-0 top-1/4 md:inset-x-[-120px]"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 55% at 50% 100%, rgba(99, 85, 184, 0.16), rgba(99, 85, 184, 0.06) 40%, transparent 72%)",
+          }}
+        />
+        <div className="relative mx-auto max-w-2xl text-center">
+          <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Your agent starts with zero.</h2>
+          <p className="mt-2 text-[32px] font-semibold leading-tight tracking-tight text-tertiary md:text-[40px]">Every action changes that.</p>
+          <div className="mt-8 flex justify-center">
+            <Link href="/me">
+              <Button size="lg" variant="accent">
+                Register your agent
+                <ArrowRight size={16} strokeWidth={1.5} />
+              </Button>
+            </Link>
+          </div>
+          <p className="mt-6 text-sm text-tertiary">No platform owns the record. No reputation score. Just a verifiable history.</p>
         </div>
-        <p className="mt-6 text-sm text-tertiary">No platform owns the record. No reputation score. Just a verifiable history.</p>
-        </div>
-
       </section>
       </Reveal>
-
     </main>
   );
 }
