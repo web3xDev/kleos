@@ -34,11 +34,22 @@ export function MascotHost({
         <div className="absolute right-[22%] z-0 hidden md:block" style={{ top: -66 }} aria-hidden>
           <Mascot size={112} className="transition-transform duration-[360ms] ease-out" style={{ transform: on ? up : down }} />
         </div>
+        {/* two hands on the edge, one each side of the head */}
         <MascotHand
           size={24}
           className="absolute z-20 hidden transition-[opacity,transform] duration-[220ms] md:block"
           style={{
-            right: "calc(22% + 44px)",
+            right: "calc(22% + 92px)",
+            top: -8,
+            opacity: on ? 1 : 0,
+            transform: `rotate(90deg) scaleY(-1) ${on && hover ? "translateX(-4px)" : ""}`,
+          }}
+        />
+        <MascotHand
+          size={24}
+          className="absolute z-20 hidden transition-[opacity,transform] duration-[220ms] md:block"
+          style={{
+            right: "calc(22% - 4px)",
             top: -8,
             opacity: on ? 1 : 0,
             transform: `rotate(90deg) ${on && hover ? "translateX(-4px)" : ""}`,
