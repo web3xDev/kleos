@@ -75,7 +75,7 @@ export default function Home() {
       {/* Hero: copy on the left, the real product on the right */}
       <section className="grid gap-12 pt-20 pb-16 md:grid-cols-[1.2fr_1fr] md:items-center md:pt-28 md:pb-24">
         <div>
-          <Mark size={36} className="mb-8 text-primary" />
+          <Mark size={36} landing className="mb-8 text-primary" />
           <h1 className="max-w-2xl text-[44px] font-semibold leading-[0.98] tracking-tight md:text-[64px]">
             Give your agent a track record.
           </h1>

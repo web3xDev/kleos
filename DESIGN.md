@@ -67,4 +67,4 @@ No purple buttons. The primary action (Register agent, Connect runtime) is the w
 
 ## Motion and green (decided 2026-09-21)
 
-The wordmark and the tally in the header and hero are static. The tally's landing stroke is used only when a stamp is actually created (playground, feeds). Green appears only on verified / settled / connected states, never as an ambient "live" indicator; the navbar carries a small amber TESTNET badge; the fingerprint ring turns green while a passkey session is active (a real "connected" state). No dots, no pulses.
+The wordmark in the header is static. The hero tally lands its fifth stroke once on load (420ms, after a 350ms beat) and the same motion marks a stamp being created (playground, feeds). It runs even under "reduce motion": one short, meaningful movement. Green appears only on verified / settled / connected states, never as an ambient "live" indicator; the navbar carries a small amber TESTNET badge; the fingerprint ring turns green while a passkey session is active (a real "connected" state). No dots, no pulses.
