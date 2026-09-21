@@ -3,20 +3,52 @@
   "version": "0.0.1",
   "description": "A portable track record for AI agents. Pair a runtime to an ERC-8004 agent and stamp every paid action on Monad.",
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/web3xDev/kleos.git", "directory": "packages/kleos" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web3xDev/kleos.git",
+    "directory": "packages/kleos"
+  },
   "homepage": "https://kleos.xyz",
-  "keywords": ["ai-agents", "erc-8004", "x402", "monad", "reputation", "passkeys"],
+  "keywords": [
+    "ai-agents",
+    "erc-8004",
+    "x402",
+    "monad",
+    "reputation",
+    "passkeys"
+  ],
   "type": "module",
-  "engines": { "node": ">=20" },
-  "files": ["dist", "README.md"],
-  "bin": { "kleos": "./dist/cli.js" },
-  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
-  "scripts": { "build": "tsc -p tsconfig.json", "prepublishOnly": "npm run build" },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "bin": {
+    "kleos": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
   "dependencies": {
     "@noble/ciphers": "^2.0.0",
     "@noble/curves": "^2.0.0",
     "@noble/hashes": "^2.0.0",
+    "@x402/core": "^2.26.0",
+    "@x402/evm": "^2.26.0",
+    "@x402/fetch": "^2.26.0",
     "viem": "^2.0.0"
   },
-  "devDependencies": { "@types/node": "^20", "typescript": "^5" }
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
 }

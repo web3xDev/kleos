@@ -15,3 +15,5 @@ export {
   DEFAULT_KLEOS_URL,
 } from "./runtime.js";
 export type { PairingPayload, StampInput, StampResult, StamperOptions } from "./runtime.js";
+export { payingFetch, readSettlement, callAndStamp } from "./x402.js";
+export type { Settlement, PaidCall } from "./x402.js";
