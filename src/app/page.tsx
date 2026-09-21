@@ -441,12 +441,8 @@ export default function Home() {
           <ol className="md:justify-self-end">
             {[
               { v: "0", l: "actions", dim: true },
-              ...Array.from({ length: Math.min(example.stamps.length, 3) }, (_, i) => ({
-                v: String(i + 1),
-                l: i === 0 ? "verified action" : "verified actions",
-                dim: false,
-              })),
-              ...(example.stamps.length > 3 ? [{ v: "…", l: `${example.stamps.length} verified actions`, dim: false }] : []),
+              { v: "1", l: "verified action", dim: false },
+              ...(example.stamps.length > 1 ? [{ v: String(example.stamps.length), l: "verified actions", dim: false }] : []),
               { v: formatUsdc(usdc), l: "USDC settled", dim: false },
             ].map((row, i, arr) => (
               <li key={i} className="flex gap-4">
