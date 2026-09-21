@@ -119,9 +119,11 @@ export default function Home() {
 
         {/* Live agent card, with the mascot peeking from behind it */}
         <div className="group relative md:w-full md:max-w-sm md:justify-self-end">
+          {/* peeking from behind the card's left edge: pivot at the bottom-right,
+              body hidden behind the card, head leaning out */}
           <Mascot
-            size={52}
-            className="absolute -left-[22px] top-[38%] z-0 -rotate-[18deg] transition-transform duration-[180ms] group-hover:-translate-x-0.5"
+            size={56}
+            className="absolute -left-[18px] top-[34%] z-0 origin-bottom-right -rotate-[22deg] transition-transform duration-[180ms] group-hover:-rotate-[26deg]"
           />
           <Card className="relative z-10 overflow-hidden">
             <Chrome path={example ? `AGENT #${example.id}` : "AGENT"} />
