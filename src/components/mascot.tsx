@@ -7,7 +7,7 @@ const PALETTE: Record<string, string> = {
   "1": "var(--accent)", // body
   "2": "var(--background)", // eye
   "3": "var(--text-primary)", // eye highlight
-  "4": "var(--accent-hover)", // lighter: forehead tally, cheeks
+  "4": "var(--accent-hover)", // lighter: forehead tally, blush
   "5": "#4c419a", // darker: outline shade, mouth
 };
 
@@ -23,9 +23,9 @@ const ROWS = [
   "1122111112211110",
   "1232111112321110",
   "1122111112211110",
-  "1111111111111110",
-  "1111155511111110",
-  "1111111111111110",
+  "1441111111144110",
+  "1111511111511110",
+  "1111155555111110",
   "0111111111111100",
   "0011111111111000",
   "0001111111111000",
