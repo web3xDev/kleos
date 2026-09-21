@@ -33,8 +33,7 @@ function timeAgo(ts: number): string {
 /** Small "KLEOS / X" tag that marks a block as a piece of the real interface. */
 function Chrome({ path }: { path: string }) {
   return (
-    <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-2">
-      <Mark size={12} className="text-tertiary" />
+    <div className="border-b border-border-subtle px-4 py-2">
       <Mono className="text-[11px] tracking-wide text-tertiary">KLEOS / {path}</Mono>
     </div>
   );
@@ -215,10 +214,7 @@ export default function Home() {
           <Chrome path="STAMP" />
           {latest && example ? (
             <div className="p-5">
-              <div className="flex items-start justify-between gap-4">
-                <VerifiedBadge />
-                <Mark size={16} className="text-tertiary" />
-              </div>
+              <VerifiedBadge />
               <div className="mt-5">
                 <div className="text-lg font-semibold leading-tight">{latest.receipt.tool}</div>
                 <div className="mt-0.5 text-sm text-tertiary">{latest.receipt.platform}</div>
