@@ -1,15 +1,22 @@
 "use client";
 
-// Owner view. Functional first; the design pass comes once the flow is proven.
+// Owner view: sign in with a passkey, register agents, see their state.
 
 import { useCallback, useEffect, useState } from "react";
-import { formatEther } from "viem";
-import { useSession } from "@/lib/session";
+import Link from "next/link";
+import { ArrowRight, Check, Fingerprint, Loader2, Plus, Link2 } from "lucide-react";
+import { useSession, SESSION_MINUTES } from "@/lib/session";
 import { cachedAgentIds, ensureGas, loadAgent, registerAgent, type Agent } from "@/lib/agents";
 import { hasStoredCredential } from "@/lib/passkey";
-import { chain, addresses } from "@/lib/chain";
+import { chain } from "@/lib/chain";
+import { Badge, Button, Card, Input, Label, Mono, TestnetBadge, shortHex } from "@/components/ui";
 
-type Progress = "idle" | "gas" | "signing" | "confirming" | "done";
+type Progress = "idle" | "gas" | "signing" | "done";
+
+const steps: { key: Progress; label: string }[] = [
+  { key: "gas", label: "Preparing your account" },
+  { key: "signing", label: `Registering on ${chain.name}` },
+];
 
 export default function MePage() {
   const { session, publicClient, busy, error, signIn, create, end, secondsLeft } = useSession();
@@ -18,8 +25,8 @@ export default function MePage() {
   const [name, setName] = useState("");
   const [progress, setProgress] = useState<Progress>("idle");
   const [txError, setTxError] = useState<string | null>(null);
-  const [balance, setBalance] = useState<bigint | null>(null);
   const [returning, setReturning] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
 
   useEffect(() => setReturning(hasStoredCredential()), []);
 
@@ -27,11 +34,7 @@ export default function MePage() {
     if (!session) return;
     setLoadingAgents(true);
     try {
-      const [bal, list] = await Promise.all([
-        publicClient.getBalance({ address: session.address }),
-        Promise.all(cachedAgentIds(session.address).map((id) => loadAgent(publicClient, id))),
-      ]);
-      setBalance(bal);
+      const list = await Promise.all(cachedAgentIds(session.address).map((id) => loadAgent(publicClient, id)));
       setAgents(list.sort((a, b) => Number(b.id - a.id)));
     } finally {
       setLoadingAgents(false);
@@ -48,7 +51,7 @@ export default function MePage() {
     setTxError(null);
     try {
       setProgress("gas");
-      await ensureGas(session.address);
+      await ensureGas(publicClient, session.address);
       setProgress("signing");
       const agent = await registerAgent({
         name: name.trim(),
@@ -60,116 +63,200 @@ export default function MePage() {
       setProgress("done");
       setAgents((a) => [agent, ...a]);
       setName("");
-      void refresh();
+      setShowRegister(false);
+      setProgress("idle");
     } catch (err) {
       setTxError(err instanceof Error ? err.message : String(err));
       setProgress("idle");
     }
   }
 
+  const working = progress === "gas" || progress === "signing";
+  const mm = Math.floor(secondsLeft / 60);
+  const ss = String(secondsLeft % 60).padStart(2, "0");
+
   if (!session) {
     return (
-      <main className="mx-auto max-w-lg p-6">
-        <h1 className="text-2xl font-semibold">Your agents</h1>
-        <p className="mt-2 opacity-70">
-          Sign in with your passkey. Nothing is stored on this device; your keys come from your finger.
-        </p>
-        <div className="mt-6 flex gap-2">
-          <button
-            className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-50"
-            disabled={busy}
-            onClick={returning ? signIn : create}
-          >
-            {busy ? "Waiting for passkey…" : returning ? "Sign in" : "Create passkey"}
-          </button>
-          <button className="rounded-md border px-4 py-2 disabled:opacity-50" disabled={busy} onClick={returning ? create : signIn}>
-            {returning ? "New passkey" : "I already have one"}
-          </button>
+      <main className="mx-auto w-full max-w-[1200px] px-4 py-24 md:px-8">
+        <div className="mx-auto max-w-md">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface text-secondary">
+            <Fingerprint size={22} strokeWidth={1.5} />
+          </div>
+          <h1 className="mt-6 text-[40px] font-semibold leading-none tracking-tight">Your agents</h1>
+          <p className="mt-4 text-secondary">
+            One passkey. No seed phrase, no extension, no account. Nothing is stored on this device; your keys are
+            derived from your passkey each time.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-2">
+            <Button size="lg" loading={busy} onClick={returning ? signIn : create}>
+              {busy ? "Waiting for passkey" : returning ? "Sign in" : "Create passkey"}
+            </Button>
+            <Button size="lg" variant="ghost" disabled={busy} onClick={returning ? create : signIn}>
+              {returning ? "Use a new passkey" : "I already have one"}
+            </Button>
+          </div>
+          {error && <p className="mt-4 text-sm text-error">{error}</p>}
+          <p className="mt-10 text-xs text-tertiary">
+            Works in Safari and with Google Password Manager. Chrome&apos;s own passkey store does not support the
+            key-derivation feature Kleos relies on.
+          </p>
         </div>
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-lg p-6">
-      <header className="flex items-start justify-between">
+    <main className="mx-auto w-full max-w-[1200px] px-4 py-12 md:px-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Your agents</h1>
-          <p className="mt-1 font-mono text-xs opacity-60">
-            {session.address}
-            {balance !== null && ` · ${Number(formatEther(balance)).toFixed(3)} MON`}
-          </p>
+          <h1 className="text-[40px] font-semibold leading-none tracking-tight">Your agents</h1>
+          <div className="mt-3 flex items-center gap-3">
+            <Mono className="text-secondary">{shortHex(session.address, 8, 6)}</Mono>
+            <TestnetBadge />
+          </div>
         </div>
-        <div className="text-right text-xs opacity-60">
-          <div>session ends in {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}</div>
-          <button className="underline" onClick={end}>
-            end session
-          </button>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-tertiary">
+            Session ends in <Mono className="text-xs text-secondary">{mm}:{ss}</Mono> of {SESSION_MINUTES}
+          </span>
+          <Button variant="ghost" onClick={end}>
+            End session
+          </Button>
+          <Button onClick={() => setShowRegister((v) => !v)}>
+            <Plus size={16} strokeWidth={1.5} />
+            Register agent
+          </Button>
         </div>
-      </header>
+      </div>
 
-      <form onSubmit={onRegister} className="mt-8 rounded-lg border p-4">
-        <h2 className="font-medium">Register an agent</h2>
-        <p className="mt-1 text-sm opacity-70">Gives your agent an on-chain identity (ERC-8004 on {chain.name}).</p>
-        <div className="mt-3 flex gap-2">
-          <input
-            className="flex-1 rounded-md border px-3 py-2"
-            placeholder="Agent name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={progress !== "idle" && progress !== "done"}
-          />
-          <button
-            className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-50"
-            disabled={!name.trim() || (progress !== "idle" && progress !== "done")}
-          >
-            Register
-          </button>
-        </div>
-        {progress !== "idle" && progress !== "done" && (
-          <ol className="mt-3 space-y-1 text-sm opacity-70">
-            <li>{progress === "gas" ? "→" : "✓"} Preparing your account</li>
-            <li>{progress === "signing" ? "→" : progress === "confirming" ? "✓" : " "} Registering on Monad</li>
-            <li>{progress === "confirming" ? "→" : " "} Confirming</li>
-          </ol>
-        )}
-        {txError && <p className="mt-3 text-sm text-red-600">{txError}</p>}
-      </form>
+      {showRegister && (
+        <Card className="mt-8 p-6">
+          <form onSubmit={onRegister}>
+            <h2 className="text-[24px] font-semibold leading-tight">Register your agent</h2>
+            <p className="mt-1 text-sm text-secondary">Give your agent an on-chain identity.</p>
+            <div className="mt-5 flex gap-2">
+              <Input
+                placeholder="Agent name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={working}
+                autoFocus
+              />
+              <Button type="submit" disabled={!name.trim() || working} loading={working} className="shrink-0">
+                Register
+              </Button>
+            </div>
+            {working && (
+              <ol className="mt-5 space-y-2 text-sm">
+                {steps.map((s, i) => {
+                  const done = steps.findIndex((x) => x.key === progress) > i;
+                  const active = s.key === progress;
+                  return (
+                    <li key={s.key} className={`flex items-center gap-2 ${done || active ? "text-primary" : "text-tertiary"}`}>
+                      {done ? (
+                        <Check size={16} strokeWidth={2} className="text-success" />
+                      ) : active ? (
+                        <Loader2 size={16} strokeWidth={1.5} className="animate-spin text-secondary" />
+                      ) : (
+                        <span className="inline-block h-4 w-4" />
+                      )}
+                      {s.label}
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+            {txError && <p className="mt-4 text-sm text-error">{txError}</p>}
+            <p className="mt-5 text-xs text-tertiary">
+              Confirms with your passkey session. Registers an ERC-8004 identity and writes your agent&apos;s
+              encryption key next to it.
+            </p>
+          </form>
+        </Card>
+      )}
 
-      <section className="mt-8">
-        <h2 className="font-medium">
-          Agents {loadingAgents && <span className="text-xs opacity-50">loading…</span>}
-        </h2>
-        {agents.length === 0 && !loadingAgents && (
-          <p className="mt-2 text-sm opacity-60">No agents yet. Register one above.</p>
+      <section className="mt-10">
+        {loadingAgents && agents.length === 0 && (
+          <div className="grid gap-4 md:grid-cols-2">
+            {[0, 1].map((i) => (
+              <div key={i} className="h-40 animate-pulse rounded-[10px] bg-surface-elevated" />
+            ))}
+          </div>
         )}
-        <ul className="mt-3 space-y-3">
+
+        {!loadingAgents && agents.length === 0 && (
+          <Card className="p-10 text-center">
+            <p className="text-secondary">No agents yet.</p>
+            <p className="mt-1 text-sm text-tertiary">Register one to give it an identity and start a track record.</p>
+            <Button className="mt-6" onClick={() => setShowRegister(true)}>
+              <Plus size={16} strokeWidth={1.5} />
+              Register agent
+            </Button>
+          </Card>
+        )}
+
+        <div className="grid gap-4 md:grid-cols-2">
           {agents.map((a) => (
-            <li key={String(a.id)} className="rounded-lg border p-4">
-              <div className="flex items-baseline justify-between">
-                <div className="font-medium">{a.name}</div>
-                <div className="font-mono text-xs opacity-60">Agent #{String(a.id)}</div>
+            <Card key={String(a.id)} hover className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-lg font-semibold leading-tight">{a.name}</div>
+                  <Mono className="mt-1 block text-secondary">Agent #{String(a.id)}</Mono>
+                </div>
+                {a.wallet ? (
+                  <Badge tone="success">
+                    <Check size={12} strokeWidth={2} />
+                    Runtime connected
+                  </Badge>
+                ) : (
+                  <Badge>Not connected</Badge>
+                )}
               </div>
-              <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 font-mono text-xs opacity-70">
-                <dt>runtime</dt>
-                <dd>{a.wallet ?? "not connected"}</dd>
-                <dt>encryption key</dt>
-                <dd className="break-all">{a.encryptionKey ?? "—"}</dd>
-                <dt>key index</dt>
-                <dd>{a.keyIndex ?? "—"}</dd>
+
+              <div className="mt-5 grid grid-cols-2 gap-4">
+                <div>
+                  <div className="metric">0</div>
+                  <Label className="mt-1">Verified actions</Label>
+                </div>
+                <div>
+                  <div className="metric">$0.00</div>
+                  <Label className="mt-1">USDC settled</Label>
+                </div>
+              </div>
+
+              <dl className="mt-5 space-y-2 border-t border-border-subtle pt-4">
+                <div className="flex items-baseline justify-between gap-4">
+                  <dt>
+                    <Label>Runtime</Label>
+                  </dt>
+                  <dd>
+                    <Mono className="text-secondary">{a.wallet ? shortHex(a.wallet) : "—"}</Mono>
+                  </dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-4">
+                  <dt>
+                    <Label>Encryption key</Label>
+                  </dt>
+                  <dd>
+                    <Mono className="text-secondary">{a.encryptionKey ? shortHex(a.encryptionKey, 8, 6) : "—"}</Mono>
+                  </dd>
+                </div>
               </dl>
-              <a
-                className="mt-2 inline-block text-xs underline opacity-70"
-                href={`${chain.blockExplorers.default.url}/address/${addresses.identityRegistry}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                registry on explorer
-              </a>
-            </li>
+
+              <div className="mt-5 flex items-center gap-2">
+                {!a.wallet && (
+                  <Button variant="secondary" disabled>
+                    <Link2 size={16} strokeWidth={1.5} />
+                    Connect runtime
+                  </Button>
+                )}
+                <Link href={`/a/${a.id}`} className="ml-auto inline-flex items-center gap-1 text-sm text-secondary hover:text-primary">
+                  View agent <ArrowRight size={14} strokeWidth={1.5} />
+                </Link>
+              </div>
+            </Card>
           ))}
-        </ul>
+        </div>
       </section>
     </main>
   );

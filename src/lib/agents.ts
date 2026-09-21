@@ -1,6 +1,6 @@
 // Agent registration and lookup against the ERC-8004 Identity Registry.
 
-import { decodeEventLog, toHex, type PublicClient, type WalletClient } from "viem";
+import { decodeEventLog, parseEther, toHex, type PublicClient, type WalletClient } from "viem";
 import { addresses } from "./chain";
 import {
   META_ENCRYPTION_KEY,
@@ -23,8 +23,17 @@ export type Agent = {
 
 const ZERO = "0x0000000000000000000000000000000000000000";
 
-/** Ask the drip endpoint to top up the owner on testnet. No-op when funded. */
-export async function ensureGas(address: `0x${string}`): Promise<void> {
+const GAS_FLOOR = parseEther("0.05");
+
+/**
+ * Ask the drip endpoint to top up the owner on testnet, then wait until the
+ * RPC actually reports the balance. A receipt can arrive a few seconds before
+ * the node used for sending sees the new state; sending earlier fails with
+ * "insufficient balance".
+ */
+export async function ensureGas(publicClient: PublicClient, address: `0x${string}`): Promise<void> {
+  if ((await publicClient.getBalance({ address })) >= GAS_FLOOR) return;
+
   const res = await fetch("/api/drip", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -34,6 +43,12 @@ export async function ensureGas(address: `0x${string}`): Promise<void> {
     const body = await res.json().catch(() => ({}));
     throw new Error(`gas drip failed: ${body.error ?? res.status}`);
   }
+
+  for (let i = 0; i < 30; i++) {
+    if ((await publicClient.getBalance({ address })) >= GAS_FLOOR) return;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  throw new Error("gas drip did not land in time, try again");
 }
 
 /**
