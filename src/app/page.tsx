@@ -12,6 +12,8 @@ import { useSession } from "@/lib/session";
 import { fetchStamps, formatUsdc, verifyStamp, type Check as VerifyCheck, type Stamp } from "@/lib/stamps";
 import { Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components/ui";
 import { Mark } from "@/components/mark";
+import { Reveal } from "@/components/reveal";
+import { Pipeline } from "@/components/pipeline";
 
 type ExploreData = {
   total: number;
@@ -184,6 +186,7 @@ export default function Home() {
       </section>
 
       {/* A stamp */}
+      <Reveal>
       <section className="grid gap-10 border-t border-border-subtle py-20 md:grid-cols-2 md:items-center md:py-28">
         <div>
           <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a stamp.</h2>
@@ -251,8 +254,10 @@ export default function Home() {
           )}
         </Card>
       </section>
+      </Reveal>
 
       {/* Network state */}
+      <Reveal>
       <section className="border-y border-border-subtle py-7">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <Label>Live on {chain.name}</Label>
@@ -285,62 +290,25 @@ export default function Home() {
           <Stat value={example ? formatUsdc(usdc) : data ? "$0.00" : null} label="USDC settled" />
         </div>
       </section>
+      </Reveal>
 
       {/* How it works: one pipeline, ending in a real stamp */}
+      <Reveal>
       <section className="border-t border-border-subtle py-20 md:py-28">
         <Label>How it works</Label>
         <h2 className="mt-3 max-w-2xl text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">
           One paid action becomes a permanent record.
         </h2>
 
-        <ol className="relative mt-12 grid gap-10 md:grid-cols-4 md:gap-6">
-          {/* the rail: one line through all four steps on desktop */}
-          <span aria-hidden className="absolute top-[3px] left-0 hidden h-px w-full bg-border md:block" />
-          {[
-            { n: "01", t: "Register", who: "Human", sub: "ERC-8004 identity", out: "identity", body: "One passkey ceremony. No seed phrase, no wallet." },
-            { n: "02", t: "Connect", who: "Human + runtime", sub: "Runtime wallet", out: "paired key", body: "The software that runs the agent gets its own key. It never sees yours." },
-            { n: "03", t: "Act", who: "Agent + runtime", sub: "x402 payment", out: "settlement", body: "The agent buys a tool. The payment settles on Monad." },
-            { n: "04", t: "Stamp", who: "Kleos", sub: "Portable record", out: "anchored", body: "A signed receipt, anchored next to the payment. Provable by anyone." },
-          ].map((st, i) => (
-            <li key={st.n} className="relative md:pt-6">
-              {/* node on the rail */}
-              <span aria-hidden className="absolute top-0 left-0 hidden h-[7px] w-[7px] rounded-full bg-primary md:block" />
-              {i === 3 && (
-                <span aria-hidden className="absolute top-[3px] right-0 hidden h-px w-3 bg-background md:block" />
-              )}
-              <div className="flex items-baseline gap-3">
-                <Mono className="text-tertiary">{st.n}</Mono>
-                <span className="text-lg font-semibold">{st.t}</span>
-              </div>
-              <Label className="mt-1">{st.who}</Label>
-              <Mono className="mt-4 block text-secondary">{st.sub}</Mono>
-              <p className="mt-2 max-w-[26ch] text-sm text-secondary">{st.body}</p>
-              <div className="mt-4 flex items-center gap-2">
-                <ArrowRight size={12} strokeWidth={1.5} className="text-tertiary" />
-                <Mono className="text-xs text-tertiary">{st.out}</Mono>
-              </div>
-
-              {i === 3 && latest && example && (
-                <Link href={`/a/${example.id}`} className="mt-5 block">
-                  <Card hover className="p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <VerifiedBadge />
-                      <Mark size={14} className="text-tertiary" />
-                    </div>
-                    <div className="mt-3 text-lg font-semibold leading-tight">{formatUsdc(BigInt(latest.receipt.amount))} USDC</div>
-                    <Mono className="mt-1 block text-secondary">Agent #{example.id}</Mono>
-                  </Card>
-                </Link>
-              )}
-            </li>
-          ))}
-        </ol>
+        <Pipeline stamp={latest && example ? { amount: formatUsdc(BigInt(latest.receipt.amount)), agentId: example.id } : null} />
 
         <p className="mt-14 text-[24px] font-semibold tracking-tight">No platform owns the record.</p>
       </section>
+      </Reveal>
 
       {/* A real record: the example, verified live in this browser */}
       {example && (
+        <Reveal>
         <section className="border-t border-border-subtle py-20 md:py-28">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -413,9 +381,11 @@ export default function Home() {
             </div>
           </Card>
         </section>
+        </Reveal>
       )}
 
       {/* Closing */}
+      <Reveal>
       <section className="border-t border-border-subtle py-20 md:py-28">
         <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Your agent starts with zero.</h2>
         <p className="mt-2 text-[32px] font-semibold leading-tight tracking-tight text-tertiary md:text-[40px]">Every action changes that.</p>
@@ -429,6 +399,7 @@ export default function Home() {
         </div>
         <p className="mt-6 text-sm text-tertiary">No platform lock-in. No reputation score. Just a verifiable history.</p>
       </section>
+      </Reveal>
 
     </main>
   );
