@@ -80,7 +80,8 @@ body {
 }
 
 ::selection {
-  background: var(--accent-muted);
+  background: rgba(245, 245, 245, 0.18);
+  color: var(--text-primary);
 }
 
 /* Metadata labels: 12px / 500 / uppercase */
