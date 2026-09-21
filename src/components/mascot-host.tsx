@@ -82,17 +82,25 @@ export function MascotHost({
 
   const on = ctx?.active === id;
   const left = side === "left";
-  // Out: peeking past the edge. In: fully behind the card (the card sits above it).
-  const out = left ? "translateX(0) rotate(-10deg)" : "translateX(0) rotate(10deg) scaleX(-1)";
-  const inn = left ? "translateX(72px) rotate(0deg)" : "translateX(-72px) rotate(0deg) scaleX(-1)";
+  // The wrapper mirrors the sprite for the right side; inside it, "out" and
+  // "in" are always expressed as if peeking from the left, so the motion is
+  // identical on both sides. In = 72px towards the card, fully behind it.
+  const out = "translateX(0) rotate(-10deg)";
+  const inn = "translateX(72px) rotate(0deg)";
 
   return (
     <div ref={ref} className={`group relative ${className}`}>
-      <Mascot
-        size={112}
-        className={`absolute z-0 transition-transform duration-[360ms] ease-out ${left ? "-left-[66px] origin-bottom-right" : "-right-[66px] origin-bottom-left"}`}
-        style={{ top, transform: on ? out : inn }}
-      />
+      <div
+        className={`absolute z-0 ${left ? "-left-[66px]" : "-right-[66px] -scale-x-100"}`}
+        style={{ top }}
+        aria-hidden
+      >
+        <Mascot
+          size={112}
+          className="origin-bottom-right transition-transform duration-[360ms] ease-out"
+          style={{ transform: on ? out : inn }}
+        />
+      </div>
       <MascotHand
         size={24}
         className={`absolute z-20 transition-opacity duration-[200ms] ${left ? "-left-[6px]" : "-right-[6px] -scale-x-100"}`}
