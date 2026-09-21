@@ -127,7 +127,7 @@ export default function Home() {
                     <Mono className="mt-1 block text-secondary">Agent #{example.id}</Mono>
                   </div>
                   {example.wallet ? (
-                    <ConnectedPill label="Runtime connected" />
+                    <ConnectedPill label="Runtime paired" />
                   ) : (
                     <span className="inline-flex h-6 items-center rounded-full border border-border px-2.5 text-xs text-secondary">No runtime</span>
                   )}
@@ -146,8 +146,11 @@ export default function Home() {
             ) : null}
             {example && latest ? (
               <div className="border-t border-border-subtle px-5 py-4">
-                <Label>Latest stamp</Label>
-                <div className="mt-2 flex items-start gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <Label>Latest stamp</Label>
+                  <VerifiedBadge />
+                </div>
+                <div className="mt-3 flex items-start gap-3">
                   <Check size={14} strokeWidth={2} className="mt-1 shrink-0 text-success" />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm text-primary">{latest.receipt.tool}</div>
@@ -186,33 +189,34 @@ export default function Home() {
       </section>
 
       {/* A stamp */}
-      <Reveal>
       <section className="grid gap-10 border-t border-border-subtle py-20 md:grid-cols-2 md:items-center md:py-28">
         <div>
-          <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a stamp.</h2>
+          <Reveal>
+            <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a stamp.</h2>
+          </Reveal>
           <ol className="mt-8">
             {[
-              ["01", "Payment settles", "Agent / runtime", "An x402 payment lands on Monad."],
-              ["02", "Receipt is signed", "Runtime", "The runtime signs what it bought and seals the answer to the owner."],
-              ["03", "Stamp is anchored", "Kleos", "The receipt hash is anchored next to the settlement. Anyone can check it."],
-            ].map(([n, t, who, b], i, arr) => (
-              <li key={n} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <Mono className="mt-0.5 w-6 text-tertiary">{n}</Mono>
-                  {i < arr.length - 1 && <span className="my-2 block w-px flex-1 bg-border" />}
-                </div>
-                <div className="pb-7">
-                  <div className="flex flex-wrap items-baseline gap-x-3">
-                    <span className="text-[15px] font-medium text-primary">{t}</span>
-                    <Label>{who}</Label>
+              ["01", "Payment settles", "A payment for a tool lands on Monad. That is the proof the action happened."],
+              ["02", "Receipt is signed", "What was bought, for how much, and the answer's hash, signed by the agent's wallet."],
+              ["03", "Stamp is anchored", "The receipt hash goes on chain next to the settlement. Anyone can check it."],
+            ].map(([n, t, b], i, arr) => (
+              <Reveal key={n} delay={120 + i * 140}>
+                <li className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <Mono className="mt-0.5 w-6 text-tertiary">{n}</Mono>
+                    {i < arr.length - 1 && <span className="my-2 block w-px flex-1 bg-border" />}
                   </div>
-                  <div className="mt-1 text-sm text-secondary">{b}</div>
-                </div>
-              </li>
+                  <div className="pb-7">
+                    <div className="text-[15px] font-medium text-primary">{t}</div>
+                    <div className="mt-1 text-sm text-secondary">{b}</div>
+                  </div>
+                </li>
+              </Reveal>
             ))}
           </ol>
         </div>
 
+        <Reveal delay={520}>
         <Card className="overflow-hidden">
           <Chrome path="STAMP" />
           {latest && example ? (
@@ -253,14 +257,14 @@ export default function Home() {
             <div className="p-5 text-sm text-tertiary">No stamps yet. The first one will appear here.</div>
           )}
         </Card>
+        </Reveal>
       </section>
-      </Reveal>
 
       {/* Network state */}
       <Reveal>
       <section className="border-y border-border-subtle py-7">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <Label>Live on {chain.name}</Label>
+          <Label className="text-[11px]">Live on {chain.name}</Label>
           <div className="flex flex-wrap gap-x-5 gap-y-1">
             <a
               href={`${chain.blockExplorers.default.url}/address/${addresses.identityRegistry}`}
@@ -312,7 +316,7 @@ export default function Home() {
         <section className="border-t border-border-subtle py-20 md:py-28">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <Label>A real record</Label>
+              <Label>Verify a real record</Label>
               <p className="mt-2 max-w-md text-sm text-secondary">
                 This record is being verified right now, in your browser, directly against Monad. No Kleos API is consulted.
               </p>
@@ -346,25 +350,47 @@ export default function Home() {
                 </div>
               </div>
               <div className="bg-surface-elevated p-6">
-                <div className="flex items-baseline justify-between gap-4">
-                  <Label>Verification</Label>
+                <Label>Verification</Label>
+                <div className="mt-2 flex items-baseline justify-between gap-4">
+                  <span className="text-sm font-medium text-primary">
+                    {checks ? (passed === checkRows.length ? "Record verified" : "Verification finished") : "Verifying"}
+                  </span>
                   <Mono className="text-xs text-secondary">
                     {checks ? `${passed} / ${checkRows.length} checks passed` : "checking"}
                   </Mono>
                 </div>
                 <ul className="mt-4 space-y-2">
-                  {checkRows.map((c) => (
-                    <li key={c.label} className="flex items-center justify-between text-sm">
-                      <span className={c.ok === false ? "text-error" : "text-primary"}>{c.label}</span>
-                      {c.ok === null ? (
+                  {checkRows.map((c, i) => {
+                    const icon =
+                      c.ok === null ? (
                         <Loader2 size={14} strokeWidth={1.5} className="animate-spin text-tertiary" />
                       ) : c.ok ? (
                         <Check size={14} strokeWidth={2} className="text-success" />
                       ) : (
                         <X size={14} strokeWidth={2} className="text-error" />
-                      )}
-                    </li>
-                  ))}
+                      );
+                    // Evidence for the first two checks, from the latest stamp.
+                    const evidence =
+                      i === 0 && latest ? shortHex(latest.receiptHash, 10, 8) : i === 1 && latest ? shortHex(latest.receipt.wallet, 8, 6) : null;
+                    return (
+                      <li key={c.label} className="text-sm">
+                        {evidence && checks ? (
+                          <details className="group">
+                            <summary className="flex cursor-pointer list-none items-center justify-between">
+                              <span className={c.ok === false ? "text-error" : "text-primary"}>{c.label}</span>
+                              {icon}
+                            </summary>
+                            <Mono className="mt-1 block text-xs text-tertiary">{evidence}</Mono>
+                          </details>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <span className={c.ok === false ? "text-error" : "text-primary"}>{c.label}</span>
+                            {icon}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
                 <p className="mt-5 text-xs text-tertiary">
                   Kleos does not decide whether this record is valid. Your browser does.
@@ -397,7 +423,7 @@ export default function Home() {
             </Button>
           </Link>
         </div>
-        <p className="mt-6 text-sm text-tertiary">No platform lock-in. No reputation score. Just a verifiable history.</p>
+        <p className="mt-6 text-sm text-tertiary">No platform owns the record. No reputation score. Just a verifiable history.</p>
       </section>
       </Reveal>
 

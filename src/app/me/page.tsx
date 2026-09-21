@@ -275,7 +275,7 @@ export default function MePage() {
                 {a.wallet ? (
                   <Badge tone="success">
                     <Check size={12} strokeWidth={2} />
-                    Runtime connected
+                    Runtime paired
                   </Badge>
                 ) : (
                   <Badge>Not connected</Badge>

@@ -20,7 +20,7 @@ const STEPS = [
 ];
 
 // Timing of the sequence, in ms from the moment the section is in view.
-const STEP_MS = 550;
+const STEP_MS = 400;
 const DRAW_MS = STEP_MS * 3;
 
 export function Pipeline({ stamp }: { stamp: StampLite }) {
@@ -37,6 +37,16 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
         style={{
           transform: inView ? "scaleX(1)" : "scaleX(0)",
           transition: `transform ${DRAW_MS}ms linear`,
+        }}
+      />
+      {/* the head of the drawn rail: a 3px point, no glow, gone when it arrives */}
+      <span
+        aria-hidden
+        className="absolute top-[2px] hidden h-[3px] w-[3px] rounded-full bg-primary md:block"
+        style={{
+          left: inView ? "calc(75% + 18px)" : "0px",
+          opacity: inView ? 0 : 1,
+          transition: `left ${DRAW_MS}ms linear, opacity 200ms ${DRAW_MS}ms`,
         }}
       />
       {STEPS.map((st, i) => {
