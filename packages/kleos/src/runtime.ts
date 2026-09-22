@@ -13,7 +13,8 @@ import {
   type WalletClient,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount, type PrivateKeyAccount } from "viem/accounts";
-import { bytesToHex, hexToBytes, utf8ToBytes } from "@noble/hashes/utils.js";
+import type { LocalAccount } from "viem";
+import { bytesToHex, hexToBytes, randomBytes, utf8ToBytes } from "@noble/hashes/utils.js";
 import {
   META_ENCRYPTION_KEY,
   agentWalletDomain,
@@ -43,7 +44,14 @@ export function runtimeKeyPath(): string {
   return process.env.KLEOS_RUNTIME_KEY_PATH ?? join(homedir(), ".kleos", "runtime.json");
 }
 
-export function loadOrCreateRuntimeKey(): PrivateKeyAccount {
+/**
+ * The runtime's account. Any wallet the runtime already uses works: pass a
+ * private key via `KLEOS_RUNTIME_KEY` (or `--key`), and no file is created.
+ * Otherwise a key is created once at `runtimeKeyPath()`.
+ */
+export function loadOrCreateRuntimeKey(explicitKey?: Hex): PrivateKeyAccount {
+  const fromEnv = explicitKey ?? (process.env.KLEOS_RUNTIME_KEY as Hex | undefined);
+  if (fromEnv) return privateKeyToAccount(fromEnv);
   const path = runtimeKeyPath();
   try {
     const { privateKey } = JSON.parse(readFileSync(path, "utf8")) as { privateKey: Hex };
@@ -56,9 +64,11 @@ export function loadOrCreateRuntimeKey(): PrivateKeyAccount {
   }
 }
 
-export type Clients = { publicClient: PublicClient; wallet: WalletClient; account: PrivateKeyAccount };
+export type RuntimeAccount = LocalAccount;
 
-export function clients(network: NetworkName, account: PrivateKeyAccount): Clients {
+export type Clients = { publicClient: PublicClient; wallet: WalletClient; account: RuntimeAccount };
+
+export function clients(network: NetworkName, account: RuntimeAccount): Clients {
   const { chain } = networks[network];
   return {
     account,
@@ -84,7 +94,7 @@ export type PairingPayload = {
  * it to the registry with their passkey session; the registry checks the
  * signature. No Kleos server is trusted anywhere in this step.
  */
-export async function pair(network: NetworkName, agentId: bigint, account: PrivateKeyAccount): Promise<PairingPayload> {
+export async function pair(network: NetworkName, agentId: bigint, account: RuntimeAccount): Promise<PairingPayload> {
   const { publicClient } = clients(network, account);
   const owner = await publicClient.readContract({
     address: networks[network].identityRegistry,
@@ -134,7 +144,8 @@ export type StampResult = {
 export type StamperOptions = {
   network?: NetworkName;
   agentId: bigint;
-  account: PrivateKeyAccount;
+  /** Any viem local account: a private key, or an adapter over a custodial signer. */
+  account: RuntimeAccount;
   /** Where sealed receipts are stored. Untrusted: it only ever sees ciphertext. */
   kleosUrl?: string;
   /** Owner encryption pubkey; read from the agent's ERC-8004 metadata when omitted. */
@@ -191,6 +202,9 @@ export class Stamper {
   }
 
   async stamp(input: StampInput): Promise<StampResult> {
+    // Fresh salt per stamp: the public answerHash stays opaque even for
+    // short or guessable answers. It travels in the sealed body.
+    const answerSalt = bytesToHex(randomBytes(32)) as `0x${string}`;
     const pub: ReceiptPublic = {
       v: 1,
       network: this.network,
@@ -201,14 +215,14 @@ export class Stamper {
       amount: input.amount.toString(),
       asset: input.asset,
       settlementTx: input.settlementTx,
-      answerHash: answerHash(input.answer),
+      answerHash: answerHash(input.answer, answerSalt),
       timestamp: Math.floor(Date.now() / 1000),
     };
     const signature = await this.c.account.signMessage({ message: signingMessage(pub) });
     const receipt: Receipt = { ...pub, signature };
     const hash = receiptHash(pub);
 
-    const priv: ReceiptPrivate = { answer: input.answer, request: input.request, meta: input.meta };
+    const priv: ReceiptPrivate = { answer: input.answer, answerSalt, request: input.request, meta: input.meta };
     const sealed = seal(utf8ToBytes(JSON.stringify(priv)), await this.ownerKey());
 
     // Store first, anchor second: an anchored hash with no body is a stamp

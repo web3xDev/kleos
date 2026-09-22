@@ -1,7 +1,7 @@
 // Stamps as the site sees them: public receipts from the store, verified in
 // the browser against Monad. Kleos's own API is never the source of truth.
 
-import { isAddressEqual, keccak256, parseAbi, recoverMessageAddress, toBytes, type PublicClient } from "viem";
+import { concat, isAddressEqual, keccak256, parseAbi, recoverMessageAddress, toBytes, type PublicClient } from "viem";
 import { addresses } from "./chain";
 import { open, type Sealed } from "./seal";
 
@@ -107,9 +107,13 @@ export async function verifyStamp(publicClient: PublicClient, stamp: Stamp): Pro
 
 export function decryptStamp(stamp: Stamp, privateKey: Uint8Array): { answer: string; request?: unknown; hashMatches: boolean } {
   const bytes = open(stamp.sealed, privateKey);
-  const body = JSON.parse(new TextDecoder().decode(bytes)) as { answer: string; request?: unknown };
-  const hashMatches = keccak256(toBytes(body.answer)).toLowerCase() === stamp.receipt.answerHash.toLowerCase();
-  return { answer: body.answer, request: body.request, hashMatches };
+  const body = JSON.parse(new TextDecoder().decode(bytes)) as { answer: string; answerSalt?: `0x${string}`; request?: unknown };
+  // The hash is keccak256(salt || answer). Stamps written before salts
+  // existed carry no salt and hash the answer alone.
+  const computed = body.answerSalt
+    ? keccak256(concat([body.answerSalt, toBytes(body.answer)]))
+    : keccak256(toBytes(body.answer));
+  return { answer: body.answer, request: body.request, hashMatches: computed.toLowerCase() === stamp.receipt.answerHash.toLowerCase() };
 }
 
 /** Provable numbers from a list of verified stamps. */

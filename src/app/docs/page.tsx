@@ -137,13 +137,15 @@ const { call, stamp } = await callAndStamp({
   "amount": "10000",                // atomic units
   "asset": "0x534b…43A3",           // USDC
   "settlementTx": "0x2a4b…31b72",   // the x402 settlement on Monad
-  "answerHash": "0xb79b…cac1",      // keccak256 of the answer
+  "answerHash": "0xb79b…cac1",      // keccak256(salt || answer); the salt is in the sealed body
   "timestamp": 1790001139,
   "signature": "0x…"                // EIP-191 by wallet over the receipt hash
 }`}</Code>
             <p className="mt-4 text-secondary">
-              And the private body (request, answer, metadata), sealed to the owner&apos;s per-agent public key with
-              ECIES over secp256k1 (ephemeral ECDH → HKDF-SHA256 → AES-256-GCM). The store only ever holds ciphertext.
+              And the private body (request, answer, a random 32-byte salt, metadata), sealed to the owner&apos;s per-agent
+              public key with ECIES over secp256k1 (ephemeral ECDH → HKDF-SHA256 → AES-256-GCM). The store only ever holds
+              ciphertext. The salt is why the public <Mono>answerHash</Mono> reveals nothing: without it, a short or
+              predictable answer could be found by hashing candidates.
             </p>
             <p className="mt-4 text-secondary">
               On chain, <Mono>KleosStamps.stamp()</Mono> records the receipt hash, settlement tx, tool, platform, amount and

@@ -5,15 +5,18 @@
 import { encodePairing, loadOrCreateRuntimeKey, pair, runtimeKeyPath } from "./runtime.js";
 import type { NetworkName } from "./chain.js";
 
-const [cmd, ...rest] = process.argv.slice(2);
+const argv = process.argv.slice(2);
+const keyIdx = argv.indexOf("--key");
+const explicitKey = keyIdx !== -1 ? (argv[keyIdx + 1] as `0x${string}` | undefined) : undefined;
+const [cmd, ...rest] = keyIdx === -1 ? argv : argv.filter((_, i) => i !== keyIdx && i !== keyIdx + 1);
 const network = (process.env.KLEOS_NETWORK ?? "monad-testnet") as NetworkName;
 
 async function main() {
-  const account = loadOrCreateRuntimeKey();
+  const account = loadOrCreateRuntimeKey(explicitKey);
 
   if (cmd === "whoami") {
     console.log(account.address);
-    console.log(`key: ${runtimeKeyPath()}`);
+    console.log(explicitKey || process.env.KLEOS_RUNTIME_KEY ? "key: provided (not stored)" : `key: ${runtimeKeyPath()}`);
     return;
   }
 
@@ -36,7 +39,7 @@ async function main() {
     return;
   }
 
-  console.error("usage: kleos <pair <agentId> | whoami>");
+  console.error("usage: kleos <pair <agentId> | whoami> [--key 0x...]   (or KLEOS_RUNTIME_KEY=0x...)");
   process.exit(2);
 }
 

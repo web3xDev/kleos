@@ -1,7 +1,7 @@
 // The stamp's off-chain half: a signed receipt. Its hash is what goes on
 // chain; the receipt itself (with the answer) is encrypted to the owner.
 
-import { hashMessage, keccak256, recoverMessageAddress, toBytes, type Hex } from "viem";
+import { concat, hashMessage, keccak256, recoverMessageAddress, toBytes, type Hex } from "viem";
 
 /** Public part of a receipt. Field order is fixed: the hash depends on it. */
 export type ReceiptPublic = {
@@ -18,10 +18,14 @@ export type ReceiptPublic = {
   timestamp: number; // unix seconds
 };
 
-/** Private part: only the owner can read it. */
+/** Private part: only the owner can read it. Carries the salt so the owner
+ * can recompute `answerHash`; without it the hash cannot be brute-forced
+ * from a small set of likely answers. */
 export type ReceiptPrivate = {
   request?: unknown;
   answer: string;
+  /** 32-byte hex, hashed together with the answer. */
+  answerSalt: Hex;
   meta?: Record<string, unknown>;
 };
 
@@ -52,8 +56,13 @@ export function receiptHash(pub: ReceiptPublic): Hex {
   return keccak256(toBytes(canonical(pub)));
 }
 
-export function answerHash(answer: string): Hex {
-  return keccak256(toBytes(answer));
+/**
+ * keccak256(salt || answer). The salt is random per stamp and lives only in
+ * the sealed body, so a public hash reveals nothing even when the answer is
+ * short or predictable.
+ */
+export function answerHash(answer: string, salt: Hex): Hex {
+  return keccak256(concat([salt, toBytes(answer)]));
 }
 
 /** What the runtime signs: EIP-191 over the canonical receipt hash. */

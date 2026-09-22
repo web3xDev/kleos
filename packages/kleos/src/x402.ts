@@ -6,7 +6,7 @@ import { x402Client } from "@x402/core/client";
 import { wrapFetchWithPayment } from "@x402/fetch";
 import { ExactEvmScheme } from "@x402/evm/exact/client";
 import { toClientEvmSigner } from "@x402/evm";
-import type { PrivateKeyAccount } from "viem/accounts";
+import type { RuntimeAccount } from "./runtime.js";
 import { networks, type NetworkName } from "./chain.js";
 import { clients } from "./runtime.js";
 import type { Stamper, StampResult } from "./runtime.js";
@@ -36,7 +36,7 @@ export function readSettlement(res: Response): Settlement | null {
  */
 export function payingFetch(
   network: NetworkName,
-  account: PrivateKeyAccount,
+  account: RuntimeAccount,
   opts: { maxPerCall?: bigint } = {},
 ): typeof fetch {
   const { publicClient } = clients(network, account);
