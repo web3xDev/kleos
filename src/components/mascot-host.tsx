@@ -35,7 +35,7 @@ export function MascotHost({
           <Mascot
             size={112}
             className="transition-transform duration-[360ms] ease-out"
-            style={{ transform: on ? up : down, transitionDelay: hover ? "0ms" : "260ms" }}
+            style={{ transform: on ? up : down, transitionDelay: hover ? "0ms" : "140ms" }}
           />
         </div>
         {/* two hands on the edge, one each side of the head */}
@@ -77,7 +77,7 @@ export function MascotHost({
         <Mascot
           size={112}
           className="origin-bottom-right transition-transform duration-[360ms] ease-out"
-          style={{ transform: on ? (hover ? outMore : out) : inn, transitionDelay: hover ? "0ms" : "260ms" }}
+          style={{ transform: on ? (hover ? outMore : out) : inn, transitionDelay: hover ? "0ms" : "140ms" }}
         />
       </div>
       <MascotHand
@@ -87,7 +87,7 @@ export function MascotHost({
           top: `calc(${top} + 100px)`,
           opacity: on ? 1 : 0,
           transform: left ? (on && hover ? "translateX(-4px)" : "translateX(0)") : on && hover ? "translateX(4px) scaleX(-1)" : "scaleX(-1)",
-          transitionDelay: hover ? "0ms" : "420ms",
+          transitionDelay: hover ? "0ms" : "300ms",
         }}
       />
       <div className="relative z-10">{children}</div>
