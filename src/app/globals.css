@@ -168,3 +168,21 @@ a:hover svg.lucide-arrow-up-right,
 button:hover svg.lucide-arrow-up-right {
   transform: translate(1px, -1px);
 }
+
+/* The one handwritten aside. Drawn once when it enters view. */
+.hand {
+  font-family: var(--font-hand), ui-rounded, cursive;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--accent-text);
+}
+.underline-draw path {
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+}
+.underline-draw.drawn path {
+  animation: underline-draw 700ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes underline-draw {
+  to { stroke-dashoffset: 0; }
+}

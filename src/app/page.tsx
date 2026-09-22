@@ -16,6 +16,7 @@ import { Reveal } from "@/components/reveal";
 import { Pipeline } from "@/components/pipeline";
 import { Faq } from "@/components/faq";
 import { MascotHost } from "@/components/mascot-host";
+import { Scribble } from "@/components/scribble";
 
 type ExploreData = {
   total: number;
@@ -312,7 +313,9 @@ export default function Home() {
 
         <Pipeline stamp={latest && example ? { amount: formatUsdc(BigInt(latest.receipt.amount)), agentId: example.id } : null} />
 
-        <p className="mt-14 text-[24px] font-semibold tracking-tight">No platform owns the record.</p>
+        <p className="mt-14 text-[24px] font-semibold tracking-tight">
+          <Scribble note="not even us">No platform owns the record.</Scribble>
+        </p>
       </section>
       </Reveal>
 
