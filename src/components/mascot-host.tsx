@@ -27,7 +27,7 @@ export function MascotHost({
     // Rises from behind the card's top edge, over its right half. The hand
     // grips the edge from above.
     const on = inView;
-    const up = hover ? "translateY(-34px)" : "translateY(0)";
+    const up = hover ? "translateY(-18px)" : "translateY(0)";
     const down = "translateY(86px)";
     return (
       <div ref={ref} className={`relative ${className}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
