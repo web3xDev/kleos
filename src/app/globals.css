@@ -172,7 +172,7 @@ button:hover svg.lucide-arrow-up-right {
 /* The one handwritten aside. Drawn once when it enters view. */
 .hand {
   font-family: var(--font-hand), ui-rounded, cursive;
-  font-size: 22px;
+  font-size: 30px;
   line-height: 1;
   color: var(--accent-text);
 }
