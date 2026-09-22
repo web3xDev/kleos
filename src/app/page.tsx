@@ -17,6 +17,7 @@ import { Pipeline } from "@/components/pipeline";
 import { Faq } from "@/components/faq";
 import { MascotHost } from "@/components/mascot-host";
 import { Scribble } from "@/components/scribble";
+import { CountUp } from "@/components/count-up";
 
 type ExploreData = {
   total: number;
@@ -468,7 +469,13 @@ export default function Home() {
 function Stat({ value, label }: { value: string | null; label: string }) {
   return (
     <div>
-      {value === null ? <div className="h-9 w-24 animate-pulse rounded-[6px] bg-surface-elevated" /> : <div className="metric">{value}</div>}
+      {value === null ? (
+        <div className="h-9 w-24 animate-pulse rounded-[6px] bg-surface-elevated" />
+      ) : (
+        <div className="metric">
+          <CountUp value={value} />
+        </div>
+      )}
       <Label className="mt-1">{label}</Label>
     </div>
   );
