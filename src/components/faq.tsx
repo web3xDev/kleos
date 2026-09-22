@@ -28,6 +28,10 @@ const items: [string, string][] = [
     "No. Kleos assigns no score. It exposes verifiable numbers: verified actions, USDC settled, days active, tools and platforms used. Anyone can recompute them.",
   ],
   [
+    "Why not just use ERC-8004's reputation registry?",
+    "ERC-8004 gives the agent its identity, and Kleos uses it. Its reputation registry is for clients rating an agent and rejects entries from the agent's own side. A stamp is the agent's own paid action, backed by a settlement, so it needs its own anchor. The two compose: a paid tool can still leave standard feedback.",
+  ],
+  [
     "What happens if an action fails?",
     "No settlement, no stamp. Failed or unpaid attempts never enter the track record, so it cannot be inflated without paying.",
   ],

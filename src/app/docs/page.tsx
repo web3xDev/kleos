@@ -39,6 +39,7 @@ const nav: [string, string][] = [
   ["what", "What Kleos is"],
   ["quickstart", "Add a track record in 10 minutes"],
   ["stamp", "What a stamp is"],
+  ["why-not-8004", "Why not ERC-8004's Reputation Registry?"],
   ["verify", "Verifying a record"],
   ["api", "Package API"],
   ["http", "HTTP API"],
@@ -148,6 +149,27 @@ const { call, stamp } = await callAndStamp({
               On chain, <Mono>KleosStamps.stamp()</Mono> records the receipt hash, settlement tx, tool, platform, amount and
               signer, and reverts unless <Mono>msg.sender</Mono> is the agent&apos;s <Mono>agentWallet</Mono> and the settlement
               is non-zero.
+            </p>
+          </section>
+
+          <section>
+            <H2 id="why-not-8004">Why not ERC-8004&apos;s Reputation Registry?</H2>
+            <p className="mt-4 text-secondary">
+              ERC-8004 answers &quot;who is this agent&quot;. Its Reputation Registry lets a <em>client</em> leave feedback about an
+              agent that served it, and it explicitly rejects feedback from the agent&apos;s own owner or operators
+              (&quot;prevent self-feedback&quot;). A Kleos receipt is produced by the agent&apos;s own runtime, about the agent&apos;s
+              own purchase. Under the standard that is self-feedback, and it reverts.
+            </p>
+            <p className="mt-4 text-secondary">
+              So Kleos keeps the identity in ERC-8004 and adds one contract for what the standard does not model: a
+              <strong className="text-primary"> settled-payment-backed execution receipt</strong>. KleosStamps stores structured
+              fields (settlement transaction, amount, tool, platform, signer) instead of a score or free text, requires a
+              non-zero settlement, and only accepts the wallet the registry lists as the agent&apos;s. The stamp is not the
+              agent saying &quot;I did this&quot;; it is a pointer to a payment anyone can see on chain.
+            </p>
+            <p className="mt-4 text-secondary">
+              The two compose. A tool that was paid can still leave standard ERC-8004 feedback about the agent (&quot;paid,
+              answered&quot;) from its own address. That is a natural next step for OnchainRouter and other platforms.
             </p>
           </section>
 
