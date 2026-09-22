@@ -87,7 +87,7 @@ export function MascotHost({
           top: `calc(${top} + 100px)`,
           opacity: on ? 1 : 0,
           transform: left ? (on && hover ? "translateX(-4px)" : "translateX(0)") : on && hover ? "translateX(4px) scaleX(-1)" : "scaleX(-1)",
-          transitionDelay: hover ? "0ms" : "300ms",
+          transitionDelay: hover ? "0ms" : "140ms",
         }}
       />
       <div className="relative z-10">{children}</div>
