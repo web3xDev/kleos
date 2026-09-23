@@ -116,7 +116,7 @@ export default function ExplorePage() {
               <Mark size={14} className="text-accent" />
               <Mono className="text-[11px] tracking-[0.14em] text-primary">KLEOS · VERIFIED TRACK RECORD</Mono>
             </div>
-            <span aria-hidden className="mt-2 block h-px w-8 bg-accent" />
+            <span aria-hidden className="mt-2 block h-px w-24 bg-accent" />
             <div className="mt-4 flex items-baseline justify-between gap-4">
               <span className="truncate text-lg font-semibold text-primary">{featured[0].name ?? `Agent #${featured[0].id}`}</span>
               <Mono className="text-secondary">#{featured[0].id}</Mono>
