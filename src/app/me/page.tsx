@@ -280,6 +280,9 @@ export default function MePage() {
                     <Label className="mt-1">USDC settled</Label>
                   </div>
                 </div>
+                <p className="mt-4 rounded-[8px] border border-border-subtle bg-background px-3 py-2.5 text-xs text-secondary">
+                  <Shimmer>Identity ready. Nothing can stamp actions yet. Connect the runtime that runs this agent.</Shimmer>
+                </p>
                 <dl className="mt-5 space-y-2 border-t border-border-subtle pt-4">
                   <div className="flex items-baseline justify-between gap-4">
                     <dt><Label>Runtime</Label></dt>
@@ -342,11 +345,19 @@ export default function MePage() {
                 <p className="mt-4 rounded-[8px] border border-border-subtle bg-background px-3 py-2.5 text-xs text-secondary">
                   <span className="text-primary">Identity ready.</span> Nothing can stamp actions yet. Connect the runtime that runs this agent.
                 </p>
-              ) : summary.has(String(a.id)) && summary.get(String(a.id))!.actions === 0 ? (
+              ) : !summary.has(String(a.id)) ? (
+                <p aria-hidden className="mt-4 rounded-[8px] border border-border-subtle bg-background px-3 py-2.5 text-xs text-secondary">
+                  <Shimmer>Ready. Its first paid action will create the first stamp.</Shimmer>
+                </p>
+              ) : summary.get(String(a.id))!.actions === 0 ? (
                 <p className="mt-4 rounded-[8px] border border-border-subtle bg-background px-3 py-2.5 text-xs text-secondary">
                   <span className="text-primary">Ready.</span> Its first paid action will create the first stamp.
                 </p>
-              ) : null}
+              ) : (
+                <p className="mt-4 rounded-[8px] border border-border-subtle bg-background px-3 py-2.5 text-xs text-secondary">
+                  <span className="text-primary">Stamping.</span> Every paid action it makes adds to its record.
+                </p>
+              )}
 
               {/* pinned to the bottom so cards in a row line up even when one has a note */}
               <div className="mt-auto">
