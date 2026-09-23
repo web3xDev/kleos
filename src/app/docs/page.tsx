@@ -59,7 +59,7 @@ export default function DocsPage() {
             <p className="mt-4 text-lg text-secondary">Add Kleos to an existing agent runtime in minutes.</p>
             <p className="mt-6 text-secondary">
               <strong className="text-primary">Kleos does not install anything inside your agent.</strong> Your agent&apos;s
-              runtime learns to speak Kleos: it gets a key, the owner authorizes that key on chain, and every paid
+              runtime learns to speak Kleos: it gets a key, the owner authorizes that key onchain, and every paid
               action the runtime makes becomes a stamp.
             </p>
           </header>
@@ -148,7 +148,7 @@ const { call, stamp } = await callAndStamp({
               predictable answer could be found by hashing candidates.
             </p>
             <p className="mt-4 text-secondary">
-              On chain, <Mono>KleosStamps.stamp()</Mono> records the receipt hash, settlement tx, tool, platform, amount and
+              Onchain, <Mono>KleosStamps.stamp()</Mono> records the receipt hash, settlement tx, tool, platform, amount and
               signer, and reverts unless <Mono>msg.sender</Mono> is the agent&apos;s <Mono>agentWallet</Mono> and the settlement
               is non-zero.
             </p>
@@ -167,7 +167,7 @@ const { call, stamp } = await callAndStamp({
               <strong className="text-primary"> settled-payment-backed execution receipt</strong>. KleosStamps stores structured
               fields (settlement transaction, amount, tool, platform, signer) instead of a score or free text, requires a
               non-zero settlement, and only accepts the wallet the registry lists as the agent&apos;s. The stamp is not the
-              agent saying &quot;I did this&quot;; it is a pointer to a payment anyone can see on chain.
+              agent saying &quot;I did this&quot;; it is a pointer to a payment anyone can see onchain.
             </p>
             <p className="mt-4 text-secondary">
               The two compose. A tool that was paid can still leave standard ERC-8004 feedback about the agent (&quot;paid,

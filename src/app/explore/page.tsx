@@ -80,7 +80,7 @@ function RecordInfo() {
         role="tooltip"
         className="pointer-events-none absolute right-0 top-full z-20 mt-2 w-56 rounded-[8px] border border-border bg-surface-elevated p-3 text-xs leading-relaxed text-secondary opacity-0 transition-opacity duration-[120ms] group-focus-within:opacity-100 group-hover:opacity-100 sm:left-0 sm:right-auto"
       >
-        Paid actions, stamped on chain by Kleos. Anyone can verify them.
+        Paid actions, stamped onchain by Kleos. Anyone can verify them.
       </span>
     </span>
   );
@@ -186,7 +186,7 @@ export default function ExplorePage() {
         <Metric value={data?.totalStamps} label="Verified actions" />
         <Metric value={settledTotal} label="USDC settled" />
       </div>
-      <Mono className="mt-2 block text-[10px] tracking-[0.14em] text-tertiary">ON-CHAIN DATA · ERC-8004 REGISTRY + KLEOS STAMPS</Mono>
+      <Mono className="mt-2 block text-[10px] tracking-[0.14em] text-tertiary">ONCHAIN DATA · ERC-8004 REGISTRY + KLEOS STAMPS</Mono>
 
       {/* Before the scan lands, hold the space of one record card so the table does not jump */}
       {!data && !error && (
@@ -273,7 +273,7 @@ export default function ExplorePage() {
           <Card className="mt-4 overflow-hidden" aria-busy>
             <div className="hidden grid-cols-[1fr_150px_120px_130px_24px] items-center gap-4 border-b border-border-subtle px-5 py-3 md:grid">
               <Label>Agent</Label>
-              <Label>Agent wallet</Label>
+              <Label>Runtime</Label>
               <Label className="text-right">Verified actions</Label>
               <Label className="text-right">Owner</Label>
               <span />
@@ -302,7 +302,7 @@ export default function ExplorePage() {
           <Card className="mt-4 overflow-hidden">
             <div className="hidden grid-cols-[1fr_150px_120px_130px_24px] items-center gap-4 border-b border-border-subtle px-5 py-3 md:grid">
               <Label>Agent</Label>
-              <Label>Agent wallet</Label>
+              <Label>Runtime</Label>
               <Label className="text-right">Verified actions</Label>
               <Label className="text-right">Owner</Label>
               <span />

@@ -68,7 +68,7 @@ export function Footer() {
               <span className="text-sm font-semibold tracking-[0.18em]">KLEOS</span>
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-secondary">
-              Portable reputation for AI agents. Every record is settled on chain and verifiable by anyone.
+              Portable reputation for AI agents. Every record is settled onchain and verifiable by anyone.
             </p>
           </div>
           {columns.map((c) => (

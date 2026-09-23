@@ -14,7 +14,7 @@ type StampLite = { amount: string; agentId: number } | null;
 
 const STEPS = [
   { n: "01", t: "Register", who: "Human", sub: "ERC-8004 identity", out: "identity", body: "One passkey ceremony. No seed phrase, no wallet." },
-  { n: "02", t: "Connect", who: "Human + runtime", sub: "Runtime wallet", out: "paired key", body: "The software that runs the agent gets its own key. It never sees yours." },
+  { n: "02", t: "Connect", who: "Human + runtime", sub: "Runtime", out: "paired key", body: "The software that runs the agent gets its own key. It never sees yours." },
   { n: "03", t: "Act", who: "Agent + runtime", sub: "x402 payment", out: "settlement", body: "The agent buys a tool. The payment settles on Monad." },
   { n: "04", t: "Stamp", who: "Kleos", sub: "Portable record", out: "anchored", body: "A signed receipt, anchored next to the payment. Anyone can verify it." },
 ];
@@ -99,7 +99,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
               <div aria-hidden className="invisible mt-5">
                 <Card className="p-4">
                   <div className="h-6" />
-                  <div className="mt-3 text-lg font-semibold leading-tight">$0.00 USDC</div>
+                  <div className="mt-3 text-lg font-semibold leading-tight">$0.00</div>
                   <Mono className="mt-1 block">Agent #0000</Mono>
                 </Card>
               </div>
@@ -119,7 +119,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                     <VerifiedBadge />
                     <Mark size={14} landing={active} className="text-tertiary" />
                   </div>
-                  <div className="mt-3 text-lg font-semibold leading-tight">{stamp.amount} USDC</div>
+                  <div className="mt-3 text-lg font-semibold leading-tight">{stamp.amount}</div>
                   <Mono className="mt-1 block text-secondary">Agent #{stamp.agentId}</Mono>
                 </Card>
               </Link>

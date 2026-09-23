@@ -176,7 +176,7 @@ export default function MePage() {
           </Button>
           <Button variant="accent" onClick={() => setShowRegister((v) => !v)}>
             <Plus size={16} strokeWidth={1.5} />
-            Register agent
+            Register your agent
           </Button>
         </div>
       </div>
@@ -185,7 +185,7 @@ export default function MePage() {
         <Card className="mt-8 p-6">
           <form onSubmit={onRegister}>
             <h2 className="text-[24px] font-semibold leading-tight">Register your agent</h2>
-            <p className="mt-1 text-sm text-secondary">Give your agent an on-chain identity.</p>
+            <p className="mt-1 text-sm text-secondary">Give your agent an onchain identity.</p>
             <div className="mt-5 flex gap-2">
               <Input
                 placeholder="Agent name"
@@ -304,7 +304,7 @@ export default function MePage() {
             <p className="mt-1 text-sm text-tertiary">Register one to give it an identity and start a track record.</p>
             <Button variant="accent" className="mt-6" onClick={() => setShowRegister(true)}>
               <Plus size={16} strokeWidth={1.5} />
-              Register agent
+              Register your agent
             </Button>
           </Card>
         )}
@@ -323,7 +323,7 @@ export default function MePage() {
                     Runtime paired
                   </Badge>
                 ) : (
-                  <Badge>Not connected</Badge>
+                  <Badge>No runtime</Badge>
                 )}
               </div>
 

@@ -26,7 +26,7 @@ type Verification = { running: boolean; results: Map<string, VerifyCheck[]>; don
 
 function timeAgo(ts: number): string {
   const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
-  if (s < 60) return `${s}s ago`;
+  if (s < 60) return "just now";
   if (s < 3600) return `${Math.floor(s / 60)} min ago`;
   if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
   return `${Math.floor(s / 86400)} d ago`;
@@ -118,7 +118,10 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <Mono className="text-secondary">Agent #{String(agentId)}</Mono>
             {agent?.wallet ? (
-              <ActiveBadge />
+              <ActiveBadge>
+                <Check size={12} strokeWidth={2} />
+                Runtime paired
+              </ActiveBadge>
             ) : agent ? (
               <Badge>No runtime</Badge>
             ) : (
@@ -230,7 +233,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             ) : agent?.wallet ? (
               <Mono className="text-primary">{agent.wallet}</Mono>
             ) : (
-              <span className="text-sm text-tertiary">No runtime connected</span>
+              <span className="text-sm text-tertiary">No runtime</span>
             )}
           </div>
           <p className="mt-1 text-xs text-tertiary">
@@ -263,7 +266,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                 </div>
                 <Mono><Shimmer>$0.01</Shimmer></Mono>
                 <span className="hidden w-20 text-right text-xs sm:block"><Shimmer>0 h ago</Shimmer></span>
-                <div className="flex w-24 justify-end"><span className="h-6 w-20 animate-pulse rounded-full bg-surface-elevated" /></div>
+                <div className="w-24" />
                 <span className="w-4" />
               </li>
             ))}
@@ -300,7 +303,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                   <Mono className="text-primary">{formatUsdc(BigInt(s.receipt.amount))}</Mono>
                   <span className="hidden w-20 text-right text-xs text-tertiary sm:block">{timeAgo(s.receipt.timestamp)}</span>
                   <div className="w-24 text-right">
-                    {ok === true ? <VerifiedBadge /> : ok === false ? <Badge tone="error">Failed</Badge> : <Badge>Answered</Badge>}
+                    {ok === true ? <VerifiedBadge /> : ok === false ? <Badge tone="error">Failed</Badge> : null}
                   </div>
                   {isOpen ? <ChevronUp size={16} className="text-tertiary" /> : <ChevronDown size={16} className="text-tertiary" />}
                 </button>
@@ -310,7 +313,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                     <dl className="grid gap-x-8 gap-y-3 text-sm md:grid-cols-2">
                       <Row label="Tool" value={s.receipt.tool} />
                       <Row label="Platform" value={s.receipt.platform} />
-                      <Row label="Amount" value={`${formatUsdc(BigInt(s.receipt.amount))} USDC`} />
+                      <Row label="Amount" value={formatUsdc(BigInt(s.receipt.amount))} />
                       <Row label="Timestamp" value={new Date(s.receipt.timestamp * 1000).toISOString().replace("T", " ").slice(0, 19) + " UTC"} />
                       <Row
                         label="Settlement"

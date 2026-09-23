@@ -30,7 +30,7 @@ type Example = { id: number; name: string; wallet: `0x${string}` | null; stamps:
 
 function timeAgo(ts: number): string {
   const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
-  if (s < 60) return `${s}s ago`;
+  if (s < 60) return "just now";
   if (s < 3600) return `${Math.floor(s / 60)} min ago`;
   if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
   return `${Math.floor(s / 86400)} d ago`;
@@ -161,7 +161,7 @@ export default function Home() {
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm text-primary">{latest.receipt.tool}</div>
                     <div className="mt-0.5 text-xs text-tertiary">
-                      {formatUsdc(BigInt(latest.receipt.amount))} USDC · {timeAgo(latest.receipt.timestamp)}
+                      {formatUsdc(BigInt(latest.receipt.amount))} · {timeAgo(latest.receipt.timestamp)}
                     </div>
                     <a
                       href={`${chain.blockExplorers.default.url}/tx/${latest.receipt.settlementTx}`}
@@ -198,7 +198,7 @@ export default function Home() {
             {[
               ["01", "Payment settles", "A payment for a tool lands on Monad. That is the proof the action happened."],
               ["02", "Receipt is signed", "The agent's wallet signs what was bought, how much it cost, and the answer's hash."],
-              ["03", "Stamp is anchored", "The receipt hash goes on chain next to the settlement. Anyone can check it."],
+              ["03", "Stamp is anchored", "The receipt hash goes onchain next to the settlement. Anyone can check it."],
             ].map(([n, t, b], i, arr) => (
               <li key={n} className="flex gap-4">
                   <div className="flex flex-col items-center">
@@ -350,7 +350,7 @@ export default function Home() {
                 <Label>Verification</Label>
                 <div className="mt-2 flex items-baseline justify-between gap-4">
                   <span className="text-sm font-medium text-primary">
-                    {checks ? (passed === checkRows.length ? "Record verified" : "Verification finished") : "Verifying"}
+                    {checks ? (passed === checkRows.length ? "Record independently verified" : "Verification finished") : "Verifying"}
                   </span>
                   <Mono className="text-xs text-secondary">
                     {checks ? `${passed} / ${checkRows.length} checks passed` : "checking"}
@@ -473,7 +473,7 @@ function LiveCardSkeleton() {
           <span className="mt-1 h-[14px] w-[14px] shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="text-sm"><Shimmer>kleos-demo/monad-block</Shimmer></div>
-            <div className="mt-0.5 text-xs"><Shimmer>0.01 USDC · 0 h ago</Shimmer></div>
+            <div className="mt-0.5 text-xs"><Shimmer>$0.01 · 0 h ago</Shimmer></div>
             <span className="mt-2 inline-flex font-mono text-xs"><Shimmer>Settlement 0x0000…0000</Shimmer></span>
           </div>
         </div>

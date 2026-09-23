@@ -16,9 +16,9 @@ type Row = { key: string; title: string; who: string; status: Status; detail?: s
 
 const ROWS: Omit<Row, "status">[] = [
   { key: "agent", title: "Agent wakes up", who: "Agent #1910 · runtime checks it is the registered wallet" },
-  { key: "tool", title: "Calls a paid tool", who: "x402 · 0.01 USDC · kleos-demo/monad-block" },
+  { key: "tool", title: "Calls a paid tool", who: "x402 · $0.01 · kleos-demo/monad-block" },
   { key: "payment", title: "Payment settles on Monad", who: "USDC transferWithAuthorization, submitted by the facilitator" },
-  { key: "stamp", title: "Receipt signed and sealed", who: "EIP-191 by the runtime wallet · body encrypted to the owner" },
+  { key: "stamp", title: "Receipt signed and sealed", who: "EIP-191 by the runtime · body encrypted to the owner" },
   { key: "anchor", title: "Stamp anchored on Monad", who: "KleosStamps.stamp() · only the registered runtime can" },
 ];
 
@@ -103,7 +103,7 @@ export default function TryPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <Mono className="text-[11px] tracking-[0.14em] text-primary">DEMO AGENT #1910 · {chain.name.toUpperCase()} · REAL SETTLEMENT</Mono>
-            <div className="mt-1.5 text-xs text-tertiary">Kleos-owned, funded by us · 0.01 USDC per run</div>
+            <div className="mt-1.5 text-xs text-tertiary">Kleos-owned, funded by us · $0.01 per run</div>
           </div>
           <Button variant="accent" onClick={run} loading={running} disabled={running}>
             <Play size={16} strokeWidth={1.5} />
