@@ -5,7 +5,7 @@
 import { useInView } from "@/components/reveal";
 
 export function ClosingGlow() {
-  const [ref, inView] = useInView<HTMLDivElement>("0px 0px -25% 0px");
+  const [ref, inView] = useInView<HTMLDivElement>("0px 0px -10% 0px");
   return (
     <div
       ref={ref}
@@ -16,7 +16,7 @@ export function ClosingGlow() {
           "radial-gradient(ellipse 70% 55% at 50% 100%, rgba(99, 85, 184, 0.16), rgba(99, 85, 184, 0.06) 40%, transparent 72%)",
         opacity: inView ? 1 : 0,
         transform: inView ? "translateY(0)" : "translateY(24px)",
-        transition: "opacity 1200ms ease-out, transform 1200ms ease-out",
+        transition: "opacity 600ms ease-out, transform 600ms ease-out",
       }}
     />
   );
