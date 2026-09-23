@@ -54,9 +54,11 @@ export function Header() {
           ) : (
             <Link
               href="/me"
-              className="inline-flex h-9 items-center rounded-[8px] border border-border px-3.5 text-sm text-primary hover:border-border-hover hover:bg-surface-hover"
+              className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-border px-3.5 text-sm text-primary hover:border-border-hover hover:bg-surface-hover"
             >
               Sign in
+              {/* white until a session exists; turns green on My agents */}
+              <Fingerprint size={14} strokeWidth={1.5} />
             </Link>
           )}
         </div>
