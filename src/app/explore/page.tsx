@@ -22,18 +22,18 @@ type ExploreAgent = {
 };
 type ExploreData = { total: number; withTrackRecord: number; totalStamps: number; agents: ExploreAgent[]; scannedAt: number };
 
-type Filter = "all" | "record" | "kleos";
+type Filter = "all" | "record";
 
 const PAGE = 10;
 
-function Metric({ value, label, accent }: { value: number | undefined; label: string; accent?: boolean }) {
+function Metric({ value, label, accent }: { value: number | string | undefined; label: string; accent?: boolean }) {
   return (
     <div>
       {value === undefined ? (
         <div className="h-7 w-16 animate-pulse rounded-[6px] bg-surface-elevated" />
       ) : (
         <div className={`text-[24px] font-semibold leading-none tabular-nums ${accent ? "text-accent-text" : "text-primary"}`}>
-          {value.toLocaleString()}
+          {typeof value === "number" ? value.toLocaleString() : value}
         </div>
       )}
       <Label className="mt-1.5">{label}</Label>
@@ -72,8 +72,13 @@ function RecordCard({ agent, summary }: { agent: ExploreAgent; summary?: { usdc:
   );
 }
 
+// In rows KLEOS means one thing only: this agent has a Kleos track record.
 function KleosTag() {
-  return <Mono className="rounded bg-accent/25 px-1.5 py-0.5 text-[10px] leading-none tracking-[0.12em] text-accent-text">KLEOS</Mono>;
+  return (
+    <Mono className="rounded bg-accent/25 px-1.5 py-0.5 text-[10px] leading-none tracking-[0.12em] text-accent-text">
+      KLEOS
+    </Mono>
+  );
 }
 
 export default function ExplorePage() {
@@ -82,7 +87,7 @@ export default function ExplorePage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [page, setPage] = useState(0);
-  // USDC settled and last stamp time for the featured agents, read from their stamps.
+  // USDC settled and last stamp time per agent with a record, read from their stamps.
   const [settled, setSettled] = useState<Map<number, { usdc: bigint; last: number | null }>>(new Map());
 
   useEffect(() => {
@@ -118,10 +123,12 @@ export default function ExplorePage() {
     return [...real, ...fake];
   }, [data, previewCount]);
 
+  const recorded = useMemo(() => (data ? data.agents.filter((a) => a.stamps > 0) : []), [data]);
+
   useEffect(() => {
-    if (featured.length === 0) return;
+    if (recorded.length === 0) return;
     Promise.all(
-      featured.filter((a) => a.id < 9000).map(async (a) => {
+      recorded.map(async (a) => {
         const stamps = await fetchStamps(BigInt(a.id));
         return [
           a.id,
@@ -132,13 +139,13 @@ export default function ExplorePage() {
         ] as const;
       }),
     ).then((pairs) => setSettled(new Map(pairs)));
-  }, [featured]);
+  }, [recorded]);
 
   const rows = useMemo(() => {
     if (!data) return [];
     const needle = q.trim().toLowerCase();
     return data.agents
-      .filter((a) => (filter === "record" ? a.stamps > 0 : filter === "kleos" ? a.kleos : true))
+      .filter((a) => (filter === "record" ? a.stamps > 0 : true))
       .filter((a) => !needle || String(a.id) === needle || a.name?.toLowerCase().includes(needle) || a.owner.toLowerCase().includes(needle))
       .sort((a, b) => b.stamps - a.stamps || b.id - a.id);
   }, [data, q, filter]);
@@ -148,7 +155,9 @@ export default function ExplorePage() {
   const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
 
 
-  const viaKleos = data ? data.agents.filter((a) => a.kleos).length : 0;
+  // Network USDC settled, shown once every recorded agent's stamps are read.
+  const settledTotal =
+    recorded.length > 0 && settled.size === recorded.length ? formatUsdc([...settled.values()].reduce((t, v) => t + v.usdc, 0n)) : data && recorded.length === 0 ? "$0" : undefined;
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 py-10 md:px-8">
@@ -161,7 +170,7 @@ export default function ExplorePage() {
         <Metric value={data?.total} label="Registered" />
         <Metric value={data?.withTrackRecord} label="With a track record" accent />
         <Metric value={data?.totalStamps} label="Verified actions" />
-        <Metric value={data ? viaKleos : undefined} label="Registered via Kleos" />
+        <Metric value={settledTotal} label="USDC settled" />
       </div>
       <Mono className="mt-2 block text-[10px] tracking-[0.14em] text-tertiary">ON-CHAIN DATA · ERC-8004 REGISTRY + KLEOS STAMPS</Mono>
 
@@ -172,7 +181,7 @@ export default function ExplorePage() {
             <div className="flex items-center gap-2">
               <Mark size={14} className="text-accent" />
               <Mono className="text-[11px] tracking-[0.14em] text-primary">
-                {featured.length > 1 ? "AGENTS WITH A TRACK RECORD" : "AGENT WITH A TRACK RECORD"}
+                {featured.length > 1 ? "AGENTS WITH A KLEOS TRACK RECORD" : "AGENT WITH A KLEOS TRACK RECORD"}
               </Mono>
             </div>
             <span aria-hidden className="mt-2 block h-px w-full bg-accent" />
@@ -204,7 +213,6 @@ export default function ExplorePage() {
               [
                 ["all", "All"],
                 ["record", "With track record"],
-                ["kleos", "Registered via Kleos"],
               ] as [Filter, string][]
             ).map(([k, label]) => (
               <button
@@ -252,7 +260,7 @@ export default function ExplorePage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="truncate text-sm font-medium text-primary">{a.name ?? `Agent #${a.id}`}</span>
-                        {a.kleos && <KleosTag />}
+                        {a.stamps > 0 && <KleosTag />}
                       </div>
                       <Mono className="text-xs text-tertiary">#{a.id}</Mono>
                     </div>
