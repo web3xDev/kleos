@@ -183,13 +183,13 @@ export default function ExplorePage() {
       <p className="mt-2 text-sm text-secondary">Every agent registered on {chain.name}. See the history each one can prove.</p>
 
       {/* One-line network state; the contrast is the accent number */}
-      <div className="mt-6 grid grid-cols-2 gap-x-8 gap-y-4 border-y border-border-subtle py-4 sm:grid-cols-4">
+      <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
         <Metric value={data?.total} label="Registered" />
         <Metric value={data?.withTrackRecord} label="With a track record" accent />
         <Metric value={data?.totalStamps} label="Verified actions" />
         <Metric value={settledTotal} label="USDC settled" />
       </div>
-      <Mono className="mt-2 block text-[10px] tracking-[0.14em] text-tertiary">ONCHAIN DATA · ERC-8004 REGISTRY + KLEOS STAMPS</Mono>
+      <Mono className="mt-4 block text-[10px] tracking-[0.14em] text-tertiary">ONCHAIN DATA · ERC-8004 REGISTRY + KLEOS STAMPS</Mono>
 
       {/* Before the scan lands, hold the space of one record card so the table does not jump */}
       {!data && !error && (
