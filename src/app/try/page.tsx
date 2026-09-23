@@ -25,10 +25,10 @@ const ROWS: Omit<Row, "status">[] = [
 
 // Grows a step's details open instead of popping them in: animates the
 // row's height (grid 0fr → 1fr) and fades the content.
-function Expand({ open, children }: { open: boolean; children: React.ReactNode }) {
+function Expand({ open, children, slow = false }: { open: boolean; children: React.ReactNode; slow?: boolean }) {
   return (
     <div
-      className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+      className={`grid transition-[grid-template-rows,opacity] ease-out ${slow ? "duration-500" : "duration-300"} ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
     >
       <div className="min-h-0 overflow-hidden">{children}</div>
     </div>
@@ -204,18 +204,23 @@ export default function TryPage() {
       {error && <p className="mt-6 text-sm text-error">{error}</p>}
       </div>
 
-      <div className="space-y-6 lg:sticky lg:top-24">
+      {/* Every block grows open and fades in (Expand), so nothing pops in or pushes others abruptly */}
+      <div className="lg:sticky lg:top-24">
       {/* Before the first run, say what will land here */}
-      {!profile && !answer && (
+      <Expand open={!profile && !answer} slow>
+        <div className="pb-6">
         <div className="rounded-[10px] border border-dashed border-border p-6">
           <Wordmark size={20} muted />
           <p className="mt-4 text-sm text-secondary">The result lands here.</p>
           <p className="mt-1 text-sm text-tertiary">First what the tool answered, then the agent&apos;s updated track record.</p>
         </div>
-      )}
+        </div>
+      </Expand>
 
       {/* The point of the run: the record moved */}
+      <Expand open={Boolean(profile)} slow>
       {profile && (
+        <div className="pb-6">
         <Card className="p-6">
           <Wordmark size={20} />
           <div className="mt-4 flex items-baseline justify-between gap-4">
@@ -229,8 +234,11 @@ export default function TryPage() {
             </Button>
           </Link>
         </Card>
+        </div>
       )}
+      </Expand>
 
+      <Expand open={Boolean(answer)} slow>
       {answer && (
         <div>
           <Label>What the agent got back</Label>
@@ -240,6 +248,7 @@ export default function TryPage() {
           </p>
         </div>
       )}
+      </Expand>
       </div>
       </div>
     </main>
