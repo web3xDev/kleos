@@ -10,7 +10,6 @@ import { chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 import { Mark } from "@/components/mark";
-import { TraceBorder } from "@/components/trace-border";
 
 type Status = "idle" | "start" | "done" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
@@ -22,6 +21,18 @@ const ROWS: Omit<Row, "status">[] = [
   { key: "stamp", title: "Receipt signed and sealed", who: "EIP-191 by the runtime · body encrypted to the owner" },
   { key: "anchor", title: "Stamp anchored on Monad", who: "KleosStamps.stamp() · only the registered runtime can" },
 ];
+
+// Grows a step's details open instead of popping them in: animates the
+// row's height (grid 0fr → 1fr) and fades the content.
+function Expand({ open, children }: { open: boolean; children: React.ReactNode }) {
+  return (
+    <div
+      className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+    >
+      <div className="min-h-0 overflow-hidden">{children}</div>
+    </div>
+  );
+}
 
 // Chain errors are long and technical; show one plain sentence instead.
 function plainError(msg: string): string {
@@ -135,16 +146,17 @@ export default function TryPage() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-3">
                   <Mono className="inline-block w-[18px] shrink-0 text-xs text-tertiary">{String(i + 1).padStart(2, "0")}</Mono>
-                  <span className={`text-sm font-medium ${r.status === "idle" ? "text-tertiary" : "text-primary"}`}>{r.title}</span>
+                  <span className={`text-sm font-medium transition-colors duration-300 ${r.status === "idle" ? "text-tertiary" : "text-primary"}`}>{r.title}</span>
                   {r.ms !== undefined && r.status !== "idle" && (
                     <Mono className="ml-auto text-[11px] text-tertiary">{(r.ms / 1000).toFixed(1)}s</Mono>
                   )}
                 </div>
-                {r.status !== "idle" && (
+                <Expand open={r.status !== "idle"}>
                   <div className="pl-[30px]">
-                    <div className="mt-0.5 text-xs text-tertiary">{r.who}</div>
-                    {r.detail && (
-                      <div className="mt-2">
+                    <div className="pt-0.5 text-xs text-tertiary">{r.who}</div>
+                    <Expand open={Boolean(r.detail)}>
+                      {r.detail && (
+                      <div className="pt-2">
                         {r.status === "error" ? (
                           <Mono className="text-xs text-error">{r.detail}</Mono>
                         ) : isTx && r.detail.startsWith("0x") ? (
@@ -165,9 +177,10 @@ export default function TryPage() {
                           <Mono className="text-xs text-secondary">{r.detail}</Mono>
                         )}
                       </div>
-                    )}
+                      )}
+                    </Expand>
                   </div>
-                )}
+                </Expand>
               </div>
             </li>
           );
@@ -178,8 +191,7 @@ export default function TryPage() {
 
       {/* The point of the run: the record moved */}
       {profile && (
-        <Card className="relative mt-8 p-6">
-          <TraceBorder />
+        <Card className="mt-8 p-6">
           <div className="flex items-center gap-2">
             <Mark size={16} className="text-accent" />
             <Mono className="text-[11px] tracking-[0.14em] text-primary">KLEOS</Mono>
