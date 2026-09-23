@@ -311,7 +311,7 @@ export default function MePage() {
 
         <div className="grid gap-4 md:grid-cols-2">
           {agents.map((a) => (
-            <Card key={String(a.id)} hover className="p-5">
+            <Card key={String(a.id)} hover className="flex flex-col p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-lg font-semibold leading-tight">{a.name}</div>
@@ -348,6 +348,8 @@ export default function MePage() {
                 </p>
               ) : null}
 
+              {/* pinned to the bottom so cards in a row line up even when one has a note */}
+              <div className="mt-auto">
               <dl className="mt-5 space-y-2 border-t border-border-subtle pt-4">
                 <div className="flex items-baseline justify-between gap-4">
                   <dt>
@@ -382,6 +384,7 @@ export default function MePage() {
                 <Link href={`/a/${a.id}`} className="ml-auto inline-flex items-center gap-1 text-sm text-secondary hover:text-primary">
                   View agent <ArrowRight size={14} strokeWidth={1.5} />
                 </Link>
+              </div>
               </div>
             </Card>
           ))}
