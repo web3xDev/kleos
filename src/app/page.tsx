@@ -318,9 +318,6 @@ export default function Home() {
                 This record is being verified right now, in your browser, directly against Monad. No Kleos API is consulted.
               </p>
             </div>
-            <Link href={`/a/${example.id}`} className="hidden items-center gap-1 text-sm text-secondary hover:text-primary md:inline-flex">
-              Open profile <ArrowRight size={14} strokeWidth={1.5} />
-            </Link>
           </div>
           <MascotHost side="top" className="mt-6">
           <Card className="overflow-hidden">
@@ -330,7 +327,7 @@ export default function Home() {
                 <div className="text-[24px] font-semibold leading-tight">{example.name}</div>
                 <div className="mt-2 flex items-center gap-3">
                   <Mono className="text-secondary">Agent #{example.id}</Mono>
-                  {example.wallet && <ConnectedPill label="Active" />}
+                  {example.wallet && <ConnectedPill label="Runtime paired" />}
                 </div>
                 <div className="mt-6 grid grid-cols-3 gap-6">
                   <div>
@@ -407,7 +404,7 @@ export default function Home() {
                 {example.stamps.length} {example.stamps.length === 1 ? "stamp" : "stamps"} · each one recomputed, signature-checked, read from KleosStamps, settlement fetched
               </span>
               <Link href={`/a/${example.id}`} className="inline-flex items-center gap-1 text-sm text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">
-                Verify this profile <ArrowRight size={14} strokeWidth={1.5} />
+                See every stamp <ArrowRight size={14} strokeWidth={1.5} />
               </Link>
             </div>
           </Card>
