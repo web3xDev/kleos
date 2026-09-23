@@ -121,7 +121,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                   transition: `opacity 450ms ${delay + 300}ms, transform 450ms cubic-bezier(0.2,0,0,1) ${delay + 300}ms`,
                 }}
               >
-                <Card hover className="relative overflow-hidden p-4 shadow-[0_6px_20px_rgba(0,0,0,0.28)]">
+                <Card hover className="relative overflow-hidden p-4">
                   {/* A rubber-stamp impression of the seal, pressed on after the card lands */}
                   <span
                     aria-hidden
@@ -132,7 +132,8 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                       transition: `opacity 220ms ease-out ${delay + 800}ms, transform 260ms cubic-bezier(0.3, 0, 0.2, 1.4) ${delay + 800}ms`,
                     }}
                   >
-                    <Mark size={64} />
+                    {/* drop-shadow follows the strokes themselves, not a box */}
+                    <Mark size={64} className="[filter:drop-shadow(0_2px_3px_rgba(0,0,0,0.45))]" />
                   </span>
                   <VerifiedBadge />
                   <div className="mt-3 text-lg font-semibold leading-tight">{stamp.amount}</div>
