@@ -7,7 +7,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Card, Label, Mono, VerifiedBadge } from "@/components/ui";
-import { Mark } from "@/components/mark";
+import { Wordmark } from "@/components/mark";
 import { useInView } from "@/components/reveal";
 
 type StampLite = { amount: string; agentId: number } | null;
@@ -74,7 +74,14 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
               <Mono className="text-tertiary">{st.n}</Mono>
               <span className="text-lg font-semibold">{st.t}</span>
             </div>
-            <Label className="mt-1">{st.who}</Label>
+            {st.who === "Kleos" ? (
+              // Kleos's own step is signed with the logo, same height as the other labels
+              <div className="mt-1 flex h-[18px] items-center">
+                <Wordmark size={14} />
+              </div>
+            ) : (
+              <Label className="mt-1">{st.who}</Label>
+            )}
             <Mono className="mt-4 block text-secondary">{st.sub}</Mono>
             <p className="mt-2 max-w-[26ch] text-sm text-secondary">{st.body}</p>
 
@@ -115,10 +122,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                 }}
               >
                 <Card hover className="p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <VerifiedBadge />
-                    <Mark size={14} landing={active} className="text-tertiary" />
-                  </div>
+                  <VerifiedBadge />
                   <div className="mt-3 text-lg font-semibold leading-tight">{stamp.amount}</div>
                   <Mono className="mt-1 block text-secondary">Agent #{stamp.agentId}</Mono>
                 </Card>
