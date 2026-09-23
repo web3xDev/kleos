@@ -10,6 +10,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { Card, Input, Label, Mono, shortHex } from "@/components/ui";
+import { Mark } from "@/components/mark";
 
 type ExploreAgent = {
   id: number;
@@ -111,7 +112,10 @@ export default function ExplorePage() {
       {featured.length === 1 && (
         <Link href={`/a/${featured[0].id}`} className="group mt-6 block md:max-w-xl">
           <Card hover className="p-5">
-            <Mono className="text-[11px] tracking-[0.14em] text-accent-text">KLEOS · VERIFIED TRACK RECORD</Mono>
+            <div className="flex items-center gap-2">
+              <Mark size={14} className="text-accent" />
+              <Mono className="text-[11px] tracking-[0.14em] text-accent-text">KLEOS · VERIFIED TRACK RECORD</Mono>
+            </div>
             <span aria-hidden className="mt-2 block h-px w-8 bg-accent" />
             <div className="mt-4 flex items-baseline justify-between gap-4">
               <span className="truncate text-lg font-semibold text-primary">{featured[0].name ?? `Agent #${featured[0].id}`}</span>
