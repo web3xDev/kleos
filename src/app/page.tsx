@@ -250,8 +250,10 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-          ) : (
+          ) : loaded ? (
             <div className="p-5 text-sm text-tertiary">No stamps yet. The first one will appear here.</div>
+          ) : (
+            <StampCardSkeleton />
           )}
         </Card>
         </MascotHost>
@@ -475,6 +477,36 @@ function LiveCardSkeleton() {
             <span className="mt-2 inline-flex font-mono text-xs"><Shimmer>Settlement 0x0000…0000</Shimmer></span>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Same markup as the loaded stamp card, text shimmering in place.
+function StampCardSkeleton() {
+  return (
+    <div aria-hidden className="p-5">
+      <div className="flex items-start justify-between gap-4">
+        <span className="h-6 w-20 animate-pulse rounded-full bg-surface-elevated" />
+        <Mark size={16} className="text-surface-elevated" />
+      </div>
+      <div className="mt-5">
+        <div className="text-lg font-semibold leading-tight"><Shimmer>kleos-demo/monad-block</Shimmer></div>
+        <div className="mt-0.5 text-sm"><Shimmer>kleos-demo</Shimmer></div>
+      </div>
+      <div className="mt-6 flex items-end justify-between gap-4">
+        <div>
+          <div className="metric"><Shimmer>$0.01</Shimmer></div>
+          <Label className="mt-1">USDC</Label>
+        </div>
+        <div className="text-right">
+          <span className="block font-mono text-[13px]"><Shimmer>0x000000…000000</Shimmer></span>
+          <Label className="mt-1">Settlement on Monad</Label>
+        </div>
+      </div>
+      <div className="mt-5 flex items-center justify-between border-t border-border-subtle pt-4">
+        <span className="text-xs"><Shimmer>00 min ago</Shimmer></span>
+        <span className="inline-flex items-center gap-1 text-sm"><Shimmer>Agent #0000 →</Shimmer></span>
       </div>
     </div>
   );

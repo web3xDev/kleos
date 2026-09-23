@@ -94,7 +94,16 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
               <Mono className="text-xs text-tertiary">{st.out}</Mono>
             </div>
 
-            {/* the real stamp appears at STAMP */}
+            {/* the real stamp appears at STAMP; until it loads, its space is held (invisible) */}
+            {i === 3 && !stamp && (
+              <div aria-hidden className="invisible mt-5">
+                <Card className="p-4">
+                  <div className="h-6" />
+                  <div className="mt-3 text-lg font-semibold leading-tight">$0.00 USDC</div>
+                  <Mono className="mt-1 block">Agent #0000</Mono>
+                </Card>
+              </div>
+            )}
             {i === 3 && stamp && (
               <Link
                 href={`/a/${stamp.agentId}`}
