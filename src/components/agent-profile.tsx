@@ -177,7 +177,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
 
       {/* Verify (left) and who controls the agent (right), side by side on desktop */}
       <div
-        className={`mt-6 grid gap-8 ${hasVerify ? "lg:grid-cols-[minmax(0,600px)_minmax(0,1fr)] lg:items-start" : ""}`}
+        className={`mt-6 grid gap-8 ${hasVerify ? "lg:grid-cols-[minmax(0,540px)_minmax(0,1fr)] lg:items-start" : ""}`}
       >
         {hasVerify && (
           <div className="min-w-0">
