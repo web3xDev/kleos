@@ -141,8 +141,21 @@ export default function MePage() {
               : "One passkey. No seed phrase, no extension, no account. Your keys are derived from your passkey each time, on any device where it syncs."}
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
-            <Button size="lg" variant="accent" loading={busy} onClick={signIn}>
-              {busy ? "Waiting for passkey" : ended ? "Continue with passkey" : "Sign in with passkey"}
+            <Button size="lg" variant="accent" disabled={busy} onClick={signIn}>
+              {/* The idle labels are stacked invisibly so the button keeps its width;
+                  the waiting state (spinner + "Waiting…") is narrower, so the row
+                  never re-wraps when it is pressed. */}
+              <span className="grid">
+                {["Continue with passkey", "Sign in with passkey"].map((l) => (
+                  <span key={l} aria-hidden className="invisible col-start-1 row-start-1 whitespace-nowrap">
+                    {l}
+                  </span>
+                ))}
+                <span className="col-start-1 row-start-1 inline-flex items-center justify-center gap-2 whitespace-nowrap">
+                  {busy && <Loader2 size={16} strokeWidth={1.5} className="animate-spin" />}
+                  {busy ? "Waiting…" : ended ? "Continue with passkey" : "Sign in with passkey"}
+                </span>
+              </span>
             </Button>
             <Button size="lg" variant="ghost" disabled={busy} onClick={create}>
               New here? Create a passkey
