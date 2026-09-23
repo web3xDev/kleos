@@ -10,7 +10,7 @@ import { ArrowRight, ArrowUpRight, Check, Loader2, X } from "lucide-react";
 import { addresses, chain } from "@/lib/chain";
 import { useSession } from "@/lib/session";
 import { fetchStamps, formatUsdc, verifyStamp, type Check as VerifyCheck, type Stamp } from "@/lib/stamps";
-import { Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components/ui";
+import { Button, Card, Label, Mono, Shimmer, VerifiedBadge, shortHex } from "@/components/ui";
 import { Mark } from "@/components/mark";
 import { Pipeline } from "@/components/pipeline";
 import { Faq } from "@/components/faq";
@@ -182,11 +182,7 @@ export default function Home() {
                     <div className="mt-1 text-xs text-tertiary">The first one will appear here.</div>
                   </>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="h-6 w-40 animate-pulse rounded-[6px] bg-surface-elevated" />
-                    <div className="h-9 w-24 animate-pulse rounded-[6px] bg-surface-elevated" />
-                    <div className="h-10 w-full animate-pulse rounded-[6px] bg-surface-elevated" />
-                  </div>
+                  <LiveCardSkeleton />
                 )}
               </div>
             )}
@@ -442,16 +438,52 @@ export default function Home() {
   );
 }
 
+// Same markup as the loaded live card (identity + latest stamp), text
+// shimmering in place, so the hero does not jump when the record lands.
+function LiveCardSkeleton() {
+  return (
+    <div aria-hidden className="-m-5">
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-lg font-semibold leading-tight"><Shimmer>Agent name</Shimmer></div>
+            <Mono className="mt-1 block"><Shimmer>Agent #0000</Shimmer></Mono>
+          </div>
+          <span className="h-6 w-28 animate-pulse rounded-full bg-surface-elevated" />
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-4">
+          <div>
+            <div className="metric"><Shimmer>00</Shimmer></div>
+            <Label className="mt-1">Verified actions</Label>
+          </div>
+          <div>
+            <div className="metric"><Shimmer>$0.00</Shimmer></div>
+            <Label className="mt-1">USDC settled</Label>
+          </div>
+        </div>
+      </div>
+      <div className="border-t border-border-subtle px-5 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <Label>Latest stamp</Label>
+          <span className="text-xs font-medium"><Shimmer>Verified</Shimmer></span>
+        </div>
+        <div className="mt-3 flex items-start gap-3">
+          <span className="mt-1 h-[14px] w-[14px] shrink-0" />
+          <div className="min-w-0 flex-1">
+            <div className="text-sm"><Shimmer>kleos-demo/monad-block</Shimmer></div>
+            <div className="mt-0.5 text-xs"><Shimmer>0.01 USDC · 0 h ago</Shimmer></div>
+            <span className="mt-2 inline-flex font-mono text-xs"><Shimmer>Settlement 0x0000…0000</Shimmer></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Stat({ value, label }: { value: string | null; label: string }) {
   return (
     <div>
-      {value === null ? (
-        <div className="h-9 w-24 animate-pulse rounded-[6px] bg-surface-elevated" />
-      ) : (
-        <div className="metric">
-          <CountUp value={value} />
-        </div>
-      )}
+      <div className="metric">{value === null ? <Shimmer>0,000</Shimmer> : <CountUp value={value} />}</div>
       <Label className="mt-1">{label}</Label>
     </div>
   );

@@ -10,7 +10,7 @@ import { cachedAgentIds, ensureGas, loadAgent, registerAgent, rememberAgent, typ
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { disconnectRuntime } from "@/lib/pairing";
 import { chain } from "@/lib/chain";
-import { Badge, Button, Card, Input, Label, Mono, shortHex } from "@/components/ui";
+import { Badge, Button, Card, Input, Label, Mono, Shimmer, shortHex } from "@/components/ui";
 import { ConnectRuntime } from "@/components/connect-runtime";
 import { useToast } from "@/components/toast";
 
@@ -262,7 +262,38 @@ export default function MePage() {
         {loadingAgents && agents.length === 0 && (
           <div className="grid gap-4 md:grid-cols-2">
             {[0, 1].map((i) => (
-              <div key={i} className="h-40 animate-pulse rounded-[10px] bg-surface-elevated" />
+              <Card key={i} className="p-5" aria-hidden>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-lg font-semibold leading-tight"><Shimmer>Agent name</Shimmer></div>
+                    <Mono className="mt-1 block"><Shimmer>Agent #0000</Shimmer></Mono>
+                  </div>
+                  <span className="h-6 w-28 animate-pulse rounded-full bg-surface-elevated" />
+                </div>
+                <div className="mt-5 grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="metric"><Shimmer>00</Shimmer></div>
+                    <Label className="mt-1">Verified actions</Label>
+                  </div>
+                  <div>
+                    <div className="metric"><Shimmer>$0.00</Shimmer></div>
+                    <Label className="mt-1">USDC settled</Label>
+                  </div>
+                </div>
+                <dl className="mt-5 space-y-2 border-t border-border-subtle pt-4">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <dt><Label>Runtime</Label></dt>
+                    <dd><Mono><Shimmer>0x0000…0000</Shimmer></Mono></dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4">
+                    <dt><Label>Encryption key</Label></dt>
+                    <dd><Mono><Shimmer>0x000000…000000</Shimmer></Mono></dd>
+                  </div>
+                </dl>
+                <div className="mt-5 flex items-center gap-2">
+                  <span className="h-10 w-40 animate-pulse rounded-[8px] bg-surface-elevated" />
+                </div>
+              </Card>
             ))}
           </div>
         )}
@@ -298,11 +329,11 @@ export default function MePage() {
 
               <div className="mt-5 grid grid-cols-2 gap-4">
                 <div>
-                  <div className="metric">{summary.get(String(a.id))?.actions ?? "–"}</div>
+                  <div className="metric">{summary.has(String(a.id)) ? summary.get(String(a.id))!.actions : <Shimmer>00</Shimmer>}</div>
                   <Label className="mt-1">Verified actions</Label>
                 </div>
                 <div>
-                  <div className="metric">{summary.has(String(a.id)) ? formatUsdc(summary.get(String(a.id))!.usdc) : "–"}</div>
+                  <div className="metric">{summary.has(String(a.id)) ? formatUsdc(summary.get(String(a.id))!.usdc) : <Shimmer>$0.00</Shimmer>}</div>
                   <Label className="mt-1">USDC settled</Label>
                 </div>
               </div>
@@ -311,7 +342,7 @@ export default function MePage() {
                 <p className="mt-4 rounded-[8px] border border-border-subtle bg-background px-3 py-2.5 text-xs text-secondary">
                   <span className="text-primary">Identity ready.</span> Nothing can stamp actions yet. Connect the runtime that runs this agent.
                 </p>
-              ) : (summary.get(String(a.id))?.actions ?? 0) === 0 ? (
+              ) : summary.has(String(a.id)) && summary.get(String(a.id))!.actions === 0 ? (
                 <p className="mt-4 rounded-[8px] border border-border-subtle bg-background px-3 py-2.5 text-xs text-secondary">
                   <span className="text-primary">Ready.</span> Its first paid action will create the first stamp.
                 </p>

@@ -107,6 +107,19 @@ export function Mono({ children, className }: { children: ReactNode; className?:
   return <span className={cx("font-mono text-[13px]", className)}>{children}</span>;
 }
 
+/**
+ * Loading placeholder that takes exactly the space of the text it stands in
+ * for: same font, same line height, text made transparent. Wrap sample text
+ * of the right length inside the real element so nothing shifts on load.
+ */
+export function Shimmer({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <span aria-hidden className={cx("animate-pulse select-none rounded-[4px] bg-surface-elevated text-transparent", className)}>
+      {children}
+    </span>
+  );
+}
+
 export function shortHex(hex: string, head = 6, tail = 4): string {
   if (hex.length <= head + tail + 2) return hex;
   return `${hex.slice(0, head)}…${hex.slice(-tail)}`;

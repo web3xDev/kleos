@@ -17,7 +17,7 @@ import {
   type Check as VerifyCheck,
   type Stamp,
 } from "@/lib/stamps";
-import { ActiveBadge, Badge, Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components/ui";
+import { ActiveBadge, Badge, Button, Card, Label, Mono, Shimmer, VerifiedBadge, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 
 const PAGE = 12;
@@ -112,14 +112,18 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
       {/* Identity */}
       <header className="flex flex-wrap items-start justify-between gap-6">
         <div>
-          {loading && !agent ? (
-            <div className="h-10 w-64 animate-pulse rounded-[8px] bg-surface-elevated" />
-          ) : (
-            <h1 className="text-[40px] font-semibold leading-none tracking-tight">{agent?.name}</h1>
-          )}
+          <h1 className="text-[40px] font-semibold leading-none tracking-tight">
+            {loading && !agent ? <Shimmer>Agent name</Shimmer> : agent?.name}
+          </h1>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <Mono className="text-secondary">Agent #{String(agentId)}</Mono>
-            {agent?.wallet ? <ActiveBadge /> : agent ? <Badge>No runtime</Badge> : null}
+            {agent?.wallet ? (
+              <ActiveBadge />
+            ) : agent ? (
+              <Badge>No runtime</Badge>
+            ) : (
+              <span aria-hidden className="h-6 w-20 animate-pulse rounded-full bg-surface-elevated" />
+            )}
           </div>
           <p className="mt-3 text-sm text-tertiary">
             Owned by a verified passkey{isOwner ? " (you)" : ""}. ERC-8004 identity on {chain.name}.
@@ -133,23 +137,23 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         <Label>Track record</Label>
         <div className="mt-3 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-5">
           <div>
-            <div className="metric">{record.actions}</div>
+            <div className="metric">{loading ? <Shimmer>00</Shimmer> : record.actions}</div>
             <Label className="mt-1">Verified actions</Label>
           </div>
           <div>
-            <div className="metric">{formatUsdc(record.usdc)}</div>
+            <div className="metric">{loading ? <Shimmer>$0.00</Shimmer> : formatUsdc(record.usdc)}</div>
             <Label className="mt-1">USDC settled</Label>
           </div>
           <div>
-            <div className="metric">{record.days}</div>
+            <div className="metric">{loading ? <Shimmer>0</Shimmer> : record.days}</div>
             <Label className="mt-1">Days active</Label>
           </div>
           <div>
-            <div className="metric">{record.tools}</div>
+            <div className="metric">{loading ? <Shimmer>0</Shimmer> : record.tools}</div>
             <Label className="mt-1">Tools</Label>
           </div>
           <div>
-            <div className="metric">{record.platforms}</div>
+            <div className="metric">{loading ? <Shimmer>0</Shimmer> : record.platforms}</div>
             <Label className="mt-1">Platforms</Label>
           </div>
         </div>
@@ -157,7 +161,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           Computed from stamps anchored on Monad. No score, no weighting. Verified actions, not a reputation score.
         </p>
 
-        {stamps.length > 0 && verification.total === 0 && (
+        {(loading || stamps.length > 0) && verification.total === 0 && (
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[10px] border border-border bg-surface-elevated p-5">
             <div>
               <div className="text-sm font-medium text-primary">Anyone can verify this record.</div>
@@ -165,7 +169,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                 Recompute the receipts, check the signatures, anchors and payments directly against Monad. Kleos is not consulted.
               </div>
             </div>
-            <Button variant="accent" onClick={verifyAll} disabled={verification.running} loading={verification.running}>
+            <Button variant="accent" onClick={verifyAll} disabled={loading || verification.running} loading={verification.running}>
               <ShieldCheck size={16} strokeWidth={1.5} />
               Verify this profile
             </Button>
@@ -219,7 +223,11 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         <div>
           <Label>Runtime</Label>
           <div className="mt-2">
-            {agent?.wallet ? (
+            {!agent && loading ? (
+              <Mono>
+                <Shimmer>0x0000000000000000000000000000000000000000</Shimmer>
+              </Mono>
+            ) : agent?.wallet ? (
               <Mono className="text-primary">{agent.wallet}</Mono>
             ) : (
               <span className="text-sm text-tertiary">No runtime connected</span>
@@ -232,7 +240,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         <div>
           <Label>Owner</Label>
           <div className="mt-2">
-            <Mono className="text-primary">{agent ? shortHex(agent.owner, 8, 6) : ""}</Mono>
+            <Mono className="text-primary">{agent ? shortHex(agent.owner, 8, 6) : <Shimmer>0x000000…000000</Shimmer>}</Mono>
           </div>
           <p className="mt-1 text-xs text-tertiary">A passkey-derived address. The person behind it is never revealed.</p>
         </div>
@@ -246,11 +254,20 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         </div>
 
         {loading && stamps.length === 0 && (
-          <div className="mt-4 space-y-2">
+          <ul aria-hidden className="mt-4 divide-y divide-border-subtle overflow-hidden rounded-[10px] border border-border bg-surface">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-16 animate-pulse rounded-[10px] bg-surface-elevated" />
+              <li key={i} className="flex items-center gap-4 px-5 py-4">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium"><Shimmer>kleos-demo/monad-block</Shimmer></div>
+                  <div className="mt-0.5 text-xs"><Shimmer>kleos-demo</Shimmer></div>
+                </div>
+                <Mono><Shimmer>$0.01</Shimmer></Mono>
+                <span className="hidden w-20 text-right text-xs sm:block"><Shimmer>0 h ago</Shimmer></span>
+                <div className="flex w-24 justify-end"><span className="h-6 w-20 animate-pulse rounded-full bg-surface-elevated" /></div>
+                <span className="w-4" />
+              </li>
             ))}
-          </div>
+          </ul>
         )}
 
         {!loading && stamps.length === 0 && (

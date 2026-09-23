@@ -9,7 +9,7 @@ import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Info, Search } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
-import { Card, Input, Label, Mono, shortHex } from "@/components/ui";
+import { Card, Input, Label, Mono, Shimmer, shortHex } from "@/components/ui";
 import { Mark } from "@/components/mark";
 
 type ExploreAgent = {
@@ -29,13 +29,9 @@ const PAGE = 12;
 function Metric({ value, label, accent }: { value: number | string | undefined; label: string; accent?: boolean }) {
   return (
     <div>
-      {value === undefined ? (
-        <div className="h-7 w-16 animate-pulse rounded-[6px] bg-surface-elevated" />
-      ) : (
-        <div className={`text-[24px] font-semibold leading-none tabular-nums ${accent ? "text-accent-text" : "text-primary"}`}>
-          {typeof value === "number" ? value.toLocaleString() : value}
-        </div>
-      )}
+      <div className={`text-[24px] font-semibold leading-none tabular-nums ${accent ? "text-accent-text" : "text-primary"}`}>
+        {value === undefined ? <Shimmer>0,000</Shimmer> : typeof value === "number" ? value.toLocaleString() : value}
+      </div>
       <Label className="mt-1.5">{label}</Label>
     </div>
   );
@@ -192,6 +188,28 @@ export default function ExplorePage() {
       </div>
       <Mono className="mt-2 block text-[10px] tracking-[0.14em] text-tertiary">ON-CHAIN DATA · ERC-8004 REGISTRY + KLEOS STAMPS</Mono>
 
+      {/* Before the scan lands, hold the space of one record card so the table does not jump */}
+      {!data && !error && (
+        <section className="mt-6" aria-hidden>
+          <div className="flex items-center gap-2 pb-[9px]">
+            <Mark size={18} className="text-surface-elevated" />
+            <Mono className="text-[11px] leading-none tracking-[0.14em]">
+              <Shimmer>AGENT WITH A KLEOS TRACK RECORD</Shimmer>
+            </Mono>
+          </div>
+          <div className="mt-4 grid gap-3 md:max-w-xl">
+            <Card className="p-5">
+              <div className="flex items-baseline justify-between gap-4">
+                <span className="text-lg font-semibold"><Shimmer>Agent name here</Shimmer></span>
+                <Mono><Shimmer>#0000</Shimmer></Mono>
+              </div>
+              <Mono className="mt-1 block text-[13px]"><Shimmer>00 verified actions · $0.00 settled</Shimmer></Mono>
+              <div className="mt-3 text-xs"><Shimmer>Last stamp 0 h ago</Shimmer></div>
+            </Card>
+          </div>
+        </section>
+      )}
+
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
         <section className="mt-6">
@@ -252,12 +270,32 @@ export default function ExplorePage() {
         {error && <p className="mt-4 text-sm text-error">{error}</p>}
 
         {!data && !error && (
-          <div className="mt-4 space-y-2">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-14 animate-pulse rounded-[10px] bg-surface-elevated" />
-            ))}
-            <p className="pt-2 text-xs text-tertiary">Reading Monad&apos;s agent registry… The first scan can take a little longer.</p>
-          </div>
+          <Card className="mt-4 overflow-hidden" aria-busy>
+            <div className="hidden grid-cols-[1fr_150px_120px_130px_24px] items-center gap-4 border-b border-border-subtle px-5 py-3 md:grid">
+              <Label>Agent</Label>
+              <Label>Agent wallet</Label>
+              <Label className="text-right">Verified actions</Label>
+              <Label className="text-right">Owner</Label>
+              <span />
+            </div>
+            <ul className="divide-y divide-border-subtle">
+              {Array.from({ length: PAGE }, (_, i) => (
+                <li key={i} className="grid grid-cols-[1fr_auto_16px] items-center gap-4 px-5 py-3.5 md:grid-cols-[1fr_150px_120px_130px_24px]">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium"><Shimmer>Agent #0000</Shimmer></div>
+                    <Mono className="text-xs"><Shimmer>#0000</Shimmer></Mono>
+                  </div>
+                  <div className="hidden md:block"><Mono><Shimmer>0x0000…0000</Shimmer></Mono></div>
+                  <div className="text-right"><Mono><Shimmer>0</Shimmer></Mono></div>
+                  <div className="hidden text-right md:block"><Mono><Shimmer>0x0000…0000</Shimmer></Mono></div>
+                  <span />
+                </li>
+              ))}
+            </ul>
+            <div className="flex h-[61px] items-center border-t border-border-subtle px-5 text-xs text-tertiary">
+              Reading Monad&apos;s agent registry… The first scan can take a little longer.
+            </div>
+          </Card>
         )}
 
         {data && (
