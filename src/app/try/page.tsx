@@ -177,7 +177,20 @@ export default function TryPage() {
 
       {/* The point of the run: the record moved */}
       {profile && (
-        <Card className="mt-8 p-6">
+        <Card className="relative mt-8 p-6">
+          {/* traced once around the card as it appears, then stays as its border */}
+          <svg aria-hidden className="trace-border pointer-events-none absolute -inset-px h-[calc(100%+2px)] w-[calc(100%+2px)] overflow-visible">
+            <rect
+              x="0.5"
+              y="0.5"
+              rx="9.5"
+              pathLength={1}
+              fill="none"
+              stroke="var(--accent)"
+              strokeWidth="1"
+              style={{ width: "calc(100% - 1px)", height: "calc(100% - 1px)" }}
+            />
+          </svg>
           <div className="flex items-center gap-2">
             <Mark size={16} className="text-accent" />
             <Mono className="text-[11px] tracking-[0.14em] text-primary">KLEOS</Mono>
