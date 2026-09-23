@@ -4,7 +4,7 @@
 // component, two modes: public (answers locked) and owner (answers open).
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Check, ChevronDown, Minus, ChevronLeft, ChevronRight, ChevronUp, Loader2, Lock, ShieldCheck, X } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, Minus, ChevronLeft, ChevronRight, Loader2, Lock, ShieldCheck, X } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { loadAgent, type Agent } from "@/lib/agents";
 import { chain } from "@/lib/chain";
@@ -358,107 +358,114 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                   <div className="w-24 text-right">
                     {ok === true ? <VerifiedBadge /> : ok === false ? <Badge tone="error">Failed</Badge> : null}
                   </div>
-                  {isOpen ? <ChevronUp size={16} className="text-tertiary" /> : <ChevronDown size={16} className="text-tertiary" />}
+                  <ChevronDown size={16} className={`text-tertiary transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {isOpen && (
-                  <div className="border-t border-border-subtle bg-surface-elevated px-5 py-5">
-                    <dl className="grid gap-x-8 gap-y-3 text-sm md:grid-cols-2">
-                      <Row label="Tool" value={s.receipt.tool} />
-                      <Row label="Platform" value={s.receipt.platform} />
-                      <Row label="Amount" value={formatUsdc(BigInt(s.receipt.amount))} />
-                      <Row label="Timestamp" value={new Date(s.receipt.timestamp * 1000).toISOString().replace("T", " ").slice(0, 19) + " UTC"} />
-                      <Row
-                        label="Settlement"
-                        value={shortHex(s.receipt.settlementTx, 10, 8)}
-                        href={`${chain.blockExplorers.default.url}/tx/${s.receipt.settlementTx}`}
-                      />
-                      <Row label="Receipt hash" value={shortHex(s.receiptHash, 10, 8)} />
-                      <Row
-                        label="Signer"
-                        value={shortHex(s.receipt.wallet)}
-                        href={`${chain.blockExplorers.default.url}/address/${s.receipt.wallet}`}
-                      />
-                      <Row label="Answer hash" value={shortHex(s.receipt.answerHash, 10, 8)} />
-                      {s.receipt.v === 2 && (
-                        <Row
-                          label="Countersigned by"
-                          value={shortHex(s.receipt.payTo)}
-                          href={`${chain.blockExplorers.default.url}/address/${s.receipt.payTo}`}
-                        />
-                      )}
-                    </dl>
+                {/* Always mounted so it can animate both ways: height 0fr ↔ 1fr, with a fade */}
+                <div
+                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                  aria-hidden={!isOpen}
+                  inert={!isOpen}
+                >
+                  <div className="min-h-0 overflow-hidden">
+                      <div className="border-t border-border-subtle bg-surface-elevated px-5 py-5">
+                        <dl className="grid gap-x-8 gap-y-3 text-sm md:grid-cols-2">
+                          <Row label="Tool" value={s.receipt.tool} />
+                          <Row label="Platform" value={s.receipt.platform} />
+                          <Row label="Amount" value={formatUsdc(BigInt(s.receipt.amount))} />
+                          <Row label="Timestamp" value={new Date(s.receipt.timestamp * 1000).toISOString().replace("T", " ").slice(0, 19) + " UTC"} />
+                          <Row
+                            label="Settlement"
+                            value={shortHex(s.receipt.settlementTx, 10, 8)}
+                            href={`${chain.blockExplorers.default.url}/tx/${s.receipt.settlementTx}`}
+                          />
+                          <Row label="Receipt hash" value={shortHex(s.receiptHash, 10, 8)} />
+                          <Row
+                            label="Signer"
+                            value={shortHex(s.receipt.wallet)}
+                            href={`${chain.blockExplorers.default.url}/address/${s.receipt.wallet}`}
+                          />
+                          <Row label="Answer hash" value={shortHex(s.receipt.answerHash, 10, 8)} />
+                          {s.receipt.v === 2 && (
+                            <Row
+                              label="Countersigned by"
+                              value={shortHex(s.receipt.payTo)}
+                              href={`${chain.blockExplorers.default.url}/address/${s.receipt.payTo}`}
+                            />
+                          )}
+                        </dl>
 
-                    {checks && (
-                      <ul className="mt-4 space-y-1 text-xs">
-                        {checks.map((c) => (
-                          <li key={c.label} className="flex items-center gap-2">
-                            {c.ok === null ? (
-                              <Minus size={12} className="text-tertiary" />
-                            ) : c.ok ? (
-                              <Check size={12} className="text-success" />
-                            ) : (
-                              <X size={12} className="text-error" />
-                            )}
-                            <span className={c.ok === null ? "text-tertiary" : c.ok ? "text-secondary" : "text-error"}>
-                              {c.ok === null ? "Not countersigned (made before countersigning)" : c.label}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    <div className="mt-5">
-                      <Label>Answer</Label>
-                      {isOwner ? (
-                        d ? (
-                          <div className="mt-2">
-                            <JsonView value={d.answer || "(could not decrypt)"} className="max-h-64" />
-                            <div className="mt-2 flex items-center gap-2 text-xs">
-                              {d.hashMatches ? (
-                                <>
+                        {checks && (
+                          <ul className="mt-4 space-y-1 text-xs">
+                            {checks.map((c) => (
+                              <li key={c.label} className="flex items-center gap-2">
+                                {c.ok === null ? (
+                                  <Minus size={12} className="text-tertiary" />
+                                ) : c.ok ? (
                                   <Check size={12} className="text-success" />
-                                  <span className="text-secondary">Answer hash matches the anchored receipt</span>
-                                </>
-                              ) : (
-                                <>
-                                  <X size={12} className="text-error" />
-                                  <span className="text-error">Hash does not match</span>
-                                </>
-                              )}
-                            </div>
-                            {d.toolCommitMatches !== null && (
-                              <div className="mt-1 flex items-center gap-2 text-xs">
-                                {d.toolCommitMatches ? (
-                                  <>
-                                    <Check size={12} className="text-success" />
-                                    <span className="text-secondary">The tool committed to this exact answer</span>
-                                  </>
                                 ) : (
-                                  <>
-                                    <X size={12} className="text-error" />
-                                    <span className="text-error">Does not match the tool&apos;s commitment</span>
-                                  </>
+                                  <X size={12} className="text-error" />
+                                )}
+                                <span className={c.ok === null ? "text-tertiary" : c.ok ? "text-secondary" : "text-error"}>
+                                  {c.ok === null ? "Not countersigned (made before countersigning)" : c.label}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        <div className="mt-5">
+                          <Label>Answer</Label>
+                          {isOwner ? (
+                            d ? (
+                              <div className="mt-2">
+                                <JsonView value={d.answer || "(could not decrypt)"} className="max-h-64" />
+                                <div className="mt-2 flex items-center gap-2 text-xs">
+                                  {d.hashMatches ? (
+                                    <>
+                                      <Check size={12} className="text-success" />
+                                      <span className="text-secondary">Answer hash matches the anchored receipt</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <X size={12} className="text-error" />
+                                      <span className="text-error">Hash does not match</span>
+                                    </>
+                                  )}
+                                </div>
+                                {d.toolCommitMatches !== null && (
+                                  <div className="mt-1 flex items-center gap-2 text-xs">
+                                    {d.toolCommitMatches ? (
+                                      <>
+                                        <Check size={12} className="text-success" />
+                                        <span className="text-secondary">The tool committed to this exact answer</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <X size={12} className="text-error" />
+                                        <span className="text-error">Does not match the tool&apos;s commitment</span>
+                                      </>
+                                    )}
+                                  </div>
                                 )}
                               </div>
-                            )}
-                          </div>
-                        ) : (
-                          <Button variant="secondary" className="mt-2" onClick={() => decrypt(s)}>
-                            Decrypt with passkey
-                          </Button>
-                        )
-                      ) : (
-                        <div className="mt-2 flex items-start gap-2 text-sm text-tertiary">
-                          <Lock size={14} strokeWidth={1.5} className="mt-0.5 shrink-0" />
-                          <span>
-                            <span className="text-secondary">Private answer.</span> Encrypted to the agent owner&apos;s passkey. Kleos cannot read it.
-                          </span>
+                            ) : (
+                              <Button variant="secondary" className="mt-2" onClick={() => decrypt(s)}>
+                                Decrypt with passkey
+                              </Button>
+                            )
+                          ) : (
+                            <div className="mt-2 flex items-start gap-2 text-sm text-tertiary">
+                              <Lock size={14} strokeWidth={1.5} className="mt-0.5 shrink-0" />
+                              <span>
+                                <span className="text-secondary">Private answer.</span> Encrypted to the agent owner&apos;s passkey. Kleos cannot read it.
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      </div>
                   </div>
-                )}
+                </div>
               </li>
             );
           })}
