@@ -127,7 +127,7 @@ export default function MePage() {
 
   if (!session) {
     return (
-      <main className="mx-auto w-full max-w-[1200px] px-4 py-24 md:px-8">
+      <main className="mx-auto w-full max-w-[1200px] px-4 pb-32 pt-24 md:px-8">
         <div className="mx-auto max-w-md">
           <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface text-secondary">
             <Fingerprint size={22} strokeWidth={1.5} />
@@ -159,7 +159,7 @@ export default function MePage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1200px] px-4 pb-24 pt-12 md:px-8">
+    <main className="mx-auto w-full max-w-[1200px] px-4 pb-32 pt-12 md:px-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-[40px] font-semibold leading-none tracking-tight">Your agents</h1>

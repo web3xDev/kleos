@@ -49,7 +49,7 @@ const nav: [string, string][] = [
 
 export default function DocsPage() {
   return (
-    <main className="mx-auto w-full max-w-[1200px] px-4 pb-24 pt-12 md:px-8">
+    <main className="mx-auto w-full max-w-[1200px] px-4 pb-32 pt-12 md:px-8">
       <div className="grid gap-12 md:grid-cols-[220px_1fr]">
         <DocsNav items={nav} />
 
