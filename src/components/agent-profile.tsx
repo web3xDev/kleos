@@ -4,7 +4,7 @@
 // component, two modes: public (answers locked) and owner (answers open).
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, Lock, ShieldCheck, X } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, Lock, ShieldCheck, X } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { loadAgent, type Agent } from "@/lib/agents";
 import { chain } from "@/lib/chain";
@@ -231,7 +231,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                 <Shimmer>0x0000000000000000000000000000000000000000</Shimmer>
               </Mono>
             ) : agent?.wallet ? (
-              <Mono className="text-primary">{agent.wallet}</Mono>
+              <AddressLink address={agent.wallet} />
             ) : (
               <span className="text-sm text-tertiary">No runtime</span>
             )}
@@ -243,7 +243,13 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         <div>
           <Label>Owner</Label>
           <div className="mt-2">
-            <Mono className="text-primary">{agent ? shortHex(agent.owner, 8, 6) : <Shimmer>0x000000…000000</Shimmer>}</Mono>
+            {agent ? (
+              <AddressLink address={agent.owner} />
+            ) : (
+              <Mono className="text-primary">
+                <Shimmer>0x000000…000000</Shimmer>
+              </Mono>
+            )}
           </div>
           <p className="mt-1 text-xs text-tertiary">A passkey-derived address. The person behind it is never revealed.</p>
         </div>
@@ -321,7 +327,11 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                         href={`${chain.blockExplorers.default.url}/tx/${s.receipt.settlementTx}`}
                       />
                       <Row label="Receipt hash" value={shortHex(s.receiptHash, 10, 8)} />
-                      <Row label="Signer" value={shortHex(s.receipt.wallet)} />
+                      <Row
+                        label="Signer"
+                        value={shortHex(s.receipt.wallet)}
+                        href={`${chain.blockExplorers.default.url}/address/${s.receipt.wallet}`}
+                      />
                       <Row label="Answer hash" value={shortHex(s.receipt.answerHash, 10, 8)} />
                     </dl>
 
@@ -403,6 +413,20 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   );
 }
 
+// An address that opens on the explorer, with the shared arrow hover.
+function AddressLink({ address }: { address: string }) {
+  return (
+    <a
+      href={`${chain.blockExplorers.default.url}/address/${address}`}
+      target="_blank"
+      rel="noreferrer"
+      className="group inline-flex items-center gap-1 font-mono text-[13px] text-primary"
+    >
+      {shortHex(address, 8, 6)} <ArrowUpRight size={12} strokeWidth={1.5} className="text-tertiary group-hover:text-primary" />
+    </a>
+  );
+}
+
 function Row({ label, value, href }: { label: string; value: string; href?: string }) {
   return (
     <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
@@ -411,8 +435,8 @@ function Row({ label, value, href }: { label: string; value: string; href?: stri
       </dt>
       <dd className="truncate">
         {href ? (
-          <a href={href} target="_blank" rel="noreferrer" className="font-mono text-[13px] text-primary underline-offset-2 underline decoration-transparent underline-offset-2 hover:decoration-current">
-            {value}
+          <a href={href} target="_blank" rel="noreferrer" className="group inline-flex items-center gap-1 font-mono text-[13px] text-primary">
+            {value} <ArrowUpRight size={12} strokeWidth={1.5} className="text-tertiary group-hover:text-primary" />
           </a>
         ) : (
           <Mono className="text-primary">{value}</Mono>
