@@ -21,6 +21,7 @@ import {
 } from "@/lib/stamps";
 import { ActiveBadge, Badge, Button, Card, Label, Mono, Shimmer, VerifiedBadge, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
+import { SmoothHeight } from "@/components/smooth-height";
 
 const PAGE = 12;
 
@@ -180,9 +181,9 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         className={`mt-6 grid gap-8 ${hasVerify ? "lg:grid-cols-[minmax(0,540px)_minmax(0,1fr)] lg:items-start" : ""}`}
       >
         {hasVerify && (
-          <div className="min-w-0">
+          <SmoothHeight className="min-w-0">
             {(loading || stamps.length > 0) && verification.total === 0 && (
-              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[10px] border border-border bg-surface-elevated p-5">
+              <div className="fade-in flex flex-wrap items-center justify-between gap-4 rounded-[10px] border border-border bg-surface-elevated p-5">
                 <div>
                   <div className="text-sm font-medium text-primary">Anyone can verify this record.</div>
                   <div className="mt-1 text-sm text-secondary">
@@ -197,7 +198,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             )}
 
             {verification.total > 0 && (
-              <Card className="bg-surface-elevated p-5">
+              <Card className="fade-in bg-surface-elevated p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="text-sm font-medium">
                     {verification.running ? "Verifying record" : allVerified ? "Record independently verified" : "Verification finished"}
@@ -258,7 +259,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             )}
 
 
-          </div>
+          </SmoothHeight>
         )}
         <div className={`grid gap-6 ${hasVerify ? "md:grid-cols-2 lg:grid-cols-1" : "md:grid-cols-2"}`}>
         <div>

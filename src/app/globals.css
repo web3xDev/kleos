@@ -187,3 +187,12 @@ button:hover svg.lucide-arrow-up-right {
   to { stroke-dashoffset: 0; }
 }
 
+
+/* Content that replaces other content in place (e.g. verify → results) fades in. */
+.fade-in {
+  animation: fade-in 320ms ease-out both;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
