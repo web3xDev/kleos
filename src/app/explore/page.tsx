@@ -161,10 +161,9 @@ export default function ExplorePage() {
         <Metric value={data?.total} label="Registered" />
         <Metric value={data?.withTrackRecord} label="With a track record" accent />
         <Metric value={data?.totalStamps} label="Verified actions" />
-        <Metric value={data ? viaKleos : undefined} label="Via Kleos" />
+        <Metric value={data ? viaKleos : undefined} label="Registered via Kleos" />
       </div>
 
-      {/* Agents with a track record: a highlight line when there is one, compact cards when more */}
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
         <section className="mt-6">
