@@ -168,11 +168,6 @@ export default function ExplorePage() {
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
         <section className="mt-6">
-          {previewCount > 0 && (
-            <div className="mb-3 rounded-[8px] border border-warning/40 bg-warning-muted px-3 py-2 font-mono text-xs text-warning">
-              PREVIEW · {previewCount} placeholder records for layout only (dev build)
-            </div>
-          )}
           <div className="inline-flex flex-col">
             <div className="flex items-center gap-2">
               <Mark size={14} className="text-accent" />
