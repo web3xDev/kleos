@@ -25,11 +25,17 @@ export function receiptHashOf(pub: ReceiptPublic): `0x${string}` {
   return receiptHash(pub);
 }
 
+/**
+ * An agent's anchored stamps. Throws when the list cannot be read (after one
+ * retry): callers must not mistake "could not read" for "has no stamps".
+ */
 export async function fetchStamps(agentId: bigint): Promise<Stamp[]> {
-  const res = await fetch(`/api/stamps?agentId=${agentId}`);
-  if (!res.ok) return [];
-  const { stamps } = (await res.json()) as { stamps: Stamp[] };
-  return stamps;
+  for (const wait of [0, 1000]) {
+    if (wait) await new Promise((r) => setTimeout(r, wait));
+    const res = await fetch(`/api/stamps?agentId=${agentId}`).catch(() => null);
+    if (res?.ok) return ((await res.json()) as { stamps: Stamp[] }).stamps;
+  }
+  throw new Error("could not read stamps");
 }
 
 /** ok: null means "not applicable" (a v1 stamp has no countersignature); it never fails a stamp. */

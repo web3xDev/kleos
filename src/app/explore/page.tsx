@@ -137,6 +137,7 @@ export default function ExplorePage() {
     return [...real, ...fake];
   }, [data, previewCount]);
 
+  const [settledFailed, setSettledFailed] = useState(false);
   const recorded = useMemo(() => (data ? data.agents.filter((a) => a.stamps > 0) : []), [data]);
 
   useEffect(() => {
@@ -152,7 +153,9 @@ export default function ExplorePage() {
           },
         ] as const;
       }),
-    ).then((pairs) => setSettled(new Map(pairs)));
+    )
+      .then((pairs) => setSettled(new Map(pairs)))
+      .catch(() => setSettledFailed(true));
   }, [recorded]);
 
   const rows = useMemo(() => {
@@ -171,7 +174,7 @@ export default function ExplorePage() {
 
   // Network USDC settled, shown once every recorded agent's stamps are read.
   const settledTotal =
-    recorded.length > 0 && settled.size === recorded.length ? formatUsdc([...settled.values()].reduce((t, v) => t + v.usdc, 0n)) : data && recorded.length === 0 ? "$0" : undefined;
+    settledFailed ? "–" : recorded.length > 0 && settled.size === recorded.length ? formatUsdc([...settled.values()].reduce((t, v) => t + v.usdc, 0n)) : data && recorded.length === 0 ? "$0" : undefined;
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 pb-32 pt-10 md:px-8">

@@ -40,6 +40,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   const [notFound, setNotFound] = useState(false);
   const [stamps, setStamps] = useState<Stamp[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stampsError, setStampsError] = useState(false);
   const [openStamp, setOpenStamp] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [verification, setVerification] = useState<Verification>({ running: false, results: new Map(), done: 0, total: 0 });
@@ -50,10 +51,14 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [a, s] = await Promise.all([loadAgent(publicClient, agentId).catch(() => null), fetchStamps(agentId)]);
+      const [a, s] = await Promise.all([
+        loadAgent(publicClient, agentId).catch(() => null),
+        fetchStamps(agentId).catch(() => null),
+      ]);
       if (!a) setNotFound(true);
       setAgent(a);
-      setStamps(s);
+      setStampsError(s === null);
+      setStamps(s ?? []);
     } finally {
       setLoading(false);
     }
@@ -143,23 +148,23 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         <Label>Track record</Label>
         <div className="mt-3 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-5">
           <div>
-            <div className="metric">{loading ? <Shimmer>00</Shimmer> : record.actions}</div>
+            <div className="metric">{loading ? <Shimmer>00</Shimmer> : stampsError ? "–" : record.actions}</div>
             <Label className="mt-1">Verified actions</Label>
           </div>
           <div>
-            <div className="metric">{loading ? <Shimmer>$0.00</Shimmer> : formatUsdc(record.usdc)}</div>
+            <div className="metric">{loading ? <Shimmer>$0.00</Shimmer> : stampsError ? "–" : formatUsdc(record.usdc)}</div>
             <Label className="mt-1">USDC settled</Label>
           </div>
           <div>
-            <div className="metric">{loading ? <Shimmer>0</Shimmer> : record.days}</div>
+            <div className="metric">{loading ? <Shimmer>0</Shimmer> : stampsError ? "–" : record.days}</div>
             <Label className="mt-1">Days active</Label>
           </div>
           <div>
-            <div className="metric">{loading ? <Shimmer>0</Shimmer> : record.tools}</div>
+            <div className="metric">{loading ? <Shimmer>0</Shimmer> : stampsError ? "–" : record.tools}</div>
             <Label className="mt-1">Tools</Label>
           </div>
           <div>
-            <div className="metric">{loading ? <Shimmer>0</Shimmer> : record.platforms}</div>
+            <div className="metric">{loading ? <Shimmer>0</Shimmer> : stampsError ? "–" : record.platforms}</div>
             <Label className="mt-1">Platforms</Label>
           </div>
         </div>
@@ -303,7 +308,14 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           </ul>
         )}
 
-        {!loading && stamps.length === 0 && (
+        {!loading && stampsError && (
+          <Card className="mt-4 p-10 text-center">
+            <p className="text-secondary">Could not load the stamps right now.</p>
+            <p className="mt-1 text-sm text-tertiary">Refresh the page to try again. Nothing here is lost: every stamp is anchored on Monad.</p>
+          </Card>
+        )}
+
+        {!loading && !stampsError && stamps.length === 0 && (
           <Card className="mt-4 p-10 text-center">
             <p className="text-secondary">No track record yet.</p>
             <p className="mt-1 text-sm text-tertiary">
