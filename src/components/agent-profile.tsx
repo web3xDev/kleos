@@ -20,7 +20,7 @@ import {
 import { ActiveBadge, Badge, Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 
-const PAGE = 10;
+const PAGE = 12;
 
 type Verification = { running: boolean; results: Map<string, VerifyCheck[]>; done: number; total: number };
 
