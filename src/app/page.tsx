@@ -419,7 +419,7 @@ export default function Home() {
         <Faq />
       </section>
 
-      {/* Closing: centered, with a faint purple atmosphere rising from the bottom */}
+      {/* Closing: centered, with a faint purple atmosphere behind the headline */}
       <section className="relative pt-16 pb-24 md:pt-28 md:pb-36">
         <ClosingGlow />
         <div className="relative mx-auto max-w-2xl text-center">
