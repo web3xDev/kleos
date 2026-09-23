@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Loader2, Play, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Loader2, Play, X } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
@@ -164,9 +164,9 @@ export default function TryPage() {
                             href={`${chain.blockExplorers.default.url}/tx/${r.detail}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="font-mono text-xs text-secondary underline decoration-transparent underline-offset-2 hover:text-primary hover:decoration-current"
+                            className="inline-flex items-center gap-1 font-mono text-xs text-secondary hover:text-primary"
                           >
-                            {shortHex(r.detail, 12, 10)} ↗
+                            {shortHex(r.detail, 12, 10)} <ArrowUpRight size={12} strokeWidth={1.5} />
                           </a>
                         ) : r.key === "stamp" && r.detail.startsWith("0x") ? (
                           <Mono className="text-xs text-secondary">
