@@ -204,7 +204,7 @@ export class Stamper {
   async stamp(input: StampInput): Promise<StampResult> {
     // Fresh salt per stamp: the public answerHash stays opaque even for
     // short or guessable answers. It travels in the sealed body.
-    const answerSalt = bytesToHex(randomBytes(32)) as `0x${string}`;
+    const answerSalt = `0x${bytesToHex(randomBytes(32))}` as const;
     const pub: ReceiptPublic = {
       v: 1,
       network: this.network,

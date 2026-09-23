@@ -111,7 +111,7 @@ export function decryptStamp(stamp: Stamp, privateKey: Uint8Array): { answer: st
   // The hash is keccak256(salt || answer). Stamps written before salts
   // existed carry no salt and hash the answer alone.
   const computed = body.answerSalt
-    ? keccak256(concat([body.answerSalt, toBytes(body.answer)]))
+    ? keccak256(concat([toBytes(body.answerSalt), toBytes(body.answer)]))
     : keccak256(toBytes(body.answer));
   return { answer: body.answer, request: body.request, hashMatches: computed.toLowerCase() === stamp.receipt.answerHash.toLowerCase() };
 }

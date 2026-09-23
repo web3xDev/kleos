@@ -62,7 +62,7 @@ export function receiptHash(pub: ReceiptPublic): Hex {
  * short or predictable.
  */
 export function answerHash(answer: string, salt: Hex): Hex {
-  return keccak256(concat([salt, toBytes(answer)]));
+  return keccak256(concat([toBytes(salt), toBytes(answer)]));
 }
 
 /** What the runtime signs: EIP-191 over the canonical receipt hash. */
