@@ -28,7 +28,8 @@ export default function MePage() {
   const [name, setName] = useState("");
   const [progress, setProgress] = useState<Progress>("idle");
   const [txError, setTxError] = useState<string | null>(null);
-  const [ended, setEnded] = useState(false);
+  // null until the tab's session flag is read, so the title never flashes.
+  const [ended, setEnded] = useState<boolean | null>(null);
   const [showRegister, setShowRegister] = useState(false);
   const [connecting, setConnecting] = useState<Agent | null>(null);
   const [summary, setSummary] = useState<Map<string, { actions: number; usdc: bigint }>>(new Map());
@@ -131,10 +132,10 @@ export default function MePage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface text-secondary">
             <Fingerprint size={22} strokeWidth={1.5} />
           </div>
-          <h1 className="mt-6 text-[40px] font-semibold leading-none tracking-tight">
+          <h1 className={`mt-6 text-[40px] font-semibold leading-none tracking-tight ${ended === null ? "invisible" : ""}`}>
             {ended ? "Your session ended" : "Sign in to Kleos"}
           </h1>
-          <p className="mt-4 text-secondary">
+          <p className={`mt-4 text-secondary ${ended === null ? "invisible" : ""}`}>
             {ended
               ? "Your agents are onchain. Your session is not. Your signing and encryption keys live in memory only; reloading clears them by design. One Touch ID restores the same keys."
               : "One passkey. No seed phrase, no extension, no account. Your keys are derived from your passkey each time, on any device where it syncs."}

@@ -172,7 +172,7 @@ export default function ExplorePage() {
             <div className="flex items-center gap-2">
               <Mark size={14} className="text-accent" />
               <Mono className="text-[11px] tracking-[0.14em] text-primary">
-                KLEOS · VERIFIED TRACK RECORD{featured.length > 1 ? "S" : ""}
+                {featured.length > 1 ? "AGENTS WITH A TRACK RECORD" : "AGENT WITH A TRACK RECORD"}
               </Mono>
             </div>
             <span aria-hidden className="mt-2 block h-px w-full bg-accent" />
@@ -203,8 +203,8 @@ export default function ExplorePage() {
             {(
               [
                 ["all", "All"],
-                ["record", "Track record"],
-                ["kleos", "Via Kleos"],
+                ["record", "With track record"],
+                ["kleos", "Registered via Kleos"],
               ] as [Filter, string][]
             ).map(([k, label]) => (
               <button
