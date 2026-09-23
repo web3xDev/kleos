@@ -23,7 +23,7 @@ type ExploreData = { total: number; withTrackRecord: number; totalStamps: number
 
 type Filter = "all" | "record" | "kleos";
 
-const PAGE = 24;
+const PAGE = 10;
 
 function Metric({ value, label, accent }: { value: number | undefined; label: string; accent?: boolean }) {
   return (
