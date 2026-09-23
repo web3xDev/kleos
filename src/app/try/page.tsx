@@ -10,6 +10,7 @@ import { chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 import { Mark } from "@/components/mark";
+import { TraceBorder } from "@/components/trace-border";
 
 type Status = "idle" | "start" | "done" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
@@ -178,11 +179,7 @@ export default function TryPage() {
       {/* The point of the run: the record moved */}
       {profile && (
         <Card className="relative mt-8 p-6">
-          {/* traced once around the card as it appears, then stays as its border */}
-          {/* inset -0.5px puts the stroke's center on the card's 1px border */}
-          <svg aria-hidden className="trace-border pointer-events-none absolute -inset-[0.5px] h-[calc(100%+1px)] w-[calc(100%+1px)] overflow-visible">
-            <rect width="100%" height="100%" rx="9.5" pathLength={1} fill="none" stroke="var(--accent)" strokeWidth="1" />
-          </svg>
+          <TraceBorder />
           <div className="flex items-center gap-2">
             <Mark size={16} className="text-accent" />
             <Mono className="text-[11px] tracking-[0.14em] text-primary">KLEOS</Mono>

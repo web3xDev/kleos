@@ -187,19 +187,3 @@ button:hover svg.lucide-arrow-up-right {
   to { stroke-dashoffset: 0; }
 }
 
-/* A purple line traced once around a card as it appears (the Try result).
-   Starts at the top-left, runs clockwise, and stays as the card's border. */
-.trace-border rect {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: trace-border 1100ms cubic-bezier(0.4, 0, 0.2, 1) 150ms forwards;
-}
-@keyframes trace-border {
-  to { stroke-dashoffset: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .trace-border rect {
-    animation: none;
-    stroke-dashoffset: 0;
-  }
-}
