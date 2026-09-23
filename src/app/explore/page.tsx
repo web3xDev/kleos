@@ -198,7 +198,7 @@ export default function ExplorePage() {
           {/* One centered row; the accent rule hangs under the label only, not the info icon */}
           <div className="flex items-center gap-2 pb-[9px]">
             <div className="relative flex items-center gap-2">
-              <Mark size={14} className="text-accent" />
+              <Mark size={18} className="text-accent" />
               <Mono className="text-[11px] leading-none tracking-[0.14em] text-primary">
                 {featured.length > 1 ? "AGENTS WITH A KLEOS TRACK RECORD" : "AGENT WITH A KLEOS TRACK RECORD"}
               </Mono>
