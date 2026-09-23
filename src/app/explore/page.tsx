@@ -163,6 +163,7 @@ export default function ExplorePage() {
         <Metric value={data?.totalStamps} label="Verified actions" />
         <Metric value={data ? viaKleos : undefined} label="Registered via Kleos" />
       </div>
+      <Mono className="mt-2 block text-[10px] tracking-[0.14em] text-tertiary">ON-CHAIN DATA · ERC-8004 REGISTRY + KLEOS STAMPS</Mono>
 
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
@@ -305,7 +306,6 @@ export default function ExplorePage() {
             )}
           </Card>
         )}
-        <p className="mt-4 text-xs text-tertiary">Read from the ERC-8004 registry and KleosStamps on Monad. Nothing here is self-reported.</p>
       </section>
     </main>
   );
