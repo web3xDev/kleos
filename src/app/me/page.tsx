@@ -163,8 +163,7 @@ export default function MePage() {
           </div>
           {error && <p className="mt-4 text-sm text-error">{error}</p>}
           <p className="mt-10 text-xs text-tertiary">
-            Works in Safari and with Google Password Manager. Chrome&apos;s own passkey store does not support the
-            key-derivation feature Kleos relies on.
+            Works with passkeys saved in iCloud Keychain or Google Password Manager.
           </p>
         </div>
       </main>
