@@ -107,15 +107,38 @@ export async function registerAgent(input: {
 }
 
 /** Read one agent straight from the registry. */
+/**
+ * One agent's identity, in a single multicall (one RPC request instead of
+ * five, so the public RPC's rate limit is not hit when several agents load).
+ * Retries transient failures; throws only if the chain keeps refusing.
+ */
 export async function loadAgent(publicClient: PublicClient, id: bigint): Promise<Agent> {
+  let lastError: unknown;
+  for (const wait of [0, 400, 1200]) {
+    if (wait) await new Promise((r) => setTimeout(r, wait));
+    try {
+      return await readAgent(publicClient, id);
+    } catch (e) {
+      // A revert is an answer (e.g. no such token), not a hiccup: do not retry it.
+      if (/revert/i.test(String(e))) throw e;
+      lastError = e;
+    }
+  }
+  throw lastError;
+}
+
+async function readAgent(publicClient: PublicClient, id: bigint): Promise<Agent> {
   const reg = { address: addresses.identityRegistry, abi: identityRegistryAbi } as const;
-  const [owner, uri, wallet, encKey, keyIndex] = await Promise.all([
-    publicClient.readContract({ ...reg, functionName: "ownerOf", args: [id] }),
-    publicClient.readContract({ ...reg, functionName: "tokenURI", args: [id] }),
-    publicClient.readContract({ ...reg, functionName: "getAgentWallet", args: [id] }),
-    publicClient.readContract({ ...reg, functionName: "getMetadata", args: [id, META_ENCRYPTION_KEY] }),
-    publicClient.readContract({ ...reg, functionName: "getMetadata", args: [id, META_KEY_INDEX] }),
-  ]);
+  const [owner, uri, wallet, encKey, keyIndex] = await publicClient.multicall({
+    allowFailure: false,
+    contracts: [
+      { ...reg, functionName: "ownerOf", args: [id] },
+      { ...reg, functionName: "tokenURI", args: [id] },
+      { ...reg, functionName: "getAgentWallet", args: [id] },
+      { ...reg, functionName: "getMetadata", args: [id, META_ENCRYPTION_KEY] },
+      { ...reg, functionName: "getMetadata", args: [id, META_KEY_INDEX] },
+    ],
+  });
   const card = parseRegistration(uri);
   return {
     id,

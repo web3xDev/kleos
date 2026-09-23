@@ -2,7 +2,7 @@
 
 // Owner view: sign in with a passkey, register agents, see their state.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Fingerprint, Loader2, Plus, Link2, Unlink } from "lucide-react";
 import { useSession, SESSION_MINUTES, hadSession } from "@/lib/session";
@@ -21,9 +21,14 @@ const steps: { key: Progress; label: string }[] = [
   { key: "signing", label: `Registering on ${chain.name}` },
 ];
 
+// Last known list per owner, kept for the life of the tab so navigating back
+// to this page shows the agents at once instead of reloading from nothing.
+let remembered: { owner: string; agents: Agent[]; summary: Map<string, { actions: number; usdc: bigint }> } | null = null;
+
 export default function MePage() {
   const { session, publicClient, busy, error, signIn, create, end, secondsLeft } = useSession();
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const cached = session && remembered?.owner === session.address.toLowerCase() ? remembered : null;
+  const [agents, setAgents] = useState<Agent[]>(cached?.agents ?? []);
   const [loadingAgents, setLoadingAgents] = useState(false);
   const [name, setName] = useState("");
   const [progress, setProgress] = useState<Progress>("idle");
@@ -32,7 +37,8 @@ export default function MePage() {
   const [ended, setEnded] = useState<boolean | null>(null);
   const [showRegister, setShowRegister] = useState(false);
   const [connecting, setConnecting] = useState<Agent | null>(null);
-  const [summary, setSummary] = useState<Map<string, { actions: number; usdc: bigint }>>(new Map());
+  const [summary, setSummary] = useState<Map<string, { actions: number; usdc: bigint }>>(cached?.summary ?? new Map());
+  const loadRun = useRef(0);
   const [revoking, setRevoking] = useState<Agent | null>(null);
   const [revokeBusy, setRevokeBusy] = useState(false);
   const { notify } = useToast();
@@ -45,6 +51,10 @@ export default function MePage() {
 
   const refresh = useCallback(async () => {
     if (!session) return;
+    // Only the latest run may write: an older, slower run never overwrites it.
+    const run = ++loadRun.current;
+    const owner = session.address.toLowerCase();
+    const previous = remembered?.owner === owner ? remembered : null;
     setLoadingAgents(true);
     try {
       // Agents come from chain: every registry token owned by this passkey's
@@ -57,20 +67,36 @@ export default function MePage() {
         )
         .catch(() => [] as bigint[]);
       const ids = [...new Set([...owned, ...cachedAgentIds(session.address)].map(String))].map(BigInt);
-      const list = (await Promise.all(ids.map((id) => loadAgent(publicClient, id).catch(() => null)))).filter(
-        (a): a is Agent => a !== null && a.owner.toLowerCase() === session.address.toLowerCase(),
-      );
-      list.forEach((a) => rememberAgent(session.address, a.id));
-      setAgents(list.sort((a, b) => Number(b.id - a.id)));
-      const sums = await Promise.all(
-        list.map(async (a) => {
-          const stamps = await fetchStamps(a.id);
-          return [String(a.id), { actions: stamps.length, usdc: stamps.reduce((t, x) => t + BigInt(x.receipt.amount), 0n) }] as const;
+      const loaded = await Promise.all(
+        ids.map(async (id) => {
+          try {
+            return await loadAgent(publicClient, id);
+          } catch {
+            // A read that keeps failing never drops an agent: keep the last known copy.
+            return previous?.agents.find((a) => a.id === id) ?? null;
+          }
         }),
       );
-      setSummary(new Map(sums));
+      if (run !== loadRun.current) return;
+      const list = loaded
+        .filter((a): a is Agent => a !== null && a.owner.toLowerCase() === owner)
+        .sort((a, b) => Number(b.id - a.id));
+      list.forEach((a) => rememberAgent(session.address, a.id));
+      setAgents(list);
+
+      const sums = new Map(previous?.summary);
+      const results = await Promise.allSettled(list.map((a) => fetchStamps(a.id)));
+      results.forEach((res, i) => {
+        if (res.status === "fulfilled") {
+          const st = res.value;
+          sums.set(String(list[i].id), { actions: st.length, usdc: st.reduce((t, x) => t + BigInt(x.receipt.amount), 0n) });
+        }
+      });
+      if (run !== loadRun.current) return;
+      setSummary(sums);
+      remembered = { owner, agents: list, summary: sums };
     } finally {
-      setLoadingAgents(false);
+      if (run === loadRun.current) setLoadingAgents(false);
     }
   }, [session, publicClient]);
 
@@ -78,6 +104,11 @@ export default function MePage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loads the owner's agents when the session starts
     void refresh();
   }, [refresh]);
+
+  // Keep the tab-level copy in step with every change (register, connect, revoke).
+  useEffect(() => {
+    if (session && agents.length) remembered = { owner: session.address.toLowerCase(), agents, summary };
+  }, [session, agents, summary]);
 
   async function onRegister(e: React.FormEvent) {
     e.preventDefault();
