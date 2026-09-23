@@ -189,7 +189,7 @@ export default function ExplorePage() {
         <Metric value={data?.totalStamps} label="Verified actions" />
         <Metric value={settledTotal} label="USDC settled" />
       </div>
-      <Mono className="mt-4 block text-[10px] tracking-[0.14em] text-tertiary">ONCHAIN DATA · ERC-8004 REGISTRY + KLEOS STAMPS</Mono>
+      <p className="mt-4 text-xs text-tertiary">Read live from Monad: the ERC-8004 registry and KleosStamps.</p>
 
       {/* Before the scan lands, hold the space of one record card so the table does not jump */}
       {!data && !error && (
