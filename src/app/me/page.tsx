@@ -9,7 +9,6 @@ import { useSession, SESSION_MINUTES, hadSession } from "@/lib/session";
 import { cachedAgentIds, ensureGas, loadAgent, registerAgent, type Agent } from "@/lib/agents";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { disconnectRuntime } from "@/lib/pairing";
-import { hasStoredCredential } from "@/lib/passkey";
 import { chain } from "@/lib/chain";
 import { Badge, Button, Card, Input, Label, Mono, shortHex } from "@/components/ui";
 import { ConnectRuntime } from "@/components/connect-runtime";
@@ -29,7 +28,6 @@ export default function MePage() {
   const [name, setName] = useState("");
   const [progress, setProgress] = useState<Progress>("idle");
   const [txError, setTxError] = useState<string | null>(null);
-  const [returning, setReturning] = useState(false);
   const [ended, setEnded] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [connecting, setConnecting] = useState<Agent | null>(null);
@@ -39,7 +37,8 @@ export default function MePage() {
   const { notify } = useToast();
 
   useEffect(() => {
-    setReturning(hasStoredCredential());
+    // Reads a non-secret sessionStorage flag once on mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEnded(hadSession());
   }, []);
 
@@ -62,6 +61,7 @@ export default function MePage() {
   }, [session, publicClient]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads the owner's agents when the session starts
     void refresh();
   }, [refresh]);
 
@@ -119,19 +119,19 @@ export default function MePage() {
             <Fingerprint size={22} strokeWidth={1.5} />
           </div>
           <h1 className="mt-6 text-[40px] font-semibold leading-none tracking-tight">
-            {ended ? "Your session ended" : "Your agents"}
+            {ended ? "Your session ended" : "Sign in to Kleos"}
           </h1>
           <p className="mt-4 text-secondary">
             {ended
               ? "Your agents are onchain. Your session is not. Your signing and encryption keys live in memory only; reloading clears them by design. One Touch ID restores the same keys."
-              : "One passkey. No seed phrase, no extension, no account. Nothing is stored on this device; your keys are derived from your passkey each time."}
+              : "One passkey. No seed phrase, no extension, no account. Your keys are derived from your passkey each time, on any device where it syncs."}
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
-            <Button size="lg" variant="accent" loading={busy} onClick={returning ? signIn : create}>
-              {busy ? "Waiting for passkey" : ended ? "Continue with passkey" : returning ? "Sign in" : "Create passkey"}
+            <Button size="lg" variant="accent" loading={busy} onClick={signIn}>
+              {busy ? "Waiting for passkey" : ended ? "Continue with passkey" : "Sign in with passkey"}
             </Button>
-            <Button size="lg" variant="ghost" disabled={busy} onClick={returning ? create : signIn}>
-              {returning ? "Use a new passkey" : "I already have one"}
+            <Button size="lg" variant="ghost" disabled={busy} onClick={create}>
+              New here? Create a passkey
             </Button>
           </div>
           {error && <p className="mt-4 text-sm text-error">{error}</p>}
