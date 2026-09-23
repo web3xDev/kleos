@@ -58,13 +58,22 @@ export default function Home() {
   const [data, setData] = useState<ExploreData | null>(null);
   const [example, setExample] = useState<Example | null>(null);
   const [loaded, setLoaded] = useState(false);
+  // "No agent has a record" only when the registry said so; a failed read is not "none".
+  const [failed, setFailed] = useState(false);
   const [checks, setChecks] = useState<VerifyCheck[][] | null>(null);
 
   useEffect(() => {
-    fetch("/api/explore")
-      .then((r) => (r.ok ? r.json() : null))
-      .then(async (d: ExploreData | null) => {
-        if (!d) return;
+    // One retry: a cold or restarting server can drop the first read.
+    const getExplore = async (): Promise<ExploreData> => {
+      for (const wait of [0, 1500]) {
+        if (wait) await new Promise((r) => setTimeout(r, wait));
+        const r = await fetch("/api/explore").catch(() => null);
+        if (r?.ok) return r.json();
+      }
+      throw new Error("registry unavailable");
+    };
+    getExplore()
+      .then(async (d: ExploreData) => {
         setData(d);
         const top = [...d.agents].sort((a, b) => b.stamps - a.stamps)[0];
         if (top && top.stamps > 0) {
@@ -72,11 +81,14 @@ export default function Home() {
           setExample({ id: top.id, name: top.name ?? `Agent #${top.id}`, wallet: top.wallet, stamps });
           // Verify the example's stamps in the browser, for real, against Monad.
           const results: VerifyCheck[][] = [];
-          for (const st of stamps.slice(0, 5)) results.push(await verifyStamp(publicClient, st));
+          for (const st of stamps.slice(0, 5)) {
+            // A flaky RPC read marks that stamp's checks as failed instead of leaving a spinner forever.
+            results.push(await verifyStamp(publicClient, st).catch(() => [{ label: "Payment settled on Monad", ok: false }]));
+          }
           setChecks(results);
         }
       })
-      .catch(() => null)
+      .catch(() => setFailed(true))
       .finally(() => setLoaded(true));
   }, [publicClient]);
 
@@ -181,7 +193,12 @@ export default function Home() {
               </div>
             ) : (
               <div className="p-5">
-                {loaded ? (
+                {loaded && failed ? (
+                  <>
+                    <div className="text-sm text-secondary">Could not read the registry right now.</div>
+                    <div className="mt-1 text-xs text-tertiary">Refresh the page to try again.</div>
+                  </>
+                ) : loaded ? (
                   <>
                     <div className="text-sm text-secondary">No agent has a track record yet.</div>
                     <div className="mt-1 text-xs text-tertiary">The first one will appear here.</div>
@@ -256,7 +273,9 @@ export default function Home() {
               </div>
             </div>
           ) : loaded ? (
-            <div className="p-5 text-sm text-tertiary">No stamps yet. The first one will appear here.</div>
+            <div className="p-5 text-sm text-tertiary">
+              {failed ? "Could not read the registry right now. Refresh to try again." : "No stamps yet. The first one will appear here."}
+            </div>
           ) : (
             <StampCardSkeleton />
           )}
