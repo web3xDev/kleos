@@ -7,7 +7,7 @@ import { Wordmark } from "@/components/mark";
 import { Mono } from "@/components/ui";
 import { addresses, chain } from "@/lib/chain";
 
-type FooterLink = { href: string; label: string; external?: boolean; mono?: boolean };
+type FooterLink = { href: string; label: string; external?: boolean; address?: string };
 
 const explorer = chain.blockExplorers.default.url;
 // Local copy: shortHex in ui.tsx is client-only and this is a server component.
@@ -32,17 +32,18 @@ const columns: { title: string; links: FooterLink[] }[] = [
   {
     title: "Contracts",
     links: [
-      { href: `${explorer}/address/${addresses.identityRegistry}`, label: `Identity ${short(addresses.identityRegistry)}`, external: true, mono: true },
-      { href: `${explorer}/address/${addresses.kleosStamps}`, label: `Stamps ${short(addresses.kleosStamps)}`, external: true, mono: true },
+      { href: `${explorer}/address/${addresses.identityRegistry}`, label: "Identity Registry", address: short(addresses.identityRegistry), external: true },
+      { href: `${explorer}/address/${addresses.kleosStamps}`, label: "KleosStamps", address: short(addresses.kleosStamps), external: true },
     ],
   },
 ];
 
 function FooterItem({ l }: { l: FooterLink }) {
-  const cls = "group inline-flex items-center gap-1 text-sm text-secondary transition-colors duration-[180ms] hover:text-primary";
+  const cls = "group inline-flex items-center gap-1.5 text-sm text-secondary transition-colors duration-[180ms] hover:text-primary";
   const body = (
     <>
-      {l.mono ? <Mono className="text-[13px]">{l.label}</Mono> : l.label}
+      {l.label}
+      {l.address && <Mono className="text-xs text-tertiary group-hover:text-secondary">{l.address}</Mono>}
       {l.external && <ArrowUpRight size={12} strokeWidth={1.5} className="text-tertiary group-hover:text-primary" />}
     </>
   );
