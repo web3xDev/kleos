@@ -1,4 +1,4 @@
-// The Kleos creature: a pixel sprite in the accent color with a small seal on
+// The Kleos creature: a pixel sprite in the accent color with the tally on
 // its forehead, two antennae, big eyes and a hand on the card's edge. It
 // peeks from behind the hero card; the face sits on the left of the sprite
 // so it stays visible while the body hides behind the card.
@@ -7,7 +7,7 @@ const PALETTE: Record<string, string> = {
   "1": "var(--accent)", // body
   "2": "var(--background)", // eye
   "3": "var(--text-primary)", // eye highlight
-  "4": "var(--accent-hover)", // lighter: forehead seal, blush
+  "4": "var(--accent-hover)", // lighter: forehead tally, blush
   "5": "#4c419a", // darker: outline shade, mouth
 };
 
@@ -16,9 +16,9 @@ const ROWS = [
   "0001000000001000",
   "0001100000011000",
   "0001111111111000",
-  "0011111441111100",
-  "0111114114111110",
-  "0111111441111110",
+  "0011111111111100",
+  "0114114114114110",
+  "0114114114114110",
   "0111111111111110",
   "0112211111122110",
   "0112311111132110",

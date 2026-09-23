@@ -1,10 +1,7 @@
-// The Kleos mark: a seal. A ring with one bar through it, like the
-// cancellation mark stamped over a postage stamp: "this happened, and it
-// cannot be undone". `landing` animates the bar, the gesture a new stamp makes.
+// The Kleos mark: a tally. Four strokes and the cross, one mark per action.
+// `landing` animates the fifth stroke, the gesture a new stamp makes.
 
 export function Mark({ size = 20, landing = false, className }: { size?: number; landing?: boolean; className?: string }) {
-  // Heavier strokes at small sizes so the ring still reads as a ring.
-  const stroke = size <= 16 ? 7 : size <= 24 ? 6 : 5;
   return (
     <svg
       width={size}
@@ -12,13 +9,16 @@ export function Mark({ size = 20, landing = false, className }: { size?: number;
       viewBox="0 0 64 64"
       fill="none"
       stroke="currentColor"
-      strokeWidth={stroke}
+      strokeWidth={size <= 20 ? 6.5 : 5}
       strokeLinecap="round"
       className={`block shrink-0 ${className ?? ""}`}
       aria-hidden="true"
     >
-      <circle cx="32" cy="32" r="21" />
-      <line x1="10" y1="46" x2="54" y2="18" className={landing ? "mark-land" : undefined} />
+      <line x1="14" y1="14" x2="14" y2="50" />
+      <line x1="26" y1="14" x2="26" y2="50" />
+      <line x1="38" y1="14" x2="38" y2="50" />
+      <line x1="50" y1="14" x2="50" y2="50" />
+      <line x1="8" y1="44" x2="56" y2="20" className={landing ? "mark-land" : undefined} />
     </svg>
   );
 }

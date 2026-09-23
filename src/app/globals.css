@@ -122,7 +122,7 @@ textarea,
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* The seal's bar landing: the hero mark once on load, and new
+/* The fifth tally stroke landing: the hero mark once on load, and new
    stamps. Deliberately kept under "reduce motion": it is one short, small
    movement that carries meaning, not decoration. */
 .mark-land {
