@@ -114,7 +114,7 @@ export default function ExplorePage() {
           <Card hover className="p-5">
             <div className="flex items-center gap-2">
               <Mark size={14} className="text-accent" />
-              <Mono className="text-[11px] tracking-[0.14em] text-accent-text">KLEOS · VERIFIED TRACK RECORD</Mono>
+              <Mono className="text-[11px] tracking-[0.14em] text-primary">KLEOS · VERIFIED TRACK RECORD</Mono>
             </div>
             <span aria-hidden className="mt-2 block h-px w-8 bg-accent" />
             <div className="mt-4 flex items-baseline justify-between gap-4">
