@@ -9,7 +9,7 @@ import { ArrowRight, ArrowUpRight, Check, Loader2, Play, X } from "lucide-react"
 import { chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
-import { Mark } from "@/components/mark";
+import { Wordmark } from "@/components/mark";
 
 type Status = "idle" | "start" | "done" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
@@ -192,10 +192,7 @@ export default function TryPage() {
       {/* The point of the run: the record moved */}
       {profile && (
         <Card className="mt-8 p-6">
-          <div className="flex items-center gap-2">
-            <Mark size={16} className="text-accent" />
-            <Mono className="text-[11px] tracking-[0.14em] text-primary">KLEOS</Mono>
-          </div>
+          <Wordmark size={20} />
           <div className="mt-4 flex items-baseline justify-between gap-4">
             <div className="text-lg font-semibold text-primary">Track record updated</div>
             <Mono className="text-secondary">#1910</Mono>

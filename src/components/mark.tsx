@@ -23,11 +23,15 @@ export function Mark({ size = 20, landing = false, className }: { size?: number;
   );
 }
 
+// The logo: mark + KLEOS. Everything scales from the mark size so the
+// proportions match the header's (24px mark, 14px text, 8px gap) at any size.
 export function Wordmark({ size = 24 }: { size?: number }) {
   return (
-    <span className="inline-flex items-center gap-2 text-primary">
+    <span className="inline-flex items-center text-primary" style={{ gap: size / 3 }}>
       <Mark size={size} className="text-accent" />
-      <span className="text-sm font-semibold leading-none tracking-[0.18em]">KLEOS</span>
+      <span className="font-semibold leading-none tracking-[0.18em]" style={{ fontSize: (size * 14) / 24 }}>
+        KLEOS
+      </span>
     </span>
   );
 }

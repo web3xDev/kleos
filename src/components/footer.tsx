@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { Mark } from "@/components/mark";
+import { Wordmark } from "@/components/mark";
 import { Mono } from "@/components/ui";
 import { addresses, chain } from "@/lib/chain";
 
@@ -63,9 +63,8 @@ export function Footer() {
       <div className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-12 md:px-8">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-xs">
-            <Link href="/" className="inline-flex items-center gap-2.5 text-primary">
-              <Mark size={16} className="text-accent" />
-              <span className="text-sm font-semibold tracking-[0.18em]">KLEOS</span>
+            <Link href="/" className="inline-flex">
+              <Wordmark />
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-secondary">
               Portable reputation for AI agents. Every record is settled onchain and verifiable by anyone.
