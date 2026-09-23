@@ -103,6 +103,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
     verification.total > 0 &&
     !verification.running &&
     [...verification.results.values()].every(passed);
+  const hasVerify = loading || stamps.length > 0 || verification.total > 0;
   const verifiedCount = [...verification.results.values()].filter(passed).length;
   const countersigned = [...verification.results.values()].filter((cs) => cs.find((c) => c.label === COUNTERSIGN_LABEL)?.ok === true).length;
 
@@ -172,86 +173,94 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           Computed from stamps anchored on Monad. No score, no weighting. Verified actions, not a reputation score.
         </p>
 
-        {(loading || stamps.length > 0) && verification.total === 0 && (
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[10px] border border-border bg-surface-elevated p-5">
-            <div>
-              <div className="text-sm font-medium text-primary">Anyone can verify this record.</div>
-              <div className="mt-1 text-sm text-secondary">
-                Recompute the receipts, check the signatures, anchors and payments directly against Monad. Kleos is not consulted.
-              </div>
-            </div>
-            <Button variant="accent" onClick={verifyAll} disabled={loading || verification.running} loading={verification.running}>
-              <ShieldCheck size={16} strokeWidth={1.5} />
-              Verify this profile
-            </Button>
-          </div>
-        )}
       </section>
 
-      {/* Verification panel */}
-      {verification.total > 0 && (
-        <Card className="mt-6 bg-surface-elevated p-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-sm font-medium">
-              {verification.running ? "Verifying record" : allVerified ? "Record independently verified" : "Verification finished"}
-            </div>
-            <Mono className="text-secondary">
-              {verifiedCount} / {verification.total} stamps verified against {chain.name}
-            </Mono>
-          </div>
-          <ol className="mt-4 space-y-1.5 text-sm">
-            {["Receipt hash recomputed", "Signed by the agent's wallet", "Anchored on Monad", "Payment settled on Monad"].map((label) => {
-              const all = [...verification.results.values()];
-              const ok = all.length > 0 && all.every((cs) => cs.find((c) => c.label === label)?.ok);
-              const pending = verification.running;
-              return (
-                <li key={label} className="flex items-center justify-between">
-                  <span className={ok || pending ? "text-primary" : "text-error"}>{label}</span>
-                  {pending && !ok ? (
-                    <Loader2 size={14} strokeWidth={1.5} className="animate-spin text-tertiary" />
-                  ) : ok ? (
-                    <Check size={14} strokeWidth={2} className="text-success" />
-                  ) : (
-                    <X size={14} strokeWidth={2} className="text-error" />
-                  )}
-                </li>
-              );
-            })}
-            {/* Countersigning started later: older stamps are "not applicable", never failed. */}
-            {(() => {
-              const all = [...verification.results.values()];
-              const failedCs = all.some((cs) => cs.find((c) => c.label === COUNTERSIGN_LABEL)?.ok === false);
-              return (
-                <li className="flex items-center justify-between">
-                  <span className={failedCs ? "text-error" : countersigned > 0 || verification.running ? "text-primary" : "text-tertiary"}>
-                    {COUNTERSIGN_LABEL}
-                  </span>
-                  {verification.running ? (
-                    <Loader2 size={14} strokeWidth={1.5} className="animate-spin text-tertiary" />
-                  ) : failedCs ? (
-                    <X size={14} strokeWidth={2} className="text-error" />
-                  ) : (
-                    <Mono className="text-xs text-secondary">
-                      {countersigned} of {all.length}
-                    </Mono>
-                  )}
-                </li>
-              );
-            })()}
-          </ol>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-tertiary">
-              Verified in your browser against {chain.name}. Kleos does not decide whether this record is valid.
-            </p>
-            <button className="text-xs text-secondary hover:text-primary" onClick={verifyAll} disabled={verification.running}>
-              Run again
-            </button>
-          </div>
-        </Card>
-      )}
+      {/* Verify (left) and who controls the agent (right), side by side on desktop */}
+      <div
+        className={`mt-6 grid gap-8 ${hasVerify ? "lg:grid-cols-[minmax(0,600px)_minmax(0,1fr)] lg:items-start" : ""}`}
+      >
+        {hasVerify && (
+          <div className="min-w-0">
+            {(loading || stamps.length > 0) && verification.total === 0 && (
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[10px] border border-border bg-surface-elevated p-5">
+                <div>
+                  <div className="text-sm font-medium text-primary">Anyone can verify this record.</div>
+                  <div className="mt-1 text-sm text-secondary">
+                    Recompute the receipts, check the signatures, anchors and payments directly against Monad. Kleos is not consulted.
+                  </div>
+                </div>
+                <Button variant="accent" onClick={verifyAll} disabled={loading || verification.running} loading={verification.running}>
+                  <ShieldCheck size={16} strokeWidth={1.5} />
+                  Verify this profile
+                </Button>
+              </div>
+            )}
 
-      {/* Runtime */}
-      <section className="mt-10 grid gap-6 md:grid-cols-2">
+            {verification.total > 0 && (
+              <Card className="bg-surface-elevated p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-sm font-medium">
+                    {verification.running ? "Verifying record" : allVerified ? "Record independently verified" : "Verification finished"}
+                  </div>
+                  <Mono className="text-secondary">
+                    {verifiedCount} / {verification.total} stamps verified against {chain.name}
+                  </Mono>
+                </div>
+                <ol className="mt-4 space-y-1.5 text-sm">
+                  {["Receipt hash recomputed", "Signed by the agent's wallet", "Anchored on Monad", "Payment settled on Monad"].map((label) => {
+                    const all = [...verification.results.values()];
+                    const ok = all.length > 0 && all.every((cs) => cs.find((c) => c.label === label)?.ok);
+                    const pending = verification.running;
+                    return (
+                      <li key={label} className="flex items-center justify-between">
+                        <span className={ok || pending ? "text-primary" : "text-error"}>{label}</span>
+                        {pending && !ok ? (
+                          <Loader2 size={14} strokeWidth={1.5} className="animate-spin text-tertiary" />
+                        ) : ok ? (
+                          <Check size={14} strokeWidth={2} className="text-success" />
+                        ) : (
+                          <X size={14} strokeWidth={2} className="text-error" />
+                        )}
+                      </li>
+                    );
+                  })}
+                  {/* Countersigning started later: older stamps are "not applicable", never failed. */}
+                  {(() => {
+                    const all = [...verification.results.values()];
+                    const failedCs = all.some((cs) => cs.find((c) => c.label === COUNTERSIGN_LABEL)?.ok === false);
+                    return (
+                      <li className="flex items-center justify-between">
+                        <span className={failedCs ? "text-error" : countersigned > 0 || verification.running ? "text-primary" : "text-tertiary"}>
+                          {COUNTERSIGN_LABEL}
+                        </span>
+                        {verification.running ? (
+                          <Loader2 size={14} strokeWidth={1.5} className="animate-spin text-tertiary" />
+                        ) : failedCs ? (
+                          <X size={14} strokeWidth={2} className="text-error" />
+                        ) : (
+                          <Mono className="text-xs text-secondary">
+                            {countersigned} of {all.length}
+                          </Mono>
+                        )}
+                      </li>
+                    );
+                  })()}
+                </ol>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-xs text-tertiary">
+                    Verified in your browser against {chain.name}. Kleos does not decide whether this record is valid.
+                  </p>
+                  <button className="text-xs text-secondary hover:text-primary" onClick={verifyAll} disabled={verification.running}>
+                    Run again
+                  </button>
+                </div>
+              </Card>
+            )}
+
+
+          </div>
+        )}
+        <div className={`grid gap-6 ${hasVerify ? "md:grid-cols-2 lg:grid-cols-1" : "md:grid-cols-2"}`}>
         <div>
           <Label>Runtime</Label>
           <div className="mt-2">
@@ -282,7 +291,8 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           </div>
           <p className="mt-1 text-xs text-tertiary">A passkey-derived address. The person behind it is never revealed.</p>
         </div>
-      </section>
+        </div>
+      </div>
 
       {/* Stamp feed */}
       <section className="mt-12">
