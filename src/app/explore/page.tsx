@@ -84,7 +84,7 @@ function RecordInfo() {
         role="tooltip"
         className="pointer-events-none absolute right-0 top-full z-20 mt-2 w-56 rounded-[8px] border border-border bg-surface-elevated p-3 text-xs leading-relaxed text-secondary opacity-0 transition-opacity duration-[120ms] group-focus-within:opacity-100 group-hover:opacity-100 sm:left-0 sm:right-auto"
       >
-        Paid actions, stamped on chain. Anyone can verify them.
+        Paid actions, stamped on chain by Kleos. Anyone can verify them.
       </span>
     </span>
   );
