@@ -109,20 +109,24 @@ export default function ExplorePage() {
 
       {/* Agents with a track record: a highlight line when there is one, compact cards when more */}
       {featured.length === 1 && (
-        <Link
-          href={`/a/${featured[0].id}`}
-          className="group mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[10px] border border-border bg-surface px-4 py-3 hover:border-border-hover hover:bg-surface-hover"
-        >
-          <span className="text-sm text-secondary">1 agent has a track record:</span>
-          <span className="text-sm font-medium text-primary">{featured[0].name ?? `Agent #${featured[0].id}`}</span>
-          <Mono className="text-xs text-tertiary">#{featured[0].id}</Mono>
-          <Mono className="text-xs text-secondary">
-            {featured[0].stamps} verified actions
-            {settled.has(featured[0].id) && <> · {formatUsdc(settled.get(featured[0].id)!)} settled</>}
-          </Mono>
-          <span className="ml-auto inline-flex items-center gap-1 text-sm text-secondary group-hover:text-primary">
-            View record <ArrowRight size={14} strokeWidth={1.5} />
-          </span>
+        <Link href={`/a/${featured[0].id}`} className="group mt-6 block md:max-w-xl">
+          <Card hover className="p-5">
+            <Mono className="text-[11px] tracking-[0.14em] text-accent-text">KLEOS · VERIFIED TRACK RECORD</Mono>
+            <span aria-hidden className="mt-2 block h-px w-8 bg-accent" />
+            <div className="mt-4 flex items-baseline justify-between gap-4">
+              <span className="truncate text-lg font-semibold text-primary">{featured[0].name ?? `Agent #${featured[0].id}`}</span>
+              <Mono className="text-secondary">#{featured[0].id}</Mono>
+            </div>
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+              <Mono className="text-[13px] text-secondary">
+                {featured[0].stamps} verified actions
+                {settled.has(featured[0].id) && <> · {formatUsdc(settled.get(featured[0].id)!)} settled</>}
+              </Mono>
+              <span className="inline-flex items-center gap-1 text-sm text-secondary group-hover:text-primary">
+                View record <ArrowRight size={14} strokeWidth={1.5} />
+              </span>
+            </div>
+          </Card>
         </Link>
       )}
       {featured.length > 1 && (
