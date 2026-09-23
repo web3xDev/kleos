@@ -76,7 +76,7 @@ function RecordCard({ agent, summary }: { agent: ExploreAgent; summary?: { usdc:
 function RecordInfo() {
   return (
     <span className="group relative inline-flex">
-      <button type="button" aria-describedby="record-info" aria-label="What is a Kleos track record?" className="text-tertiary hover:text-primary focus-visible:text-primary">
+      <button type="button" aria-describedby="record-info" aria-label="What is a Kleos track record?" className="flex text-tertiary hover:text-primary focus-visible:text-primary">
         <Info size={14} strokeWidth={1.5} />
       </button>
       <span
@@ -195,15 +195,14 @@ export default function ExplorePage() {
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
         <section className="mt-6">
-          <div className="flex items-start gap-2">
-            <div className="inline-flex flex-col">
-              <div className="flex items-center gap-2">
-                <Mark size={14} className="text-accent" />
-                <Mono className="text-[11px] tracking-[0.14em] text-primary">
-                  {featured.length > 1 ? "AGENTS WITH A KLEOS TRACK RECORD" : "AGENT WITH A KLEOS TRACK RECORD"}
-                </Mono>
-              </div>
-              <span aria-hidden className="mt-2 block h-px w-full bg-accent" />
+          {/* One centered row; the accent rule hangs under the label only, not the info icon */}
+          <div className="flex items-center gap-2 pb-[9px]">
+            <div className="relative flex items-center gap-2">
+              <Mark size={14} className="text-accent" />
+              <Mono className="text-[11px] leading-none tracking-[0.14em] text-primary">
+                {featured.length > 1 ? "AGENTS WITH A KLEOS TRACK RECORD" : "AGENT WITH A KLEOS TRACK RECORD"}
+              </Mono>
+              <span aria-hidden className="absolute -bottom-[9px] left-0 h-px w-full bg-accent" />
             </div>
             <RecordInfo />
           </div>
