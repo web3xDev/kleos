@@ -125,8 +125,11 @@ export default function TryPage() {
         </div>
       </Card>
 
+      {/* Desktop: the steps on the left, what they produce (record, answer) on the right */}
+      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
+      <div className="min-w-0">
       {/* Protocol timeline: titles always, mechanism and proof once a step starts */}
-      <ol className="mt-8">
+      <ol>
         {rows.map((r, i) => {
           const last = i === rows.length - 1;
           const isTx = r.key === "payment" || r.key === "anchor";
@@ -199,10 +202,21 @@ export default function TryPage() {
       </ol>
 
       {error && <p className="mt-6 text-sm text-error">{error}</p>}
+      </div>
+
+      <div className="space-y-6 lg:sticky lg:top-24">
+      {/* Before the first run, say what will land here */}
+      {!profile && !answer && (
+        <div className="rounded-[10px] border border-dashed border-border p-6">
+          <Wordmark size={20} muted />
+          <p className="mt-4 text-sm text-secondary">The result lands here.</p>
+          <p className="mt-1 text-sm text-tertiary">First what the tool answered, then the agent&apos;s updated track record.</p>
+        </div>
+      )}
 
       {/* The point of the run: the record moved */}
       {profile && (
-        <Card className="mt-8 p-6">
+        <Card className="p-6">
           <Wordmark size={20} />
           <div className="mt-4 flex items-baseline justify-between gap-4">
             <div className="text-lg font-semibold text-primary">Track record updated</div>
@@ -218,7 +232,7 @@ export default function TryPage() {
       )}
 
       {answer && (
-        <div className="mt-8 max-w-2xl">
+        <div>
           <Label>What the agent got back</Label>
           <JsonView value={answer} className="mt-2 max-h-48 !p-3 !text-xs" />
           <p className="mt-2 text-xs text-tertiary">
@@ -226,6 +240,8 @@ export default function TryPage() {
           </p>
         </div>
       )}
+      </div>
+      </div>
     </main>
   );
 }
