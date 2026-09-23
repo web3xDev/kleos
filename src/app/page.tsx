@@ -11,7 +11,7 @@ import { addresses, chain } from "@/lib/chain";
 import { useSession } from "@/lib/session";
 import { fetchStamps, formatUsdc, verifyStamp, type Check as VerifyCheck, type Stamp } from "@/lib/stamps";
 import { Button, Card, Label, Mono, Shimmer, VerifiedBadge, shortHex } from "@/components/ui";
-import { Mark } from "@/components/mark";
+import { Mark, Wordmark } from "@/components/mark";
 import { Pipeline } from "@/components/pipeline";
 import { Faq } from "@/components/faq";
 import { MascotHost } from "@/components/mascot-host";
@@ -40,8 +40,11 @@ function timeAgo(ts: number): string {
 function Chrome({ path }: { path: string }) {
   return (
     <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-2">
-      <Mark size={12} className="text-tertiary" />
-      <Mono className="text-[11px] tracking-wide text-tertiary">KLEOS / {path}</Mono>
+      <Wordmark size={18} muted />
+      {/* same size as the wordmark's text, so the path reads as part of it */}
+      <Mono className="tracking-wide text-tertiary">
+        <span style={{ fontSize: (18 * 14) / 24 }}>/ {path}</span>
+      </Mono>
     </div>
   );
 }
