@@ -96,11 +96,13 @@ export default function ExplorePage() {
 
   // Dev-only layout preview: /explore?preview=N adds N placeholder records.
   // Never active in production builds, where every card is real.
-  const [previewCount, setPreviewCount] = useState(0);
+  const [preview, setPreview] = useState<{ count: number; now: number }>({ count: 0, now: 0 });
+  const previewCount = preview.count;
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
     const n = Number(new URLSearchParams(window.location.search).get("preview") ?? 0);
-    if (n > 0) setPreviewCount(Math.min(n, 8));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the URL once on mount, dev only
+    if (n > 0) setPreview({ count: Math.min(n, 8), now: Math.floor(Date.now() / 1000) });
   }, []);
 
   const featured = useMemo(() => {
@@ -185,7 +187,7 @@ export default function ExplorePage() {
               <RecordCard
                 key={a.id}
                 agent={a}
-                summary={a.id >= 9000 ? { usdc: BigInt(a.stamps) * 10_000n, last: Math.floor(Date.now() / 1000) - (a.id - 8990) * 3600 } : settled.get(a.id)}
+                summary={a.id >= 9000 ? { usdc: BigInt(a.stamps) * 10_000n, last: preview.now - (a.id - 8990) * 3600 } : settled.get(a.id)}
               />
             ))}
           </div>
