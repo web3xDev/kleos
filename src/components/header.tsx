@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Fingerprint } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { Wordmark } from "@/components/mark";
 import { Mono } from "@/components/ui";
@@ -47,6 +48,8 @@ export function Header() {
               title={`Session ends in ${Math.ceil(secondsLeft / 60)} min`}
             >
               My agents
+              {/* green = a live passkey session (a real state, per the color rule) */}
+              <Fingerprint size={14} strokeWidth={1.5} className="text-success" />
             </Link>
           ) : (
             <Link
