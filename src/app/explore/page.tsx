@@ -30,7 +30,7 @@ function Metric({ value, label, accent }: { value: number | string | undefined; 
   return (
     <div>
       <div className={`text-[24px] font-semibold leading-none tabular-nums ${accent ? "text-accent-text" : "text-primary"}`}>
-        {value === undefined ? <Shimmer>0,000</Shimmer> : typeof value === "number" ? value.toLocaleString() : value}
+        {value === undefined ? <Shimmer>0,000</Shimmer> : typeof value === "number" ? value.toLocaleString("en-US") : value}
       </div>
       <Label className="mt-1.5">{label}</Label>
     </div>
@@ -344,8 +344,8 @@ export default function ExplorePage() {
             {rows.length > PAGE && (
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle px-5 py-3">
                 <span className="text-xs text-tertiary">
-                  Showing {(current * PAGE + 1).toLocaleString()}–{Math.min(rows.length, (current + 1) * PAGE).toLocaleString()} of{" "}
-                  {rows.length.toLocaleString()} agents
+                  Showing {(current * PAGE + 1).toLocaleString("en-US")}–{Math.min(rows.length, (current + 1) * PAGE).toLocaleString("en-US")} of{" "}
+                  {rows.length.toLocaleString("en-US")} agents
                 </span>
                 <div className="flex items-center gap-2">
                   <button

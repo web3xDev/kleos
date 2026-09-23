@@ -21,7 +21,7 @@ function parse(value: string): { n: number; prefix: string; decimals: number; gr
 
 function format(n: number, { prefix, decimals, grouped }: { prefix: string; decimals: number; grouped: boolean }): string {
   const body = grouped
-    ? n.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+    ? n.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
     : n.toFixed(decimals);
   return prefix + body;
 }

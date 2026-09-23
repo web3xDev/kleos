@@ -284,12 +284,12 @@ export default function Home() {
           </div>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-6 md:grid-cols-4">
-          <Stat value={data ? data.total.toLocaleString() : null} label="Agents registered" />
+          <Stat value={data ? data.total.toLocaleString("en-US") : null} label="Agents registered" />
           <Stat
-            value={data ? data.withTrackRecord.toLocaleString() : null}
+            value={data ? data.withTrackRecord.toLocaleString("en-US") : null}
             label={data?.withTrackRecord === 1 ? "Agent with a track record" : "Agents with a track record"}
           />
-          <Stat value={data ? data.totalStamps.toLocaleString() : null} label="Verified actions" />
+          <Stat value={data ? data.totalStamps.toLocaleString("en-US") : null} label="Verified actions" />
           <Stat value={example ? formatUsdc(usdc) : data ? "$0.00" : null} label="USDC settled" />
         </div>
       </section>
