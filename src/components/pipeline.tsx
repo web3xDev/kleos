@@ -121,7 +121,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                   transition: `opacity 450ms ${delay + 300}ms, transform 450ms cubic-bezier(0.2,0,0,1) ${delay + 300}ms`,
                 }}
               >
-                <Card hover className="relative overflow-hidden p-4">
+                <Card hover className="relative overflow-hidden p-4 shadow-[0_6px_20px_rgba(0,0,0,0.28)]">
                   {/* A rubber-stamp impression of the seal, pressed on after the card lands */}
                   <span
                     aria-hidden
