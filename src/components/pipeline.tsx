@@ -128,7 +128,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                     className="pointer-events-none absolute right-3 top-1/2 text-success"
                     style={{
                       opacity: active ? 0.45 : 0,
-                      transform: `translateY(-50%) rotate(-14deg) scale(${active ? 1 : 1.6})`,
+                      transform: `translateY(-50%) scale(${active ? 1 : 1.6})`,
                       transition: `opacity 220ms ease-out ${delay + 800}ms, transform 260ms cubic-bezier(0.3, 0, 0.2, 1.4) ${delay + 800}ms`,
                     }}
                   >
