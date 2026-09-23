@@ -59,7 +59,7 @@ function FooterItem({ l }: { l: FooterLink }) {
 
 export function Footer() {
   return (
-    <footer className="border-t border-border-subtle">
+    <footer className="relative z-10 border-t border-border-subtle bg-background">
       <div className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-12 md:px-8">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-xs">
