@@ -97,7 +97,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1200px] px-4 py-12 md:px-8">
+    <main className="mx-auto w-full max-w-[1200px] px-4 pb-24 pt-12 md:px-8">
       {/* Identity */}
       <header className="flex flex-wrap items-start justify-between gap-6">
         <div>

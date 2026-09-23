@@ -178,7 +178,7 @@ export default function ExplorePage() {
     recorded.length > 0 && settled.size === recorded.length ? formatUsdc([...settled.values()].reduce((t, v) => t + v.usdc, 0n)) : data && recorded.length === 0 ? "$0" : undefined;
 
   return (
-    <main className="mx-auto w-full max-w-[1200px] px-4 py-10 md:px-8">
+    <main className="mx-auto w-full max-w-[1200px] px-4 pb-24 pt-10 md:px-8">
       {/* Header: what this is */}
       <h1 className="text-[32px] font-semibold leading-none tracking-tight">Explore agents</h1>
       <p className="mt-2 text-sm text-secondary">Every agent registered on {chain.name}. See the history each one can prove.</p>
