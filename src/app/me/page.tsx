@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Fingerprint, Loader2, Plus, Link2, Unlink } from "lucide-react";
 import { useSession, SESSION_MINUTES, hadSession } from "@/lib/session";
-import { cachedAgentIds, ensureGas, loadAgent, registerAgent, type Agent } from "@/lib/agents";
+import { cachedAgentIds, ensureGas, loadAgent, registerAgent, rememberAgent, type Agent } from "@/lib/agents";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { disconnectRuntime } from "@/lib/pairing";
 import { chain } from "@/lib/chain";
@@ -46,7 +46,20 @@ export default function MePage() {
     if (!session) return;
     setLoadingAgents(true);
     try {
-      const list = await Promise.all(cachedAgentIds(session.address).map((id) => loadAgent(publicClient, id)));
+      // Agents come from chain: every registry token owned by this passkey's
+      // address. The local cache only adds ones registered moments ago that
+      // the registry scan has not picked up yet.
+      const owned = await fetch("/api/explore")
+        .then((r) => (r.ok ? r.json() : { agents: [] }))
+        .then((d: { agents: { id: number; owner: string }[] }) =>
+          d.agents.filter((a) => a.owner.toLowerCase() === session.address.toLowerCase()).map((a) => BigInt(a.id)),
+        )
+        .catch(() => [] as bigint[]);
+      const ids = [...new Set([...owned, ...cachedAgentIds(session.address)].map(String))].map(BigInt);
+      const list = (await Promise.all(ids.map((id) => loadAgent(publicClient, id).catch(() => null)))).filter(
+        (a): a is Agent => a !== null && a.owner.toLowerCase() === session.address.toLowerCase(),
+      );
+      list.forEach((a) => rememberAgent(session.address, a.id));
       setAgents(list.sort((a, b) => Number(b.id - a.id)));
       const sums = await Promise.all(
         list.map(async (a) => {
