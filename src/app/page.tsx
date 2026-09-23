@@ -40,11 +40,9 @@ function timeAgo(ts: number): string {
 function Chrome({ path }: { path: string }) {
   return (
     <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-2">
-      <Wordmark size={18} muted />
+      <Wordmark size={16} muted />
       {/* same size as the wordmark's text, so the path reads as part of it */}
-      <Mono className="tracking-wide text-tertiary">
-        <span style={{ fontSize: (18 * 14) / 24 }}>/ {path}</span>
-      </Mono>
+      <Mono className="text-[11px] tracking-wide text-tertiary">/ {path}</Mono>
     </div>
   );
 }

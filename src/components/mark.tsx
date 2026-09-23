@@ -23,14 +23,15 @@ export function Mark({ size = 20, landing = false, className }: { size?: number;
   );
 }
 
-// The logo: mark + KLEOS. Everything scales from the mark size so the
-// proportions match the header's (24px mark, 14px text, 8px gap) at any size.
+// The logo: mark + KLEOS. Scales from the mark size with the header's
+// proportions (24px mark, 14px text, 8px gap). Below that the text is kept
+// at 11px or more: at small sizes a strict ratio makes the mark look heavy.
 // `muted` is the grey version used in card chrome ("KLEOS / STAMP").
 export function Wordmark({ size = 24, muted = false }: { size?: number; muted?: boolean }) {
   return (
     <span className={`inline-flex items-center ${muted ? "text-tertiary" : "text-primary"}`} style={{ gap: size / 3 }}>
       <Mark size={size} className={muted ? "text-tertiary" : "text-accent"} />
-      <span className="font-semibold leading-none tracking-[0.18em]" style={{ fontSize: (size * 14) / 24 }}>
+      <span className="font-semibold leading-none tracking-[0.18em]" style={{ fontSize: Math.max(11, (size * 14) / 24) }}>
         KLEOS
       </span>
     </span>
