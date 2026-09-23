@@ -41,6 +41,37 @@ function Metric({ value, label, accent }: { value: number | undefined; label: st
   );
 }
 
+function ago(ts: number): string {
+  const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
+  return `${Math.floor(s / 86400)} d ago`;
+}
+
+function RecordCard({ agent, summary }: { agent: ExploreAgent; summary?: { usdc: bigint; last: number | null } }) {
+  return (
+    <Link href={`/a/${agent.id}`} className="group block">
+      <Card hover className="p-5">
+        <div className="flex items-baseline justify-between gap-4">
+          <span className="truncate text-lg font-semibold text-primary">{agent.name ?? `Agent #${agent.id}`}</span>
+          <span className="inline-flex items-center gap-2">
+            <Mono className="text-secondary">#{agent.id}</Mono>
+            <ArrowRight size={14} strokeWidth={1.5} className="text-tertiary group-hover:text-primary" />
+          </span>
+        </div>
+        <Mono className="mt-1 block text-[13px] text-secondary">
+          {agent.stamps} verified {agent.stamps === 1 ? "action" : "actions"}
+          {summary && <> · {formatUsdc(summary.usdc)} settled</>}
+        </Mono>
+        <div className="mt-3 text-xs text-tertiary">
+          {summary?.last ? <>Last stamp {ago(summary.last)}</> : <span className="invisible">Last stamp</span>}
+        </div>
+      </Card>
+    </Link>
+  );
+}
+
 function KleosTag() {
   return <Mono className="text-[10px] tracking-[0.12em] text-accent-text">KLEOS</Mono>;
 }
@@ -51,8 +82,8 @@ export default function ExplorePage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [page, setPage] = useState(0);
-  // USDC settled for the featured agents, read from their stamps.
-  const [settled, setSettled] = useState<Map<number, bigint>>(new Map());
+  // USDC settled and last stamp time for the featured agents, read from their stamps.
+  const [settled, setSettled] = useState<Map<number, { usdc: bigint; last: number | null }>>(new Map());
 
   useEffect(() => {
     fetch("/api/explore")
@@ -73,7 +104,13 @@ export default function ExplorePage() {
     Promise.all(
       featured.map(async (a) => {
         const stamps = await fetchStamps(BigInt(a.id));
-        return [a.id, stamps.reduce((t, s) => t + BigInt(s.receipt.amount), 0n)] as const;
+        return [
+          a.id,
+          {
+            usdc: stamps.reduce((t, s) => t + BigInt(s.receipt.amount), 0n),
+            last: stamps.length ? Math.max(...stamps.map((s) => s.receipt.timestamp)) : null,
+          },
+        ] as const;
       }),
     ).then((pairs) => setSettled(new Map(pairs)));
   }, [featured]);
@@ -109,55 +146,24 @@ export default function ExplorePage() {
       </div>
 
       {/* Agents with a track record: a highlight line when there is one, compact cards when more */}
-      {featured.length === 1 && (
-        <Link href={`/a/${featured[0].id}`} className="group mt-6 block md:max-w-xl">
-          <Card hover className="p-5">
-            <div className="inline-flex flex-col">
-              <div className="flex items-center gap-2">
-                <Mark size={14} className="text-accent" />
-                <Mono className="text-[11px] tracking-[0.14em] text-primary">KLEOS · VERIFIED TRACK RECORD</Mono>
-              </div>
-              <span aria-hidden className="mt-2 block h-px w-full bg-accent" />
-            </div>
-            <div className="mt-4 flex items-baseline justify-between gap-4">
-              <span className="truncate text-lg font-semibold text-primary">{featured[0].name ?? `Agent #${featured[0].id}`}</span>
-              <Mono className="text-secondary">#{featured[0].id}</Mono>
-            </div>
-            <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-              <Mono className="text-[13px] text-secondary">
-                {featured[0].stamps} verified actions
-                {settled.has(featured[0].id) && <> · {formatUsdc(settled.get(featured[0].id)!)} settled</>}
+      {/* Agents with a track record: one card design, one or many */}
+      {featured.length > 0 && (
+        <section className="mt-6">
+          <div className="inline-flex flex-col">
+            <div className="flex items-center gap-2">
+              <Mark size={14} className="text-accent" />
+              <Mono className="text-[11px] tracking-[0.14em] text-primary">
+                KLEOS · VERIFIED TRACK RECORD{featured.length > 1 ? "S" : ""}
               </Mono>
-              <span className="inline-flex items-center gap-1 text-sm text-secondary group-hover:text-primary">
-                View record <ArrowRight size={14} strokeWidth={1.5} />
-              </span>
             </div>
-          </Card>
-        </Link>
-      )}
-      {featured.length > 1 && (
-        <div className="mt-6">
-          <Label>Agents with a track record</Label>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <span aria-hidden className="mt-2 block h-px w-full bg-accent" />
+          </div>
+          <div className={`mt-4 grid gap-3 ${featured.length === 1 ? "md:max-w-xl" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
             {featured.map((a) => (
-              <Link key={a.id} href={`/a/${a.id}`}>
-                <Card hover className="flex items-center justify-between gap-4 px-4 py-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium text-primary">{a.name ?? `Agent #${a.id}`}</span>
-                      {a.kleos && <KleosTag />}
-                    </div>
-                    <Mono className="text-xs text-tertiary">#{a.id}</Mono>
-                  </div>
-                  <div className="text-right">
-                    <Mono className="text-primary">{a.stamps}</Mono>
-                    <div className="text-[11px] text-tertiary">{settled.has(a.id) ? `${formatUsdc(settled.get(a.id)!)} settled` : "actions"}</div>
-                  </div>
-                </Card>
-              </Link>
+              <RecordCard key={a.id} agent={a} summary={settled.get(a.id)} />
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Search and filters on one row, table right under */}
