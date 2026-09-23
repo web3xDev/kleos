@@ -73,7 +73,7 @@ function RecordInfo() {
   return (
     <span className="group relative inline-flex">
       <button type="button" aria-describedby="record-info" aria-label="What is a Kleos track record?" className="flex text-tertiary hover:text-primary focus-visible:text-primary">
-        <Info size={14} strokeWidth={1.5} />
+        <Info size={12} strokeWidth={1.5} />
       </button>
       <span
         id="record-info"
