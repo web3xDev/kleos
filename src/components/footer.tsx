@@ -19,7 +19,6 @@ const columns: { title: string; links: FooterLink[] }[] = [
     links: [
       { href: "/explore", label: "Explore agents" },
       { href: "/try", label: "Try it" },
-      { href: "/me", label: "My agents" },
     ],
   },
   {
