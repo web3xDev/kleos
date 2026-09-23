@@ -4,12 +4,14 @@
 // component, two modes: public (answers locked) and owner (answers open).
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, Lock, ShieldCheck, X } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, Minus, ChevronLeft, ChevronRight, ChevronUp, Loader2, Lock, ShieldCheck, X } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { loadAgent, type Agent } from "@/lib/agents";
 import { chain } from "@/lib/chain";
 import {
+  COUNTERSIGN_LABEL,
   decryptStamp,
+  passed,
   fetchStamps,
   formatUsdc,
   trackRecord,
@@ -41,7 +43,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   const [openStamp, setOpenStamp] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [verification, setVerification] = useState<Verification>({ running: false, results: new Map(), done: 0, total: 0 });
-  const [decrypted, setDecrypted] = useState<Map<string, { answer: string; hashMatches: boolean }>>(new Map());
+  const [decrypted, setDecrypted] = useState<Map<string, { answer: string; hashMatches: boolean; toolCommitMatches: boolean | null }>>(new Map());
 
   const isOwner = Boolean(session && agent && session.address.toLowerCase() === agent.owner.toLowerCase());
 
@@ -86,17 +88,18 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
     const { privateKey } = session.keys.encryption.forIndex(agent.keyIndex);
     try {
       const d = decryptStamp(stamp, privateKey);
-      setDecrypted((m) => new Map(m).set(stamp.receiptHash, { answer: d.answer, hashMatches: d.hashMatches }));
+      setDecrypted((m) => new Map(m).set(stamp.receiptHash, { answer: d.answer, hashMatches: d.hashMatches, toolCommitMatches: d.toolCommitMatches }));
     } catch {
-      setDecrypted((m) => new Map(m).set(stamp.receiptHash, { answer: "", hashMatches: false }));
+      setDecrypted((m) => new Map(m).set(stamp.receiptHash, { answer: "", hashMatches: false, toolCommitMatches: null }));
     }
   }
 
   const allVerified =
     verification.total > 0 &&
     !verification.running &&
-    [...verification.results.values()].every((cs) => cs.every((c) => c.ok));
-  const verifiedCount = [...verification.results.values()].filter((cs) => cs.every((c) => c.ok)).length;
+    [...verification.results.values()].every(passed);
+  const verifiedCount = [...verification.results.values()].filter(passed).length;
+  const countersigned = [...verification.results.values()].filter((cs) => cs.find((c) => c.label === COUNTERSIGN_LABEL)?.ok === true).length;
 
   if (notFound) {
     return (
@@ -209,6 +212,27 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                 </li>
               );
             })}
+            {/* Countersigning started later: older stamps are "not applicable", never failed. */}
+            {(() => {
+              const all = [...verification.results.values()];
+              const failedCs = all.some((cs) => cs.find((c) => c.label === COUNTERSIGN_LABEL)?.ok === false);
+              return (
+                <li className="flex items-center justify-between">
+                  <span className={failedCs ? "text-error" : countersigned > 0 || verification.running ? "text-primary" : "text-tertiary"}>
+                    {COUNTERSIGN_LABEL}
+                  </span>
+                  {verification.running ? (
+                    <Loader2 size={14} strokeWidth={1.5} className="animate-spin text-tertiary" />
+                  ) : failedCs ? (
+                    <X size={14} strokeWidth={2} className="text-error" />
+                  ) : (
+                    <Mono className="text-xs text-secondary">
+                      {countersigned} of {all.length}
+                    </Mono>
+                  )}
+                </li>
+              );
+            })()}
           </ol>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-tertiary">
@@ -294,7 +318,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           {visible.map((s) => {
             const isOpen = openStamp === s.receiptHash;
             const checks = verification.results.get(s.receiptHash);
-            const ok = checks ? checks.every((c) => c.ok) : null;
+            const ok = checks ? passed(checks) : null;
             const d = decrypted.get(s.receiptHash);
             return (
               <li key={s.receiptHash}>
@@ -333,14 +357,29 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                         href={`${chain.blockExplorers.default.url}/address/${s.receipt.wallet}`}
                       />
                       <Row label="Answer hash" value={shortHex(s.receipt.answerHash, 10, 8)} />
+                      {s.receipt.v === 2 && (
+                        <Row
+                          label="Countersigned by"
+                          value={shortHex(s.receipt.payTo)}
+                          href={`${chain.blockExplorers.default.url}/address/${s.receipt.payTo}`}
+                        />
+                      )}
                     </dl>
 
                     {checks && (
                       <ul className="mt-4 space-y-1 text-xs">
                         {checks.map((c) => (
                           <li key={c.label} className="flex items-center gap-2">
-                            {c.ok ? <Check size={12} className="text-success" /> : <X size={12} className="text-error" />}
-                            <span className={c.ok ? "text-secondary" : "text-error"}>{c.label}</span>
+                            {c.ok === null ? (
+                              <Minus size={12} className="text-tertiary" />
+                            ) : c.ok ? (
+                              <Check size={12} className="text-success" />
+                            ) : (
+                              <X size={12} className="text-error" />
+                            )}
+                            <span className={c.ok === null ? "text-tertiary" : c.ok ? "text-secondary" : "text-error"}>
+                              {c.ok === null ? "Not countersigned (made before countersigning)" : c.label}
+                            </span>
                           </li>
                         ))}
                       </ul>
@@ -365,6 +404,21 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                                 </>
                               )}
                             </div>
+                            {d.toolCommitMatches !== null && (
+                              <div className="mt-1 flex items-center gap-2 text-xs">
+                                {d.toolCommitMatches ? (
+                                  <>
+                                    <Check size={12} className="text-success" />
+                                    <span className="text-secondary">The tool committed to this exact answer</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <X size={12} className="text-error" />
+                                    <span className="text-error">Does not match the tool&apos;s commitment</span>
+                                  </>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <Button variant="secondary" className="mt-2" onClick={() => decrypt(s)}>

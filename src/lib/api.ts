@@ -1,9 +1,11 @@
 // Shared shapes and helpers for the public API. Everything served here is
 // either read from chain or verifiable against it; nothing is a score.
 
-import { createPublicClient, http, isAddressEqual, keccak256, recoverMessageAddress, toBytes, type PublicClient } from "viem";
+import { createPublicClient, http, isAddressEqual, recoverMessageAddress, toBytes, type PublicClient, type TransactionReceipt } from "viem";
+import { receiptHash, type ReceiptPublic } from "kleos/receipt";
+import { checkCountersign } from "./countersign";
 import { addresses, chain } from "./chain";
-import { kleosStampsAbi, type ReceiptPublic } from "./stamps";
+import { kleosStampsAbi } from "./stamps";
 import { listStamps, type StoredStamp } from "./store";
 
 export const publicClient: PublicClient = createPublicClient({ chain, transport: http() });
@@ -56,15 +58,12 @@ export function trackRecordOf(stamps: StoredStamp[]) {
   };
 }
 
-const ORDER = ["v", "network", "agentId", "wallet", "tool", "platform", "amount", "asset", "settlementTx", "answerHash", "timestamp"];
-
-/** The same four checks the browser runs, server-side, for callers without a wallet library. */
+/** The same five checks the browser runs, server-side, for callers without a wallet library. */
 export async function verifyStored(s: StoredStamp) {
   const { signature, ...pub } = s.receipt as unknown as Record<string, unknown> & { signature: `0x${string}` };
-  const o: Record<string, unknown> = {};
-  for (const k of ORDER) o[k] = pub[k];
-  const hash = keccak256(toBytes(JSON.stringify(o)));
-  const checks: { label: string; ok: boolean; detail?: string }[] = [];
+  const hash = receiptHash(pub as unknown as ReceiptPublic);
+  // ok: null = not applicable (v1 stamps have no countersignature).
+  const checks: { label: string; ok: boolean | null; detail?: string }[] = [];
 
   checks.push({ label: "receiptHashRecomputed", ok: hash.toLowerCase() === s.receiptHash.toLowerCase(), detail: hash });
 
@@ -99,8 +98,10 @@ export async function verifyStored(s: StoredStamp) {
 
   let settled = false;
   let detail: string | undefined;
+  let settlement: TransactionReceipt | null = null;
   try {
     const r = await publicClient.getTransactionReceipt({ hash: pub.settlementTx as `0x${string}` });
+    settlement = r;
     settled = r.status === "success" && r.logs.some((l) => isAddressEqual(l.address, pub.asset as `0x${string}`));
     detail = `${r.status}, block ${r.blockNumber}`;
   } catch {
@@ -108,7 +109,10 @@ export async function verifyStored(s: StoredStamp) {
   }
   checks.push({ label: "paymentSettledOnMonad", ok: settled, detail });
 
-  return { receiptHash: s.receiptHash, agentId: pub.agentId, valid: checks.every((c) => c.ok), checks };
+  const cs = await checkCountersign(publicClient, pub as unknown as ReceiptPublic, settlement);
+  checks.push({ label: "countersignedByTool", ok: cs.ok, detail: cs.detail });
+
+  return { receiptHash: s.receiptHash, agentId: pub.agentId, valid: checks.every((c) => c.ok !== false), checks };
 }
 
 export const apiHeaders = { "cache-control": "public, max-age=15", "access-control-allow-origin": "*" };

@@ -10,6 +10,13 @@ import type { RuntimeAccount } from "./runtime.js";
 import { networks, type NetworkName } from "./chain.js";
 import { clients } from "./runtime.js";
 import type { Stamper, StampResult } from "./runtime.js";
+import { COUNTERSIGN_HEADER, decodeCountersign, type Countersign } from "./receipt.js";
+
+/** The tool's countersignature, if the tool sent one (see `countersignPaidCall`). */
+export function readCountersign(res: Response): Countersign | null {
+  const raw = res.headers.get(COUNTERSIGN_HEADER);
+  return raw ? decodeCountersign(raw) : null;
+}
 
 export type Settlement = {
   success: boolean;
@@ -96,6 +103,7 @@ export async function callAndStamp(input: {
     answer,
     request: input.request,
     meta: { url: input.url, status: res.status },
+    countersign: readCountersign(res),
   });
 
   return { call: { answer, settlement, status: res.status }, stamp };

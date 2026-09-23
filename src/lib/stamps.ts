@@ -1,23 +1,13 @@
 // Stamps as the site sees them: public receipts from the store, verified in
 // the browser against Monad. Kleos's own API is never the source of truth.
 
-import { concat, isAddressEqual, keccak256, parseAbi, recoverMessageAddress, toBytes, type PublicClient } from "viem";
+import { concat, isAddressEqual, keccak256, parseAbi, recoverMessageAddress, toBytes, type PublicClient, type TransactionReceipt } from "viem";
+import { answerCommitment, receiptHash, type ReceiptPublic } from "kleos/receipt";
 import { addresses } from "./chain";
+import { checkCountersign } from "./countersign";
 import { open, type Sealed } from "./seal";
 
-export type ReceiptPublic = {
-  v: 1;
-  network: string;
-  agentId: string;
-  wallet: `0x${string}`;
-  tool: string;
-  platform: string;
-  amount: string;
-  asset: `0x${string}`;
-  settlementTx: `0x${string}`;
-  answerHash: `0x${string}`;
-  timestamp: number;
-};
+export type { ReceiptPublic };
 
 export type Stamp = {
   receiptHash: `0x${string}`;
@@ -30,14 +20,9 @@ export const kleosStampsAbi = parseAbi([
   "function getStamp(bytes32 receiptHash) view returns ((uint256 agentId, bytes32 settlementTx, uint256 amount, address wallet, uint64 timestamp))",
 ]);
 
-const ORDER: (keyof ReceiptPublic)[] = [
-  "v", "network", "agentId", "wallet", "tool", "platform", "amount", "asset", "settlementTx", "answerHash", "timestamp",
-];
-
+/** Canonical receipt hash, v1 or v2: the same function the runtime signs with. */
 export function receiptHashOf(pub: ReceiptPublic): `0x${string}` {
-  const o: Record<string, unknown> = {};
-  for (const k of ORDER) o[k] = pub[k];
-  return keccak256(toBytes(JSON.stringify(o)));
+  return receiptHash(pub);
 }
 
 export async function fetchStamps(agentId: bigint): Promise<Stamp[]> {
@@ -47,7 +32,10 @@ export async function fetchStamps(agentId: bigint): Promise<Stamp[]> {
   return stamps;
 }
 
-export type Check = { label: string; ok: boolean; detail?: string };
+/** ok: null means "not applicable" (a v1 stamp has no countersignature); it never fails a stamp. */
+export type Check = { label: string; ok: boolean | null; detail?: string };
+
+export const COUNTERSIGN_LABEL = "Countersigned by the tool";
 
 /**
  * Verify one stamp the way anyone could: recompute the hash, recover the
@@ -91,8 +79,10 @@ export async function verifyStamp(publicClient: PublicClient, stamp: Stamp): Pro
 
   let settled = false;
   let detail: string | undefined;
+  let settlement: TransactionReceipt | null = null;
   try {
     const receipt = await publicClient.getTransactionReceipt({ hash: pub.settlementTx });
+    settlement = receipt;
     // The facilitator settles by calling the asset contract (transferWithAuthorization).
     settled = receipt.status === "success" && receipt.logs.some((l) => isAddressEqual(l.address, pub.asset));
     detail = receipt.status;
@@ -102,18 +92,43 @@ export async function verifyStamp(publicClient: PublicClient, stamp: Stamp): Pro
   }
   checks.push({ label: "Payment settled on Monad", ok: settled, detail });
 
+  const cs = await checkCountersign(publicClient, pub, settlement);
+  checks.push({ label: COUNTERSIGN_LABEL, ok: cs.ok, detail: cs.signer ?? cs.detail });
+
   return checks;
 }
 
-export function decryptStamp(stamp: Stamp, privateKey: Uint8Array): { answer: string; request?: unknown; hashMatches: boolean } {
+/** A stamp passes when no check failed; "not applicable" (null) is not a failure. */
+export function passed(checks: Check[]): boolean {
+  return checks.every((c) => c.ok !== false);
+}
+
+export function decryptStamp(
+  stamp: Stamp,
+  privateKey: Uint8Array,
+): { answer: string; request?: unknown; hashMatches: boolean; toolCommitMatches: boolean | null } {
   const bytes = open(stamp.sealed, privateKey);
-  const body = JSON.parse(new TextDecoder().decode(bytes)) as { answer: string; answerSalt?: `0x${string}`; request?: unknown };
+  const body = JSON.parse(new TextDecoder().decode(bytes)) as {
+    answer: string;
+    answerSalt?: `0x${string}`;
+    toolSalt?: `0x${string}`;
+    request?: unknown;
+  };
   // The hash is keccak256(salt || answer). Stamps written before salts
   // existed carry no salt and hash the answer alone.
   const computed = body.answerSalt
     ? keccak256(concat([toBytes(body.answerSalt), toBytes(body.answer)]))
     : keccak256(toBytes(body.answer));
-  return { answer: body.answer, request: body.request, hashMatches: computed.toLowerCase() === stamp.receipt.answerHash.toLowerCase() };
+  // v2: the tool committed to the answer it served; the owner can open that commitment.
+  const r = stamp.receipt;
+  const toolCommitMatches =
+    r.v === 2 && body.toolSalt ? answerCommitment(body.answer, body.toolSalt).toLowerCase() === r.answerCommit.toLowerCase() : null;
+  return {
+    answer: body.answer,
+    request: body.request,
+    hashMatches: computed.toLowerCase() === r.answerHash.toLowerCase(),
+    toolCommitMatches,
+  };
 }
 
 /** Provable numbers from a list of verified stamps. */

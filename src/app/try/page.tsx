@@ -17,6 +17,7 @@ type Row = { key: string; title: string; who: string; status: Status; detail?: s
 const ROWS: Omit<Row, "status">[] = [
   { key: "agent", title: "Agent wakes up", who: "Agent #1910 · runtime checks it is the registered wallet" },
   { key: "tool", title: "Calls a paid tool", who: "x402 · $0.01 · kleos-demo/monad-block" },
+  { key: "countersign", title: "Tool countersigns", who: "Signed by the address that was paid · commits to the answer it served" },
   { key: "payment", title: "Payment settles on Monad", who: "USDC transferWithAuthorization, submitted by the facilitator" },
   { key: "stamp", title: "Receipt signed and sealed", who: "EIP-191 by the runtime · body encrypted to the owner" },
   { key: "anchor", title: "Stamp anchored on Monad", who: "KleosStamps.stamp() · only the registered runtime can" },
@@ -159,6 +160,16 @@ export default function TryPage() {
                       <div className="pt-2">
                         {r.status === "error" ? (
                           <Mono className="text-xs text-error">{r.detail}</Mono>
+                        ) : r.key === "countersign" && r.detail.startsWith("0x") ? (
+                          <a
+                            href={`${chain.blockExplorers.default.url}/address/${r.detail}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 font-mono text-xs text-secondary hover:text-primary"
+                          >
+                            <span className="text-tertiary">Tool </span>
+                            {shortHex(r.detail, 8, 6)} <ArrowUpRight size={12} strokeWidth={1.5} />
+                          </a>
                         ) : isTx && r.detail.startsWith("0x") ? (
                           <a
                             href={`${chain.blockExplorers.default.url}/tx/${r.detail}`}

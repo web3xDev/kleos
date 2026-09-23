@@ -6,10 +6,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Check, Loader2, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Loader2, Minus, X } from "lucide-react";
 import { addresses, chain } from "@/lib/chain";
 import { useSession } from "@/lib/session";
-import { fetchStamps, formatUsdc, verifyStamp, type Check as VerifyCheck, type Stamp } from "@/lib/stamps";
+import { COUNTERSIGN_LABEL, fetchStamps, formatUsdc, verifyStamp, type Check as VerifyCheck, type Stamp } from "@/lib/stamps";
 import { Button, Card, Label, Mono, Shimmer, VerifiedBadge, shortHex } from "@/components/ui";
 import { Mark, Wordmark } from "@/components/mark";
 import { Pipeline } from "@/components/pipeline";
@@ -80,13 +80,17 @@ export default function Home() {
       .finally(() => setLoaded(true));
   }, [publicClient]);
 
-  // One row per check label: passed only when every verified stamp passed it.
-  const CHECKS = ["Receipt hash recomputed", "Signed by the agent's wallet", "Anchored on Monad", "Payment settled on Monad"];
-  const checkRows = CHECKS.map((label) => ({
-    label,
-    ok: checks ? checks.every((cs) => cs.find((c) => c.label === label)?.ok) : null,
-  }));
-  const passed = checkRows.filter((c) => c.ok).length;
+  // One row per check label: failed if any verified stamp failed it; "na" when
+  // it applied to none of them (older stamps have no countersignature).
+  const CHECKS = ["Receipt hash recomputed", "Signed by the agent's wallet", "Anchored on Monad", "Payment settled on Monad", COUNTERSIGN_LABEL];
+  const checkRows = CHECKS.map((label) => {
+    if (!checks) return { label, ok: null as boolean | null | "na" };
+    const vals = checks.map((cs) => cs.find((c) => c.label === label)?.ok ?? null);
+    const ok: boolean | "na" = vals.some((v) => v === false) ? false : vals.every((v) => v === null) ? "na" : true;
+    return { label, ok };
+  });
+  const passed = checkRows.filter((c) => c.ok === true).length;
+  const applicable = checkRows.filter((c) => c.ok !== "na").length;
 
   const usdc = example ? example.stamps.reduce((s, x) => s + BigInt(x.receipt.amount), 0n) : 0n;
   const latest = example?.stamps[0];
@@ -348,10 +352,10 @@ export default function Home() {
                 <Label>Verification</Label>
                 <div className="mt-2 flex items-baseline justify-between gap-4">
                   <span className="text-sm font-medium text-primary">
-                    {checks ? (passed === checkRows.length ? "Record independently verified" : "Verification finished") : "Verifying"}
+                    {checks ? (passed === applicable ? "Record independently verified" : "Verification finished") : "Verifying"}
                   </span>
                   <Mono className="text-xs text-secondary">
-                    {checks ? `${passed} / ${checkRows.length} checks passed` : "checking"}
+                    {checks ? `${passed} / ${applicable} checks passed` : "checking"}
                   </Mono>
                 </div>
                 <ul className="mt-4 space-y-2">
@@ -359,24 +363,29 @@ export default function Home() {
                     const icon =
                       c.ok === null ? (
                         <Loader2 size={14} strokeWidth={1.5} className="animate-spin text-tertiary" />
+                      ) : c.ok === "na" ? (
+                        <Minus size={14} strokeWidth={2} className="text-tertiary" />
                       ) : c.ok ? (
                         <Check size={14} strokeWidth={2} className="text-success" />
                       ) : (
                         <X size={14} strokeWidth={2} className="text-error" />
                       );
-                    // Evidence for the first two checks, from the latest stamp.
+                    // Evidence from the latest stamp: its hash, its signer, the tool that countersigned it.
                     const evidence =
                       i === 0 && latest
                         ? { k: "Receipt hash", v: shortHex(latest.receiptHash, 10, 8) }
                         : i === 1 && latest
                           ? { k: "Signer", v: shortHex(latest.receipt.wallet, 8, 6) }
-                          : null;
+                          : c.label === COUNTERSIGN_LABEL && latest?.receipt.v === 2
+                            ? { k: "Tool", v: shortHex(latest.receipt.payTo, 8, 6) }
+                            : null;
+                    const tone = c.ok === false ? "text-error" : c.ok === "na" ? "text-tertiary" : "text-primary";
                     return (
                       <li key={c.label} className="text-sm">
                         {evidence && checks ? (
                           <details className="group">
                             <summary className="flex cursor-pointer list-none items-center justify-between">
-                              <span className={c.ok === false ? "text-error" : "text-primary"}>{c.label}</span>
+                              <span className={tone}>{c.label}</span>
                               {icon}
                             </summary>
                             <div className="mt-1.5 flex items-baseline gap-3 pl-0.5">
@@ -386,7 +395,7 @@ export default function Home() {
                           </details>
                         ) : (
                           <div className="flex items-center justify-between">
-                            <span className={c.ok === false ? "text-error" : "text-primary"}>{c.label}</span>
+                            <span className={tone}>{c.label}</span>
                             {icon}
                           </div>
                         )}
@@ -401,7 +410,7 @@ export default function Home() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle px-6 py-4">
               <span className="text-xs text-tertiary">
-                {example.stamps.length} {example.stamps.length === 1 ? "stamp" : "stamps"} · each one recomputed, signature-checked, read from KleosStamps, settlement fetched
+                {example.stamps.length} {example.stamps.length === 1 ? "stamp" : "stamps"} · each one recomputed, signature-checked, read from KleosStamps, settlement fetched, countersignature checked
               </span>
               <Link href={`/a/${example.id}`} className="inline-flex items-center gap-1 text-sm text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">
                 See every stamp <ArrowRight size={14} strokeWidth={1.5} />

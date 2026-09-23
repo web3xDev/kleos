@@ -26,9 +26,13 @@ import {
 } from "./chain.js";
 import { seal, type Sealed } from "./crypto.js";
 import {
+  answerCommitment,
   answerHash,
+  caip2,
+  countersigner,
   receiptHash,
   signingMessage,
+  type Countersign,
   type Receipt,
   type ReceiptPrivate,
   type ReceiptPublic,
@@ -133,6 +137,8 @@ export type StampInput = {
   answer: string;
   request?: unknown;
   meta?: Record<string, unknown>;
+  /** The tool's countersignature from its response (`readCountersign`). Makes a v2 receipt. */
+  countersign?: Countersign | null;
 };
 
 export type StampResult = {
@@ -205,8 +211,7 @@ export class Stamper {
     // Fresh salt per stamp: the public answerHash stays opaque even for
     // short or guessable answers. It travels in the sealed body.
     const answerSalt = `0x${bytesToHex(randomBytes(32))}` as const;
-    const pub: ReceiptPublic = {
-      v: 1,
+    const base = {
       network: this.network,
       agentId: this.agentId.toString(),
       wallet: this.address,
@@ -218,11 +223,15 @@ export class Stamper {
       answerHash: answerHash(input.answer, answerSalt),
       timestamp: Math.floor(Date.now() / 1000),
     };
+    const cs = input.countersign ? await this.checkCountersign(input) : null;
+    const pub: ReceiptPublic = cs
+      ? { v: 2, ...base, payTo: cs.payTo, paymentNonce: cs.nonce, answerCommit: cs.answerCommit, toolSignature: cs.signature }
+      : { v: 1, ...base };
     const signature = await this.c.account.signMessage({ message: signingMessage(pub) });
     const receipt: Receipt = { ...pub, signature };
     const hash = receiptHash(pub);
 
-    const priv: ReceiptPrivate = { answer: input.answer, answerSalt, request: input.request, meta: input.meta };
+    const priv: ReceiptPrivate = { answer: input.answer, answerSalt, request: input.request, meta: input.meta, toolSalt: cs?.salt };
     const sealed = seal(utf8ToBytes(JSON.stringify(priv)), await this.ownerKey());
 
     // Store first, anchor second: an anchored hash with no body is a stamp
@@ -241,6 +250,26 @@ export class Stamper {
     await this.c.publicClient.waitForTransactionReceipt({ hash: anchorTx });
 
     return { receiptHash: hash, anchorTx, receipt };
+  }
+
+  /**
+   * Only carry a countersignature that is really about this call: signed by
+   * the address that was paid, for this payer, amount, asset and tool, and
+   * committing to the answer we got. Anything else is dropped (the stamp is
+   * then a plain v1), never stored as if it were valid.
+   */
+  private async checkCountersign(input: StampInput): Promise<Countersign | null> {
+    const c = input.countersign!;
+    const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+    const ok =
+      c.network === caip2(this.network) &&
+      same(c.payer, this.address) &&
+      same(c.asset, input.asset) &&
+      c.amount === input.amount.toString() &&
+      c.tool === input.tool &&
+      c.answerCommit === answerCommitment(input.answer, c.salt) &&
+      same(await countersigner(c, c.signature), c.payTo);
+    return ok ? c : null;
   }
 
   private async store(hash: Hex, receipt: Receipt, sealed: Sealed): Promise<void> {

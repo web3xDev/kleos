@@ -40,6 +40,7 @@ const nav: [string, string][] = [
   ["quickstart", "Add a track record in 10 minutes"],
   ["stamp", "What a stamp is"],
   ["why-not-8004", "Why not ERC-8004's Reputation Registry?"],
+  ["countersign", "Tool countersignature"],
   ["verify", "Verifying a record"],
   ["api", "Package API"],
   ["http", "HTTP API"],
@@ -176,6 +177,38 @@ const { call, stamp } = await callAndStamp({
           </section>
 
           <section>
+            <H2 id="countersign">Tool countersignature</H2>
+            <p className="mt-4 text-secondary">
+              A plain stamp is signed by the buyer only. When the tool countersigns, the receipt becomes two-sided: the
+              runtime says &quot;I paid&quot;, the tool says &quot;I was paid for this call, and this is the answer I served&quot;.
+              Such receipts are version 2.
+            </p>
+            <p className="mt-4 text-secondary">
+              The tool signs (EIP-191) the payer, <Mono>payTo</Mono>, asset, amount, the x402 payment&apos;s EIP-3009
+              <Mono> nonce</Mono>, the tool id and a salted commitment to its answer, and returns it in the
+              <Mono> X-Kleos-Countersign</Mono> response header. No registry of tools is needed: a countersignature counts only
+              if it was signed by the address that received the payment, and only if the settlement transaction used that
+              nonce (<Mono>AuthorizationUsed</Mono>) and moved that amount from the payer to <Mono>payTo</Mono>
+              (<Mono>Transfer</Mono>). It cannot be reused for another payment.
+            </p>
+            <p className="mt-4 text-secondary">For an x402 tool it is one call in the handler:</p>
+            <Code>{`import { countersignPaidCall } from "kleos";
+
+const answer = JSON.stringify(result);
+const res = new Response(answer, { headers: { "content-type": "application/json" } });
+// account = the key behind payTo
+const cs = await countersignPaidCall({ account, headers: req.headers, tool: "my-tool/v1", answer });
+if (cs) res.headers.set(cs.name, cs.value);
+return res;`}</Code>
+            <p className="mt-4 text-secondary">
+              On the runtime side nothing changes: <Mono>callAndStamp</Mono> reads the header and writes a v2 receipt when the
+              countersignature matches the call (payer, amount, asset, tool and answer). The tool&apos;s salt goes into the
+              sealed body, so the owner can check the tool committed to the exact answer they paid for. Stamps made before
+              countersigning stay valid; for them the check is &quot;not applicable&quot;.
+            </p>
+          </section>
+
+          <section>
             <H2 id="verify">Verifying a record</H2>
             <p className="mt-4 text-secondary">
               The profile page&apos;s &quot;Verify this profile&quot; runs in your browser against Monad. For each stamp:
@@ -185,6 +218,10 @@ const { call, stamp } = await callAndStamp({
               <li>Recover the EIP-191 signer and check it equals the receipt&apos;s wallet.</li>
               <li>Read <Mono>KleosStamps.getStamp(hash)</Mono>: agent id, settlement, amount and wallet must match.</li>
               <li>Fetch the settlement transaction receipt: it must have succeeded and touched the asset contract.</li>
+              <li>
+                Version 2 only: recover the tool&apos;s countersignature, check it is from <Mono>payTo</Mono>, and find its nonce
+                and transfer in the settlement.
+              </li>
             </ol>
             <p className="mt-4 text-secondary">
               Kleos&apos;s API is not consulted. Kleos does not decide whether a record is valid.

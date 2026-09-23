@@ -7,16 +7,9 @@
 
 import { NextResponse } from "next/server";
 import { listAnchoredStamps } from "@/lib/api";
-import { isAddressEqual, keccak256, recoverMessageAddress, toBytes } from "viem";
+import { isAddressEqual, recoverMessageAddress, toBytes } from "viem";
+import { receiptHash, type ReceiptPublic } from "kleos/receipt";
 import { getStamp, putStamp, type StoredStamp } from "@/lib/store";
-
-const ORDER = ["v", "network", "agentId", "wallet", "tool", "platform", "amount", "asset", "settlementTx", "answerHash", "timestamp"];
-
-function canonical(pub: Record<string, unknown>): string {
-  const o: Record<string, unknown> = {};
-  for (const k of ORDER) o[k] = pub[k];
-  return JSON.stringify(o);
-}
 
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as Partial<StoredStamp> | null;
@@ -28,7 +21,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "malformed receipt" }, { status: 400 });
   }
 
-  const hash = keccak256(toBytes(canonical(pub)));
+  if (pub.v !== 1 && pub.v !== 2) return NextResponse.json({ error: "unknown receipt version" }, { status: 400 });
+  const hash = receiptHash(pub as unknown as ReceiptPublic);
   if (hash.toLowerCase() !== body.receiptHash.toLowerCase()) {
     return NextResponse.json({ error: "receiptHash does not match receipt" }, { status: 400 });
   }
