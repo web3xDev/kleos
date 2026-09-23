@@ -179,17 +179,9 @@ export default function TryPage() {
       {profile && (
         <Card className="relative mt-8 p-6">
           {/* traced once around the card as it appears, then stays as its border */}
-          <svg aria-hidden className="trace-border pointer-events-none absolute -inset-px h-[calc(100%+2px)] w-[calc(100%+2px)] overflow-visible">
-            <rect
-              x="0.5"
-              y="0.5"
-              rx="9.5"
-              pathLength={1}
-              fill="none"
-              stroke="var(--accent)"
-              strokeWidth="1"
-              style={{ width: "calc(100% - 1px)", height: "calc(100% - 1px)" }}
-            />
+          {/* inset -0.5px puts the stroke's center on the card's 1px border */}
+          <svg aria-hidden className="trace-border pointer-events-none absolute -inset-[0.5px] h-[calc(100%+1px)] w-[calc(100%+1px)] overflow-visible">
+            <rect width="100%" height="100%" rx="9.5" pathLength={1} fill="none" stroke="var(--accent)" strokeWidth="1" />
           </svg>
           <div className="flex items-center gap-2">
             <Mark size={16} className="text-accent" />
