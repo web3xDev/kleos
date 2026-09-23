@@ -25,6 +25,21 @@ type Filter = "all" | "record" | "kleos";
 
 const PAGE = 24;
 
+function Metric({ value, label, accent }: { value: number | undefined; label: string; accent?: boolean }) {
+  return (
+    <div>
+      {value === undefined ? (
+        <div className="h-7 w-16 animate-pulse rounded-[6px] bg-surface-elevated" />
+      ) : (
+        <div className={`text-[24px] font-semibold leading-none tabular-nums ${accent ? "text-accent-text" : "text-primary"}`}>
+          {value.toLocaleString()}
+        </div>
+      )}
+      <Label className="mt-1.5">{label}</Label>
+    </div>
+  );
+}
+
 function KleosTag() {
   return <Mono className="text-[10px] tracking-[0.12em] text-accent-text">KLEOS</Mono>;
 }
@@ -75,123 +90,102 @@ export default function ExplorePage() {
   const current = Math.min(page, pages - 1);
   const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
 
-  useEffect(() => setPage(0), [q, filter]);
 
-  const totalSettled = [...settled.values()].reduce((t, v) => t + v, 0n);
   const viaKleos = data ? data.agents.filter((a) => a.kleos).length : 0;
 
   return (
-    <main className="mx-auto w-full max-w-[1200px] px-4 py-12 md:px-8 md:py-16">
-      {/* Header */}
-      <Mono className="text-[11px] tracking-[0.12em] text-tertiary">{chain.name.toUpperCase()} · ERC-8004 REGISTRY</Mono>
-      <h1 className="mt-3 text-[40px] font-semibold leading-none tracking-tight">Explore agents</h1>
-      <p className="mt-3 text-secondary">Every agent registered on {chain.name}. See the history each one can prove.</p>
+    <main className="mx-auto w-full max-w-[1200px] px-4 py-10 md:px-8">
+      {/* Header: what this is */}
+      <h1 className="text-[32px] font-semibold leading-none tracking-tight">Explore agents</h1>
+      <p className="mt-2 text-sm text-secondary">Every agent registered on {chain.name}. See the history each one can prove.</p>
 
-      {/* The contrast: identity vs. history */}
-      <section className="mt-10">
-        {data ? (
-          <>
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-              <span className="text-[44px] font-semibold leading-none tracking-tight tabular-nums md:text-[56px]">
-                {data.total.toLocaleString()}
-              </span>
-              <span className="text-lg text-secondary">agents registered on Monad</span>
-            </div>
-            <div className="mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-1">
-              <span className="text-[44px] font-semibold leading-none tracking-tight tabular-nums text-accent-text md:text-[56px]">
-                {data.withTrackRecord.toLocaleString()}
-              </span>
-              <span className="text-lg text-secondary">
-                with a verifiable track record
-              </span>
-            </div>
-            <p className="mt-5 font-mono text-[13px] text-tertiary">
-              {data.totalStamps.toLocaleString()} verified actions
-              {settled.size > 0 && <> · {formatUsdc(totalSettled)} USDC settled</>} · {viaKleos} registered via Kleos
-            </p>
-          </>
-        ) : (
-          <div className="space-y-3">
-            <div className="h-12 w-72 animate-pulse rounded-[8px] bg-surface-elevated" />
-            <div className="h-12 w-80 animate-pulse rounded-[8px] bg-surface-elevated" />
-          </div>
-        )}
-      </section>
+      {/* One-line network state; the contrast is the accent number */}
+      <div className="mt-6 grid grid-cols-2 gap-x-8 gap-y-4 border-y border-border-subtle py-4 sm:grid-cols-4">
+        <Metric value={data?.total} label="Registered" />
+        <Metric value={data?.withTrackRecord} label="With a track record" accent />
+        <Metric value={data?.totalStamps} label="Verified actions" />
+        <Metric value={data ? viaKleos : undefined} label="Via Kleos" />
+      </div>
 
-      {/* Agents with a track record */}
-      {featured.length > 0 && (
-        <section className="mt-14">
-          <div className="eyebrow">Agents with a track record</div>
-          <p className="mt-2 text-sm text-secondary">
-            {featured.length === 1 ? "One agent has" : `${featured.length} agents have`} a history anyone can verify.
-          </p>
-          <div className={`mt-5 grid gap-4 ${featured.length === 1 ? "md:max-w-xl" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+      {/* Agents with a track record: a highlight line when there is one, compact cards when more */}
+      {featured.length === 1 && (
+        <Link
+          href={`/a/${featured[0].id}`}
+          className="group mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[10px] border border-border bg-surface px-4 py-3 hover:border-border-hover hover:bg-surface-hover"
+        >
+          <span className="text-sm text-secondary">1 agent has a track record:</span>
+          <span className="text-sm font-medium text-primary">{featured[0].name ?? `Agent #${featured[0].id}`}</span>
+          <Mono className="text-xs text-tertiary">#{featured[0].id}</Mono>
+          <Mono className="text-xs text-secondary">
+            {featured[0].stamps} verified actions
+            {settled.has(featured[0].id) && <> · {formatUsdc(settled.get(featured[0].id)!)} settled</>}
+          </Mono>
+          <span className="ml-auto inline-flex items-center gap-1 text-sm text-secondary group-hover:text-primary">
+            View record <ArrowRight size={14} strokeWidth={1.5} />
+          </span>
+        </Link>
+      )}
+      {featured.length > 1 && (
+        <div className="mt-6">
+          <Label>Agents with a track record</Label>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((a) => (
-              <Link key={a.id} href={`/a/${a.id}`} className="group">
-                <Card hover className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="truncate text-lg font-semibold leading-tight text-primary">{a.name ?? `Agent #${a.id}`}</div>
-                      <Mono className="mt-1 block text-secondary">#{a.id}</Mono>
+              <Link key={a.id} href={`/a/${a.id}`}>
+                <Card hover className="flex items-center justify-between gap-4 px-4 py-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium text-primary">{a.name ?? `Agent #${a.id}`}</span>
+                      {a.kleos && <KleosTag />}
                     </div>
-                    {a.kleos && <KleosTag />}
+                    <Mono className="text-xs text-tertiary">#{a.id}</Mono>
                   </div>
-                  <div className="mt-6 grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="metric">{a.stamps}</div>
-                      <Label className="mt-1">Verified actions</Label>
-                    </div>
-                    <div>
-                      <div className="metric">{settled.has(a.id) ? formatUsdc(settled.get(a.id)!) : "–"}</div>
-                      <Label className="mt-1">USDC settled</Label>
-                    </div>
-                  </div>
-                  <div className="mt-6 inline-flex items-center gap-1 text-sm text-secondary group-hover:text-primary">
-                    View track record <ArrowRight size={14} strokeWidth={1.5} />
+                  <div className="text-right">
+                    <Mono className="text-primary">{a.stamps}</Mono>
+                    <div className="text-[11px] text-tertiary">{settled.has(a.id) ? `${formatUsdc(settled.get(a.id)!)} settled` : "actions"}</div>
                   </div>
                 </Card>
               </Link>
             ))}
           </div>
-        </section>
+        </div>
       )}
 
-      {/* All agents */}
-      <section className="mt-16">
-        <div className="eyebrow">All agents</div>
-
-        <div className="relative mt-5 w-full md:max-w-[560px]">
-          <Search size={16} strokeWidth={1.5} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-tertiary" />
-          <Input
-            className="h-12 pl-10 text-[15px]"
-            placeholder="Search by name, id or owner"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
+      {/* Search and filters on one row, table right under */}
+      <section className="mt-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:w-[420px]">
+            <Search size={16} strokeWidth={1.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
+            <Input className="pl-9" placeholder="Search by name, id or owner" value={q} onChange={(e) => {
+                setQ(e.target.value);
+                setPage(0);
+              }} />
+          </div>
+          <div className="flex gap-1">
+            {(
+              [
+                ["all", "All"],
+                ["record", "Track record"],
+                ["kleos", "Via Kleos"],
+              ] as [Filter, string][]
+            ).map(([k, label]) => (
+              <button
+                key={k}
+                onClick={() => {
+                  setFilter(k);
+                  setPage(0);
+                }}
+                className={`h-10 rounded-[8px] px-3 text-sm ${filter === k ? "bg-surface-elevated text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-4 flex gap-1">
-          {(
-            [
-              ["all", "All"],
-              ["record", "With track record"],
-              ["kleos", "Via Kleos"],
-            ] as [Filter, string][]
-          ).map(([k, label]) => (
-            <button
-              key={k}
-              onClick={() => setFilter(k)}
-              className={`h-9 rounded-[8px] px-3 text-sm ${filter === k ? "bg-surface-elevated text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {error && <p className="mt-6 text-sm text-error">{error}</p>}
+        {error && <p className="mt-4 text-sm text-error">{error}</p>}
 
         {!data && !error && (
-          <div className="mt-6 space-y-2">
+          <div className="mt-4 space-y-2">
             {[0, 1, 2, 3, 4].map((i) => (
               <div key={i} className="h-14 animate-pulse rounded-[10px] bg-surface-elevated" />
             ))}
@@ -200,7 +194,7 @@ export default function ExplorePage() {
         )}
 
         {data && (
-          <Card className="mt-5 overflow-hidden">
+          <Card className="mt-4 overflow-hidden">
             <div className="hidden grid-cols-[1fr_150px_120px_130px_24px] items-center gap-4 border-b border-border-subtle px-5 py-3 md:grid">
               <Label>Agent</Label>
               <Label>Agent wallet</Label>
