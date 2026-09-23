@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Info, Search } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { Card, Input, Label, Mono, shortHex } from "@/components/ui";
@@ -69,6 +69,24 @@ function RecordCard({ agent, summary }: { agent: ExploreAgent; summary?: { usdc:
         </div>
       </Card>
     </Link>
+  );
+}
+
+// Hover or focus (tap on mobile) explains what a track record is.
+function RecordInfo() {
+  return (
+    <span className="group relative inline-flex">
+      <button type="button" aria-describedby="record-info" aria-label="What is a Kleos track record?" className="text-tertiary hover:text-primary focus-visible:text-primary">
+        <Info size={14} strokeWidth={1.5} />
+      </button>
+      <span
+        id="record-info"
+        role="tooltip"
+        className="pointer-events-none absolute right-0 top-full z-20 mt-2 w-64 rounded-[8px] border border-border bg-surface-elevated p-3 text-xs leading-relaxed text-secondary opacity-0 transition-opacity duration-[120ms] group-focus-within:opacity-100 group-hover:opacity-100 sm:left-0 sm:right-auto"
+      >
+        Paid actions this agent completed, each stamped on chain by Kleos after the payment settled. Open a profile to verify them yourself.
+      </span>
+    </span>
   );
 }
 
@@ -177,14 +195,17 @@ export default function ExplorePage() {
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
         <section className="mt-6">
-          <div className="inline-flex flex-col">
-            <div className="flex items-center gap-2">
-              <Mark size={14} className="text-accent" />
-              <Mono className="text-[11px] tracking-[0.14em] text-primary">
-                {featured.length > 1 ? "AGENTS WITH A KLEOS TRACK RECORD" : "AGENT WITH A KLEOS TRACK RECORD"}
-              </Mono>
+          <div className="flex items-start gap-2">
+            <div className="inline-flex flex-col">
+              <div className="flex items-center gap-2">
+                <Mark size={14} className="text-accent" />
+                <Mono className="text-[11px] tracking-[0.14em] text-primary">
+                  {featured.length > 1 ? "AGENTS WITH A KLEOS TRACK RECORD" : "AGENT WITH A KLEOS TRACK RECORD"}
+                </Mono>
+              </div>
+              <span aria-hidden className="mt-2 block h-px w-full bg-accent" />
             </div>
-            <span aria-hidden className="mt-2 block h-px w-full bg-accent" />
+            <RecordInfo />
           </div>
           <div className={`mt-4 grid gap-3 ${featured.length === 1 ? "md:max-w-xl" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
             {featured.map((a) => (
