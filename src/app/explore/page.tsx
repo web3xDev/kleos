@@ -52,7 +52,7 @@ function ago(ts: number): string {
 function RecordCard({ agent, summary }: { agent: ExploreAgent; summary?: { usdc: bigint; last: number | null } }) {
   return (
     <Link href={`/a/${agent.id}`} className="group block">
-      <Card hover className="p-5">
+      <Card className="border-accent/40 p-5 hover:border-accent hover:bg-surface-hover">
         <div className="flex items-baseline justify-between gap-4">
           <span className="truncate text-lg font-semibold text-primary">{agent.name ?? `Agent #${agent.id}`}</span>
           <span className="inline-flex items-center gap-2">
