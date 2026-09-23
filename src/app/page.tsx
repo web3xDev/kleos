@@ -17,6 +17,7 @@ import { Faq } from "@/components/faq";
 import { MascotHost } from "@/components/mascot-host";
 import { Scribble } from "@/components/scribble";
 import { CountUp } from "@/components/count-up";
+import { ClosingGlow } from "@/components/glow";
 
 type ExploreData = {
   total: number;
@@ -422,14 +423,7 @@ export default function Home() {
 
       {/* Closing: centered, with a faint purple atmosphere rising from the bottom */}
       <section className="relative pt-16 pb-24 md:pt-28 md:pb-36">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-[-32px] bottom-0 top-1/4 md:inset-x-[-120px]"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 55% at 50% 100%, rgba(99, 85, 184, 0.16), rgba(99, 85, 184, 0.06) 40%, transparent 72%)",
-          }}
-        />
+        <ClosingGlow />
         <div className="relative mx-auto max-w-2xl text-center">
           <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Your agent starts with zero.</h2>
           <p className="mt-2 text-[32px] font-semibold leading-tight tracking-tight text-tertiary md:text-[40px]">Every action changes that.</p>
