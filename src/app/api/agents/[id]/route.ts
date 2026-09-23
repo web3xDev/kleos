@@ -2,8 +2,8 @@
 // Identity, runtime, track record and the latest public receipts. No score.
 import { NextResponse } from "next/server";
 import { loadAgent } from "@/lib/agents";
-import { listStamps } from "@/lib/store";
-import { apiHeaders, publicClient, stampPublic, trackRecordOf } from "@/lib/api";
+
+import { listAnchoredStamps, apiHeaders, publicClient, stampPublic, trackRecordOf } from "@/lib/api";
 import { addresses, chain } from "@/lib/chain";
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -11,7 +11,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   if (!/^\d+$/.test(id)) return NextResponse.json({ error: "agent id must be an integer" }, { status: 400 });
   const agent = await loadAgent(publicClient, BigInt(id)).catch(() => null);
   if (!agent) return NextResponse.json({ error: "no such agent" }, { status: 404 });
-  const stamps = await listStamps(id);
+  const stamps = await listAnchoredStamps(id);
   return NextResponse.json(
     {
       network: { name: chain.name, chainId: chain.id },

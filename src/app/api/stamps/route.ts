@@ -6,8 +6,9 @@
 // signature and hash so junk cannot be filed under someone else's agent.
 
 import { NextResponse } from "next/server";
+import { listAnchoredStamps } from "@/lib/api";
 import { isAddressEqual, keccak256, recoverMessageAddress, toBytes } from "viem";
-import { getStamp, listStamps, putStamp, type StoredStamp } from "@/lib/store";
+import { getStamp, putStamp, type StoredStamp } from "@/lib/store";
 
 const ORDER = ["v", "network", "agentId", "wallet", "tool", "platform", "amount", "asset", "settlementTx", "answerHash", "timestamp"];
 
@@ -53,5 +54,5 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const agentId = new URL(req.url).searchParams.get("agentId");
   if (!agentId || !/^\d+$/.test(agentId)) return NextResponse.json({ error: "agentId required" }, { status: 400 });
-  return NextResponse.json({ stamps: await listStamps(agentId) });
+  return NextResponse.json({ stamps: await listAnchoredStamps(agentId) });
 }

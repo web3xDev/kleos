@@ -9,6 +9,7 @@ import { ArrowRight, Check, Loader2, Play, X } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
+import { Mark } from "@/components/mark";
 
 type Status = "idle" | "start" | "done" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
@@ -20,6 +21,14 @@ const ROWS: Omit<Row, "status">[] = [
   { key: "stamp", title: "Receipt signed and sealed", who: "EIP-191 by the runtime wallet · body encrypted to the owner" },
   { key: "anchor", title: "Stamp anchored on Monad", who: "KleosStamps.stamp() · only the registered runtime can" },
 ];
+
+// Chain errors are long and technical; show one plain sentence instead.
+function plainError(msg: string): string {
+  if (/insufficient (balance|funds)/i.test(msg)) return "The demo agent is out of gas right now. Try again in a little while.";
+  if (/busy/i.test(msg)) return msg;
+  if (/not this agent's wallet/i.test(msg)) return "The demo runtime is no longer paired to agent #1910.";
+  return msg.split("\n")[0].slice(0, 160);
+}
 
 export default function TryPage() {
   const [rows, setRows] = useState<Row[]>(ROWS.map((r) => ({ ...r, status: "idle" })));
@@ -61,7 +70,8 @@ export default function TryPage() {
             continue;
           }
           if (ev.step === "error") {
-            setError(ev.detail ?? "failed");
+            setError(plainError(ev.detail ?? "failed"));
+            setRows((rs) => rs.map((r) => (r.status === "start" ? { ...r, status: "error" } : r)));
             continue;
           }
           if (ev.step === "tool" && ev.status === "done") setAnswer(ev.detail ?? null);
@@ -69,7 +79,8 @@ export default function TryPage() {
         }
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(plainError(e instanceof Error ? e.message : String(e)));
+      setRows((rs) => rs.map((r) => (r.status === "start" ? { ...r, status: "error" } : r)));
     } finally {
       setRunning(false);
     }
@@ -87,10 +98,12 @@ export default function TryPage() {
         </div>
       </div>
 
+      {/* Run bar: what is about to run, and who pays for it */}
       <Card className="mt-8 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-tertiary">
-            This demo agent is owned by Kleos and funded by us. Each run costs it 0.01 USDC.
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <Mono className="text-[11px] tracking-[0.14em] text-primary">DEMO AGENT #1910 · {chain.name.toUpperCase()} · REAL SETTLEMENT</Mono>
+            <div className="mt-1.5 text-xs text-tertiary">Kleos-owned, funded by us · 0.01 USDC per run</div>
           </div>
           <Button variant="accent" onClick={run} loading={running} disabled={running}>
             <Play size={16} strokeWidth={1.5} />
@@ -99,71 +112,97 @@ export default function TryPage() {
         </div>
       </Card>
 
-      <ol className="mt-6 divide-y divide-border-subtle rounded-[10px] border border-border bg-surface">
-        {rows.map((r) => (
-          <li key={r.key} className="flex items-start gap-4 px-5 py-4">
-            <div className="mt-0.5 w-5">
-              {r.status === "start" ? (
-                <Loader2 size={18} strokeWidth={1.5} className="animate-spin text-secondary" />
-              ) : r.status === "done" ? (
-                <Check size={18} strokeWidth={2} className="text-success" />
-              ) : r.status === "error" ? (
-                <X size={18} strokeWidth={2} className="text-error" />
-              ) : (
-                <span className="block h-[18px] w-[18px] rounded-full border border-border" />
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className={`text-sm font-medium ${r.status === "idle" ? "text-tertiary" : "text-primary"}`}>{r.title}</div>
-              <div className="mt-0.5 text-xs text-tertiary">{r.who}</div>
-              {r.detail && (
-                <div className="mt-2">
-                  {r.detail.startsWith("0x") && r.detail.length === 66 ? (
-                    <a
-                      href={`${chain.blockExplorers.default.url}/tx/${r.detail}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-mono text-xs text-secondary underline decoration-transparent underline-offset-2 hover:text-primary hover:decoration-current"
-                    >
-                      {shortHex(r.detail, 12, 10)}
-                    </a>
-                  ) : (
-                    <Mono className={`text-xs ${r.status === "error" ? "text-error" : "text-secondary"}`}>{r.detail}</Mono>
+      {/* Protocol timeline: titles always, mechanism and proof once a step starts */}
+      <ol className="mt-8">
+        {rows.map((r, i) => {
+          const last = i === rows.length - 1;
+          const isTx = r.key === "payment" || r.key === "anchor";
+          return (
+            <li key={r.key} className="relative flex gap-4 pb-6 last:pb-0">
+              {!last && <span aria-hidden className="absolute left-[9px] top-7 bottom-1 w-px bg-border-subtle" />}
+              <div className="mt-0.5 flex w-5 shrink-0 justify-center">
+                {r.status === "start" ? (
+                  <Loader2 size={18} strokeWidth={1.5} className="animate-spin text-secondary" />
+                ) : r.status === "done" ? (
+                  <Check size={18} strokeWidth={2} className="text-success" />
+                ) : r.status === "error" ? (
+                  <X size={18} strokeWidth={2} className="text-error" />
+                ) : (
+                  <span className="block h-[18px] w-[18px] rounded-full border border-border" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline gap-3">
+                  <Mono className="inline-block w-[18px] shrink-0 text-xs text-tertiary">{String(i + 1).padStart(2, "0")}</Mono>
+                  <span className={`text-sm font-medium ${r.status === "idle" ? "text-tertiary" : "text-primary"}`}>{r.title}</span>
+                  {r.ms !== undefined && r.status !== "idle" && (
+                    <Mono className="ml-auto text-[11px] text-tertiary">{(r.ms / 1000).toFixed(1)}s</Mono>
                   )}
                 </div>
-              )}
-            </div>
-            {r.ms !== undefined && r.status !== "idle" && (
-              <Mono className="hidden text-[11px] text-tertiary sm:block">{(r.ms / 1000).toFixed(1)}s</Mono>
-            )}
-          </li>
-        ))}
+                {r.status !== "idle" && (
+                  <div className="pl-[30px]">
+                    <div className="mt-0.5 text-xs text-tertiary">{r.who}</div>
+                    {r.detail && (
+                      <div className="mt-2">
+                        {r.status === "error" ? (
+                          <Mono className="text-xs text-error">{r.detail}</Mono>
+                        ) : isTx && r.detail.startsWith("0x") ? (
+                          <a
+                            href={`${chain.blockExplorers.default.url}/tx/${r.detail}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-mono text-xs text-secondary underline decoration-transparent underline-offset-2 hover:text-primary hover:decoration-current"
+                          >
+                            {shortHex(r.detail, 12, 10)} ↗
+                          </a>
+                        ) : r.key === "stamp" && r.detail.startsWith("0x") ? (
+                          <Mono className="text-xs text-secondary">
+                            <span className="text-tertiary">Receipt hash </span>
+                            {shortHex(r.detail, 12, 10)}
+                          </Mono>
+                        ) : (
+                          <Mono className="text-xs text-secondary">{r.detail}</Mono>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ol>
-
-      {answer && (
-        <div className="mt-6">
-          <Label>What the agent got back</Label>
-          <JsonView value={answer} className="mt-2" />
-          <p className="mt-2 text-xs text-tertiary">
-            Shown here because this is the demo agent. On a real agent, the answer is sealed to its owner.
-          </p>
-        </div>
-      )}
 
       {error && <p className="mt-6 text-sm text-error">{error}</p>}
 
+      {/* The point of the run: the record moved */}
       {profile && (
-        <Card className="mt-8 flex flex-wrap items-center justify-between gap-4 p-5">
-          <div>
-            <div className="text-sm font-medium">Track record updated</div>
-            <div className="mt-0.5 text-xs text-tertiary">One more verified action, provable by anyone.</div>
+        <Card className="mt-8 p-6">
+          <div className="flex items-center gap-2">
+            <Mark size={16} className="text-accent" />
+            <Mono className="text-[11px] tracking-[0.14em] text-primary">KLEOS</Mono>
           </div>
-          <Link href={profile}>
-            <Button variant="secondary">
+          <div className="mt-4 flex items-baseline justify-between gap-4">
+            <div className="text-lg font-semibold text-primary">Track record updated</div>
+            <Mono className="text-secondary">#1910</Mono>
+          </div>
+          <div className="mt-1 text-sm text-secondary">One more verified action, provable by anyone.</div>
+          <Link href={profile} className="mt-5 inline-block">
+            <Button variant="accent">
               View agent profile <ArrowRight size={14} strokeWidth={1.5} />
             </Button>
           </Link>
         </Card>
+      )}
+
+      {answer && (
+        <div className="mt-8 max-w-2xl">
+          <Label>What the agent got back</Label>
+          <JsonView value={answer} className="mt-2 max-h-48 !p-3 !text-xs" />
+          <p className="mt-2 text-xs text-tertiary">
+            Shown here because this is the demo agent. On a real agent, the answer is sealed to its owner.
+          </p>
+        </div>
       )}
     </main>
   );

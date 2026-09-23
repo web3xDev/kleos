@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         if (!paired) throw new Error("demo runtime is not this agent's wallet");
         emit({ step: "agent", status: "done" });
 
-        emit({ step: "tool", status: "start", detail: TOOL_ID });
+        emit({ step: "tool", status: "start", detail: "Paying and calling · awaiting settlement…" });
         const res = await payingFetch(network, account)(`${origin}/api/demo/tool`);
         const answer = await res.text();
         const settlement = readSettlement(res);

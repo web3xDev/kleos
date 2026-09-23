@@ -4,9 +4,38 @@
 import { createPublicClient, http, isAddressEqual, keccak256, recoverMessageAddress, toBytes, type PublicClient } from "viem";
 import { addresses, chain } from "./chain";
 import { kleosStampsAbi, type ReceiptPublic } from "./stamps";
-import type { StoredStamp } from "./store";
+import { listStamps, type StoredStamp } from "./store";
 
 export const publicClient: PublicClient = createPublicClient({ chain, transport: http() });
+
+// Anchors are permanent, so a hash seen anchored once never needs re-reading.
+const anchoredSeen = new Set<string>();
+
+/**
+ * Stored receipts that are actually anchored on KleosStamps for this agent.
+ * The store also holds bodies whose anchor never landed (e.g. the runtime ran
+ * out of gas after storing); those are not stamps and are never served.
+ */
+export async function listAnchoredStamps(agentId: string): Promise<StoredStamp[]> {
+  const stored = await listStamps(agentId);
+  const unknown = stored.filter((s) => !anchoredSeen.has(s.receiptHash.toLowerCase()));
+  if (unknown.length) {
+    const res = await publicClient.multicall({
+      contracts: unknown.map((s) => ({
+        address: addresses.kleosStamps,
+        abi: kleosStampsAbi,
+        functionName: "getStamp" as const,
+        args: [s.receiptHash as `0x${string}`],
+      })),
+    });
+    res.forEach((r, i) => {
+      if (r.status === "success" && r.result.timestamp !== 0n && r.result.agentId === BigInt(agentId)) {
+        anchoredSeen.add(unknown[i].receiptHash.toLowerCase());
+      }
+    });
+  }
+  return stored.filter((s) => anchoredSeen.has(s.receiptHash.toLowerCase()));
+}
 
 export function stampPublic(s: StoredStamp) {
   const { signature, ...pub } = s.receipt as unknown as ReceiptPublic & { signature: `0x${string}` };
