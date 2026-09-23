@@ -94,15 +94,32 @@ export default function ExplorePage() {
       .catch((e) => setError(e.message));
   }, []);
 
-  const featured = useMemo(
-    () => (data ? data.agents.filter((a) => a.stamps > 0).sort((a, b) => b.stamps - a.stamps).slice(0, 6) : []),
-    [data],
-  );
+  // Dev-only layout preview: /explore?preview=N adds N placeholder records.
+  // Never active in production builds, where every card is real.
+  const [previewCount, setPreviewCount] = useState(0);
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+    const n = Number(new URLSearchParams(window.location.search).get("preview") ?? 0);
+    if (n > 0) setPreviewCount(Math.min(n, 8));
+  }, []);
+
+  const featured = useMemo(() => {
+    const real = data ? data.agents.filter((a) => a.stamps > 0).sort((a, b) => b.stamps - a.stamps).slice(0, 6) : [];
+    const fake: ExploreAgent[] = Array.from({ length: previewCount }, (_, i) => ({
+      id: 9000 + i,
+      name: ["Research Agent", "Lending Scout", "Price Watcher", "Yield Analyst", "Risk Monitor", "Data Broker", "Trade Planner", "Audit Bot"][i],
+      owner: "0x0000000000000000000000000000000000000000",
+      wallet: null,
+      stamps: [42, 17, 9, 6, 3, 2, 1, 1][i],
+      kleos: true,
+    }));
+    return [...real, ...fake];
+  }, [data, previewCount]);
 
   useEffect(() => {
     if (featured.length === 0) return;
     Promise.all(
-      featured.map(async (a) => {
+      featured.filter((a) => a.id < 9000).map(async (a) => {
         const stamps = await fetchStamps(BigInt(a.id));
         return [
           a.id,
@@ -149,6 +166,11 @@ export default function ExplorePage() {
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
         <section className="mt-6">
+          {previewCount > 0 && (
+            <div className="mb-3 rounded-[8px] border border-warning/40 bg-warning-muted px-3 py-2 font-mono text-xs text-warning">
+              PREVIEW · {previewCount} placeholder records for layout only (dev build)
+            </div>
+          )}
           <div className="inline-flex flex-col">
             <div className="flex items-center gap-2">
               <Mark size={14} className="text-accent" />
@@ -160,7 +182,11 @@ export default function ExplorePage() {
           </div>
           <div className={`mt-4 grid gap-3 ${featured.length === 1 ? "md:max-w-xl" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
             {featured.map((a) => (
-              <RecordCard key={a.id} agent={a} summary={settled.get(a.id)} />
+              <RecordCard
+                key={a.id}
+                agent={a}
+                summary={a.id >= 9000 ? { usdc: BigInt(a.stamps) * 10_000n, last: Math.floor(Date.now() / 1000) - (a.id - 8990) * 3600 } : settled.get(a.id)}
+              />
             ))}
           </div>
         </section>
