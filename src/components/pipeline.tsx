@@ -133,7 +133,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                     }}
                   >
                     {/* drop-shadow follows the strokes themselves, not a box */}
-                    <Mark size={64} className="[filter:drop-shadow(0_2px_3px_rgba(0,0,0,0.45))]" />
+                    <Mark size={64} className="[filter:drop-shadow(0_1px_1px_rgba(0,0,0,0.85))]" />
                   </span>
                   <VerifiedBadge />
                   <div className="mt-3 text-lg font-semibold leading-tight">{stamp.amount}</div>
