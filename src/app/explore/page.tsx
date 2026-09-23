@@ -73,7 +73,7 @@ function RecordCard({ agent, summary }: { agent: ExploreAgent; summary?: { usdc:
 }
 
 function KleosTag() {
-  return <Mono className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] leading-none tracking-[0.12em] text-accent-text">KLEOS</Mono>;
+  return <Mono className="rounded bg-accent/25 px-1.5 py-0.5 text-[10px] leading-none tracking-[0.12em] text-accent-text">KLEOS</Mono>;
 }
 
 export default function ExplorePage() {
