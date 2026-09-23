@@ -24,7 +24,7 @@ type ExploreData = { total: number; withTrackRecord: number; totalStamps: number
 
 type Filter = "all" | "record";
 
-const PAGE = 10;
+const PAGE = 12;
 
 function Metric({ value, label, accent }: { value: number | string | undefined; label: string; accent?: boolean }) {
   return (
