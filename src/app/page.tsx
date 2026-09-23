@@ -12,7 +12,6 @@ import { useSession } from "@/lib/session";
 import { fetchStamps, formatUsdc, verifyStamp, type Check as VerifyCheck, type Stamp } from "@/lib/stamps";
 import { Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components/ui";
 import { Mark } from "@/components/mark";
-import { Reveal } from "@/components/reveal";
 import { Pipeline } from "@/components/pipeline";
 import { Faq } from "@/components/faq";
 import { MascotHost } from "@/components/mascot-host";
@@ -197,17 +196,14 @@ export default function Home() {
       {/* A stamp */}
       <section className="grid gap-10 py-16 md:grid-cols-2 md:items-center md:py-28">
         <div>
-          <Reveal>
             <h2 className="text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">Every paid action leaves a stamp.</h2>
-          </Reveal>
           <ol className="mt-8">
             {[
               ["01", "Payment settles", "A payment for a tool lands on Monad. That is the proof the action happened."],
               ["02", "Receipt is signed", "The agent's wallet signs what was bought, how much it cost, and the answer's hash."],
               ["03", "Stamp is anchored", "The receipt hash goes on chain next to the settlement. Anyone can check it."],
             ].map(([n, t, b], i, arr) => (
-              <li key={n}>
-                <Reveal className="flex gap-4" delay={90 + i * 100}>
+              <li key={n} className="flex gap-4">
                   <div className="flex flex-col items-center">
                     <Mono className="mt-0.5 w-6 text-tertiary">{n}</Mono>
                     {i < arr.length - 1 && <span className="my-2 block w-px flex-1 bg-accent/60" />}
@@ -216,13 +212,10 @@ export default function Home() {
                     <div className="text-[15px] font-medium text-primary">{t}</div>
                     <div className="mt-1 text-sm text-secondary">{b}</div>
                   </div>
-                </Reveal>
               </li>
             ))}
           </ol>
         </div>
-
-        <Reveal delay={380}>
         <MascotHost side="right" top="30%">
         <Card className="overflow-hidden">
           <Chrome path="STAMP" />
@@ -265,11 +258,9 @@ export default function Home() {
           )}
         </Card>
         </MascotHost>
-        </Reveal>
       </section>
 
       {/* Network state */}
-      <Reveal>
       <section className="border-y border-border-subtle py-7">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <Label className="text-[11px]">Live on {chain.name}</Label>
@@ -302,10 +293,8 @@ export default function Home() {
           <Stat value={example ? formatUsdc(usdc) : data ? "$0.00" : null} label="USDC settled" />
         </div>
       </section>
-      </Reveal>
 
       {/* How it works: one pipeline, ending in a real stamp */}
-      <Reveal>
       <section className="py-16 md:py-28">
         <div className="eyebrow">How it works</div>
         <h2 className="mt-4 max-w-2xl text-[32px] font-semibold leading-tight tracking-tight md:text-[40px]">
@@ -318,11 +307,9 @@ export default function Home() {
           <Scribble note="not even us">No platform owns the record.</Scribble>
         </p>
       </section>
-      </Reveal>
 
       {/* A real record: the example, verified live in this browser */}
       {example && (
-        <Reveal>
         <section className="py-16 md:py-28">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -426,18 +413,14 @@ export default function Home() {
           </Card>
           </MascotHost>
         </section>
-        </Reveal>
       )}
 
       {/* FAQ */}
-      <Reveal>
       <section className="py-16 md:py-28">
         <Faq />
       </section>
-      </Reveal>
 
       {/* Closing: centered, with a faint purple atmosphere rising from the bottom */}
-      <Reveal>
       <section className="relative pt-16 pb-24 md:pt-28 md:pb-36">
         <div
           aria-hidden
@@ -461,7 +444,6 @@ export default function Home() {
           <p className="mt-6 text-sm text-tertiary">No platform owns the record. No reputation score. Just a verifiable history.</p>
         </div>
       </section>
-      </Reveal>
     </main>
   );
 }
