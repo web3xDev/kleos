@@ -7,7 +7,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Card, Label, Mono, VerifiedBadge } from "@/components/ui";
-import { Wordmark } from "@/components/mark";
+import { Mark, Wordmark } from "@/components/mark";
 import { useInView } from "@/components/reveal";
 
 type StampLite = { amount: string; agentId: number } | null;
@@ -121,7 +121,19 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                   transition: `opacity 450ms ${delay + 300}ms, transform 450ms cubic-bezier(0.2,0,0,1) ${delay + 300}ms`,
                 }}
               >
-                <Card hover className="p-4">
+                <Card hover className="relative overflow-hidden p-4">
+                  {/* A rubber-stamp impression of the seal, pressed on after the card lands */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute right-3 top-1/2 text-accent"
+                    style={{
+                      opacity: active ? 0.55 : 0,
+                      transform: `translateY(-50%) rotate(-14deg) scale(${active ? 1 : 1.6})`,
+                      transition: `opacity 220ms ease-out ${delay + 800}ms, transform 260ms cubic-bezier(0.3, 0, 0.2, 1.4) ${delay + 800}ms`,
+                    }}
+                  >
+                    <Mark size={64} />
+                  </span>
                   <VerifiedBadge />
                   <div className="mt-3 text-lg font-semibold leading-tight">{stamp.amount}</div>
                   <Mono className="mt-1 block text-secondary">Agent #{stamp.agentId}</Mono>
