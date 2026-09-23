@@ -205,7 +205,7 @@ export default function MePage() {
     <main className="mx-auto w-full max-w-[1200px] px-4 pb-32 pt-12 md:px-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[40px] font-semibold leading-none tracking-tight">Your agents</h1>
+          <h1 className="text-[40px] font-semibold leading-none tracking-tight">My agents</h1>
           <div className="mt-3">
             <Mono className="text-secondary">{shortHex(session.address, 8, 6)}</Mono>
           </div>
