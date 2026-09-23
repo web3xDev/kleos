@@ -4,7 +4,7 @@
 // component, two modes: public (answers locked) and owner (answers open).
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, ChevronUp, Loader2, Lock, ShieldCheck, X } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, Lock, ShieldCheck, X } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { loadAgent, type Agent } from "@/lib/agents";
 import { chain } from "@/lib/chain";
@@ -19,6 +19,8 @@ import {
 } from "@/lib/stamps";
 import { ActiveBadge, Badge, Button, Card, Label, Mono, VerifiedBadge, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
+
+const PAGE = 10;
 
 type Verification = { running: boolean; results: Map<string, VerifyCheck[]>; done: number; total: number };
 
@@ -37,6 +39,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   const [stamps, setStamps] = useState<Stamp[]>([]);
   const [loading, setLoading] = useState(true);
   const [openStamp, setOpenStamp] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
   const [verification, setVerification] = useState<Verification>({ running: false, results: new Map(), done: 0, total: 0 });
   const [decrypted, setDecrypted] = useState<Map<string, { answer: string; hashMatches: boolean }>>(new Map());
 
@@ -59,6 +62,14 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   }, [load]);
 
   const record = useMemo(() => trackRecord(stamps), [stamps]);
+  const pages = Math.max(1, Math.ceil(stamps.length / PAGE));
+  const current = Math.min(page, pages - 1);
+  const visible = stamps.slice(current * PAGE, current * PAGE + PAGE);
+
+  function goTo(p: number) {
+    setPage(p);
+    setOpenStamp(null);
+  }
 
   async function verifyAll() {
     setVerification({ running: true, results: new Map(), done: 0, total: stamps.length });
@@ -251,8 +262,10 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           </Card>
         )}
 
-        <ul className="mt-4 divide-y divide-border-subtle rounded-[10px] border border-border bg-surface">
-          {stamps.map((s) => {
+        {stamps.length > 0 && (
+          <div className="mt-4 overflow-hidden rounded-[10px] border border-border bg-surface">
+        <ul className="divide-y divide-border-subtle">
+          {visible.map((s) => {
             const isOpen = openStamp === s.receiptHash;
             const checks = verification.results.get(s.receiptHash);
             const ok = checks ? checks.every((c) => c.ok) : null;
@@ -343,6 +356,28 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             );
           })}
         </ul>
+            {stamps.length > PAGE && (
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle px-5 py-3">
+                <span className="text-xs text-tertiary">
+                  Showing {current * PAGE + 1}–{Math.min(stamps.length, (current + 1) * PAGE)} of {stamps.length} stamps
+                </span>
+                <div className="flex items-center gap-2">
+                  <button className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-transparent" onClick={() => goTo(current - 1)} disabled={current === 0}>
+                    <ChevronLeft size={14} strokeWidth={1.5} />
+                    Previous
+                  </button>
+                  <Mono className="w-16 text-center text-xs text-secondary">
+                    {current + 1} / {pages}
+                  </Mono>
+                  <button className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-transparent" onClick={() => goTo(current + 1)} disabled={current >= pages - 1}>
+                    Next
+                    <ChevronRight size={14} strokeWidth={1.5} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </section>
     </main>
   );
