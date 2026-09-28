@@ -14,6 +14,7 @@ import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 import { Wordmark } from "@/components/mark";
 import { Segmented } from "@/components/segmented";
+import { SmoothHeight } from "@/components/smooth-height";
 
 type Status = "idle" | "start" | "done" | "declined" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
@@ -180,6 +181,9 @@ export default function TryPage() {
 
       {/* Run bar: what is about to run, and who pays for it */}
       <Card className="mt-4 p-5">
+        {/* Switching the toggle: the box resizes smoothly and the new content fades in (keyed on mode) */}
+        <SmoothHeight>
+        <div key={mode} className="swap-in">
         {mode === "first" ? (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -221,13 +225,15 @@ export default function TryPage() {
             Dev: take credit and leave the invoice unpaid
           </button>
         )}
+        </div>
+        </SmoothHeight>
       </Card>
 
       {/* Desktop: the steps on the left, what they produce (record, answer) on the right */}
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
       <div className="min-w-0">
-      {/* Protocol timeline: titles always, mechanism and proof once a step starts */}
-      <ol>
+      {/* Protocol timeline: titles always, mechanism and proof once a step starts. Keyed on mode so a toggle swap fades in. */}
+      <ol key={mode} className="swap-in">
         {rows.map((r, i) => {
           const last = i === rows.length - 1;
           const isTx = TX_KEYS[mode].includes(r.key);
