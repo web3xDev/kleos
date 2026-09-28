@@ -34,6 +34,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
     links: [
       { href: `${explorer}/address/${addresses.identityRegistry}`, label: "Identity Registry", address: short(addresses.identityRegistry), external: true },
       { href: `${explorer}/address/${addresses.kleosStamps}`, label: "KleosStamps", address: short(addresses.kleosStamps), external: true },
+      { href: `${explorer}/address/${addresses.kleosCredit}`, label: "KleosCredit", address: short(addresses.kleosCredit), external: true },
     ],
   },
 ];
