@@ -35,12 +35,12 @@ export function Segmented<T extends string>({
   }, [value]);
 
   return (
-    <div role="tablist" aria-label={label} className={`relative inline-flex gap-1 rounded-[10px] border border-border bg-surface p-1 ${className}`}>
+    <div role="tablist" aria-label={label} className={`relative inline-flex gap-1 rounded-[10px] border border-border bg-background p-1 ${className}`}>
       {pill && (
         <span
           aria-hidden
-          // A step lighter than the track, with a hairline edge and a soft drop, so the selection reads at a glance.
-          className="absolute bottom-1 top-1 rounded-[8px] border border-border-hover bg-border shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
+          // Same as the navbar's selected item: surface-elevated on the page background.
+          className="absolute bottom-1 top-1 rounded-[8px] bg-surface-elevated"
           style={{ left: pill.left, width: pill.width, transition: "left 280ms cubic-bezier(0.2, 0, 0, 1), width 280ms cubic-bezier(0.2, 0, 0, 1)" }}
         />
       )}
