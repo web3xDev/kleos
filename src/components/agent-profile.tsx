@@ -170,7 +170,8 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
       {/* Track record */}
       <section className="mt-10">
         <Label>Track record</Label>
-        <div className="mt-3 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-6">
+        {/* The last column (Invoices) carries a breakdown line, so it gets a little more room */}
+        <div className="mt-3 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-[repeat(5,minmax(0,1fr))_minmax(0,1.5fr)]">
           <div>
             <div className="metric">{loading ? <Shimmer>00</Shimmer> : stampsError ? "–" : record.actions}</div>
             <Label className="mt-1">Verified actions</Label>
@@ -198,9 +199,9 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             </div>
             <Label className="mt-1">Invoices</Label>
             {!loading && invoices !== null && invoices.length > 0 && (
-              <div className="mt-1 text-xs text-tertiary">
-                {paidOnTime} paid on time
-                {paidLate > 0 && <> · {paidLate} paid late</>} · <span className={openCount > 0 ? "text-secondary" : ""}>{openCount} open</span> ·{" "}
+              <div className="mt-1 whitespace-nowrap text-xs text-tertiary">
+                {paidOnTime} paid
+                {paidLate > 0 && <> · {paidLate} late</>} · <span className={openCount > 0 ? "text-secondary" : ""}>{openCount} open</span> ·{" "}
                 <span className={overdueCount > 0 ? "font-medium text-error" : ""}>{overdueCount} unpaid</span>
               </div>
             )}
