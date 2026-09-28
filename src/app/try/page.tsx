@@ -351,7 +351,8 @@ export default function TryPage() {
       <Expand open={Boolean(profile)} slow>
       {profile && (
         <div className="pb-6">
-        <Card className="p-6">
+        {/* A purple light runs once around the card when the record moved (not for an unpaid invoice) */}
+        <Card className={`p-6 ${unpaid ? "" : "border-sweep"}`}>
           <Wordmark size={20} />
           <div className="mt-4 flex items-baseline justify-between gap-4">
             <div className="text-lg font-semibold text-primary">
