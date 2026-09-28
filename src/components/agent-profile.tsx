@@ -81,7 +81,15 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   // A paid invoice is represented by the stamp that closed it (tagged "Paid later").
   const paidBy = useMemo(() => new Map((invoices ?? []).filter((i) => i.receiptHash).map((i) => [i.receiptHash!.toLowerCase(), i])), [invoices]);
   const unpaid = useMemo(() => (invoices ?? []).filter((i) => i.paidAt === null), [invoices]);
-  const overdueCount = unpaid.filter((i) => invoiceStatus(i) === "overdue").length;
+  // A live clock while anything is unpaid: "due in" counts down and an invoice
+  // turns overdue (red) the moment its due date passes, without a reload.
+  const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
+  useEffect(() => {
+    if (unpaid.length === 0) return;
+    const t = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [unpaid.length]);
+  const overdueCount = unpaid.filter((i) => invoiceStatus(i, now) === "overdue").length;
   const openCount = unpaid.length - overdueCount;
   const paidOnTime = (invoices ?? []).filter((i) => invoiceStatus(i) === "paid").length;
   const paidLate = (invoices ?? []).filter((i) => invoiceStatus(i) === "paid-late").length;
@@ -398,7 +406,12 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             // An invoice not yet paid sits in the list where a stamp would be.
             if (e.kind === "invoice") {
               return (
-                <InvoiceRow key={e.key} invoice={e.invoice} onPay={agentId === DEMO_AGENT_ID ? () => payDemoInvoice(e.invoice.id) : undefined} />
+                <InvoiceRow
+                  key={e.key}
+                  invoice={e.invoice}
+                  now={now}
+                  onPay={agentId === DEMO_AGENT_ID ? () => payDemoInvoice(e.invoice.id) : undefined}
+                />
               );
             }
             const s = e.stamp;
@@ -572,8 +585,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
 
 // An invoice not paid yet, in the stamp list. Same columns as a stamp row, so
 // it reads as part of the record: open (neutral) until due, unpaid (red) after.
-function InvoiceRow({ invoice, onPay }: { invoice: Invoice; onPay?: () => Promise<void> }) {
-  const now = Math.floor(Date.now() / 1000);
+function InvoiceRow({ invoice, now, onPay }: { invoice: Invoice; now: number; onPay?: () => Promise<void> }) {
   const overdue = invoiceStatus(invoice, now) === "overdue";
   const [paying, setPaying] = useState(false);
   return (
