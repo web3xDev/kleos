@@ -19,11 +19,7 @@ export function Header() {
   const { session, secondsLeft } = useSession();
 
   return (
-    <header
-      className="sticky top-0 z-50 border-b border-border-subtle bg-background/85 backdrop-blur-[6px]"
-      // Anchored during page transitions: the content moves, the header does not (globals.css).
-      style={{ viewTransitionName: "site-header" }}
-    >
+    <header className="sticky top-0 z-50 border-b border-border-subtle bg-background/85 backdrop-blur-[6px]">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 md:px-8">
         <Link href="/" aria-label="Kleos home">
           <Wordmark />
