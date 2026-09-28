@@ -235,9 +235,8 @@ button:hover svg.lucide-arrow-up-right {
   80% { opacity: 1; }
   100% { opacity: 0; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .border-sweep::before { animation: none; }
-}
+/* Deliberately kept under "reduce motion", like .mark-land: one short color
+   sweep on a 1px line, nothing on screen changes position. */
 
 /* Content swapped by a toggle (e.g. Pay first ↔ Pay later) fades in and rises a few pixels. */
 .swap-in {
@@ -247,6 +246,7 @@ button:hover svg.lucide-arrow-up-right {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
+/* Reduced motion: keep the fade, drop the rise. */
 @media (prefers-reduced-motion: reduce) {
-  .swap-in { animation: none; }
+  .swap-in { animation: fade-in 280ms ease-out both; }
 }
