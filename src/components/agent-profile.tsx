@@ -19,6 +19,7 @@ import {
   type Check as VerifyCheck,
   type Stamp,
 } from "@/lib/stamps";
+import { fetchInvoices, invoiceStatus, span, type Invoice } from "@/lib/credit";
 import { ActiveBadge, Badge, Button, Card, Label, Mono, Shimmer, VerifiedBadge, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 import { SmoothHeight } from "@/components/smooth-height";
@@ -42,6 +43,8 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   const [stamps, setStamps] = useState<Stamp[]>([]);
   const [loading, setLoading] = useState(true);
   const [stampsError, setStampsError] = useState(false);
+  // Credit history from KleosCredit; null when it could not be read.
+  const [invoices, setInvoices] = useState<Invoice[] | null>([]);
   const [openStamp, setOpenStamp] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [verification, setVerification] = useState<Verification>({ running: false, results: new Map(), done: 0, total: 0 });
@@ -52,14 +55,16 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [a, s] = await Promise.all([
+      const [a, s, inv] = await Promise.all([
         loadAgent(publicClient, agentId).catch(() => null),
         fetchStamps(agentId).catch(() => null),
+        fetchInvoices(publicClient, agentId).catch(() => null),
       ]);
       if (!a) setNotFound(true);
       setAgent(a);
       setStampsError(s === null);
       setStamps(s ?? []);
+      setInvoices(inv);
     } finally {
       setLoading(false);
     }
@@ -70,9 +75,23 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   }, [load]);
 
   const record = useMemo(() => trackRecord(stamps), [stamps]);
-  const pages = Math.max(1, Math.ceil(stamps.length / PAGE));
+
+  // One list, newest first: stamps, plus invoices not yet paid in their place.
+  // A paid invoice is represented by the stamp that closed it (tagged "Paid later").
+  const paidBy = useMemo(() => new Map((invoices ?? []).filter((i) => i.receiptHash).map((i) => [i.receiptHash!.toLowerCase(), i])), [invoices]);
+  const unpaid = useMemo(() => (invoices ?? []).filter((i) => i.paidAt === null), [invoices]);
+  const overdueCount = unpaid.filter((i) => invoiceStatus(i) === "overdue").length;
+  const entries = useMemo(
+    () =>
+      [
+        ...stamps.map((s) => ({ kind: "stamp" as const, t: s.receipt.timestamp, key: s.receiptHash, stamp: s })),
+        ...unpaid.map((i) => ({ kind: "invoice" as const, t: i.openedAt, key: i.id, invoice: i })),
+      ].sort((a, b) => b.t - a.t),
+    [stamps, unpaid],
+  );
+  const pages = Math.max(1, Math.ceil(entries.length / PAGE));
   const current = Math.min(page, pages - 1);
-  const visible = stamps.slice(current * PAGE, current * PAGE + PAGE);
+  const visible = entries.slice(current * PAGE, current * PAGE + PAGE);
 
   function goTo(p: number) {
     setPage(p);
@@ -148,7 +167,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
       {/* Track record */}
       <section className="mt-10">
         <Label>Track record</Label>
-        <div className="mt-3 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-5">
+        <div className="mt-3 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-6">
           <div>
             <div className="metric">{loading ? <Shimmer>00</Shimmer> : stampsError ? "–" : record.actions}</div>
             <Label className="mt-1">Verified actions</Label>
@@ -168,6 +187,13 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           <div>
             <div className="metric">{loading ? <Shimmer>0</Shimmer> : stampsError ? "–" : record.platforms}</div>
             <Label className="mt-1">Platforms</Label>
+          </div>
+          {/* Credit served and not paid past its due date: red, because it is a fact against the agent */}
+          <div>
+            <div className={`metric ${overdueCount > 0 ? "text-error" : ""}`}>
+              {loading ? <Shimmer>0</Shimmer> : invoices === null ? "–" : overdueCount}
+            </div>
+            <Label className="mt-1">Unpaid invoices</Label>
           </div>
         </div>
         <p className="mt-3 text-xs text-tertiary">
@@ -326,7 +352,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           </Card>
         )}
 
-        {!loading && !stampsError && stamps.length === 0 && (
+        {!loading && !stampsError && entries.length === 0 && (
           <Card className="mt-4 p-10 text-center">
             <p className="text-secondary">No track record yet.</p>
             <p className="mt-1 text-sm text-tertiary">
@@ -335,10 +361,14 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           </Card>
         )}
 
-        {stamps.length > 0 && (
+        {entries.length > 0 && (
           <div className="mt-4 overflow-hidden rounded-[10px] border border-border bg-surface">
         <ul className="divide-y divide-border-subtle">
-          {visible.map((s) => {
+          {visible.map((e) => {
+            // An invoice not yet paid sits in the list where a stamp would be.
+            if (e.kind === "invoice") return <InvoiceRow key={e.key} invoice={e.invoice} />;
+            const s = e.stamp;
+            const paidInvoice = paidBy.get(s.receiptHash.toLowerCase());
             const isOpen = openStamp === s.receiptHash;
             const checks = verification.results.get(s.receiptHash);
             const ok = checks ? passed(checks) : null;
@@ -351,7 +381,15 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium text-primary">{s.receipt.tool}</div>
-                    <div className="mt-0.5 text-xs text-tertiary">{s.receipt.platform}</div>
+                    <div className="mt-0.5 text-xs text-tertiary">
+                      {s.receipt.platform}
+                      {paidInvoice && (
+                        <span className="text-secondary">
+                          {" · "}
+                          {invoiceStatus(paidInvoice) === "paid-late" ? "paid later, after the due date" : "served first, paid later"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <Mono className="text-primary">{formatUsdc(BigInt(s.receipt.amount))}</Mono>
                   <span className="hidden w-20 text-right text-xs text-tertiary sm:block">{timeAgo(s.receipt.timestamp)}</span>
@@ -470,10 +508,11 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             );
           })}
         </ul>
-            {stamps.length > PAGE && (
+            {entries.length > PAGE && (
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle px-5 py-3">
                 <span className="text-xs text-tertiary">
-                  Showing {current * PAGE + 1}–{Math.min(stamps.length, (current + 1) * PAGE)} of {stamps.length} stamps
+                  Showing {current * PAGE + 1}–{Math.min(entries.length, (current + 1) * PAGE)} of {entries.length}{" "}
+                  {unpaid.length ? "entries" : "stamps"}
                 </span>
                 <div className="flex items-center gap-2">
                   <button className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-transparent" onClick={() => goTo(current - 1)} disabled={current === 0}>
@@ -494,6 +533,41 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         )}
       </section>
     </main>
+  );
+}
+
+// An invoice not paid yet, in the stamp list. Same columns as a stamp row, so
+// it reads as part of the record: open (neutral) until due, unpaid (red) after.
+function InvoiceRow({ invoice }: { invoice: Invoice }) {
+  const now = Math.floor(Date.now() / 1000);
+  const overdue = invoiceStatus(invoice, now) === "overdue";
+  return (
+    <li className={overdue ? "bg-error-muted/40" : ""}>
+      <div className="flex w-full items-center gap-4 px-5 py-4">
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-medium text-primary">{invoice.tool}</div>
+          <div className="mt-0.5 text-xs text-tertiary">
+            Served before payment ·{" "}
+            <span className={overdue ? "text-error" : "text-secondary"}>
+              {overdue ? `${span(now - invoice.dueAt)} overdue` : `due in ${span(invoice.dueAt - now)}`}
+            </span>
+            {" · owed to "}
+            <a
+              href={`${chain.blockExplorers.default.url}/address/${invoice.creditor}`}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-secondary hover:text-primary"
+            >
+              {shortHex(invoice.creditor)}
+            </a>
+          </div>
+        </div>
+        <Mono className={overdue ? "text-error" : "text-primary"}>{formatUsdc(invoice.amount)}</Mono>
+        <span className="hidden w-20 text-right text-xs text-tertiary sm:block">{timeAgo(invoice.openedAt)}</span>
+        <div className="w-24 text-right">{overdue ? <Badge tone="error">Unpaid</Badge> : <Badge>Open</Badge>}</div>
+        <span className="w-4" />
+      </div>
+    </li>
   );
 }
 
