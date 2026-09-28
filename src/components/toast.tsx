@@ -12,32 +12,57 @@ type ToastContextValue = { notify: (title: string, body?: string, ms?: number) =
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+// Exit is a touch faster than enter; both only animate opacity and transform
+// (compositor-only, so they stay smooth even while the page is busy).
+const ENTER_MS = 320;
+const EXIT_MS = 220;
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<Toast | null>(null);
   const [visible, setVisible] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visibleRef = useRef(false);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const frame = useRef(0);
   const seq = useRef(0);
 
+  const clearAll = () => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+    cancelAnimationFrame(frame.current);
+  };
+  const later = (fn: () => void, ms: number) => timers.current.push(setTimeout(fn, ms));
+  const show = (on: boolean) => {
+    visibleRef.current = on;
+    setVisible(on);
+  };
+
   const dismiss = useCallback(() => {
-    setVisible(false);
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setToast(null), 180);
+    clearAll();
+    show(false);
+    later(() => setToast(null), EXIT_MS);
   }, []);
 
   const notify = useCallback(
     (title: string, body?: string, ms = 8000) => {
-      if (timer.current) clearTimeout(timer.current);
-      setToast({ id: ++seq.current, title, body });
-      // Next frame so the enter transition runs.
-      requestAnimationFrame(() => setVisible(true));
-      timer.current = setTimeout(dismiss, ms);
+      clearAll();
+      const enter = () => {
+        setToast({ id: ++seq.current, title, body });
+        // Two frames: the toast is painted hidden first, so the enter transition always runs.
+        frame.current = requestAnimationFrame(() => {
+          frame.current = requestAnimationFrame(() => show(true));
+        });
+        later(dismiss, ms);
+      };
+      // A toast already on screen leaves first instead of swapping its text in place.
+      if (visibleRef.current) {
+        show(false);
+        later(enter, EXIT_MS);
+      } else enter();
     },
     [dismiss],
   );
 
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current);
-  }, []);
+  useEffect(() => clearAll, []);
 
   const value = useMemo(() => ({ notify }), [notify]);
 
@@ -47,9 +72,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {toast && (
         <div
           role="status"
-          className={`fixed bottom-4 right-4 z-30 w-[calc(100%-2rem)] max-w-sm rounded-[10px] border border-border bg-surface-elevated p-4 transition-[opacity,transform] duration-[180ms] ${
-            visible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
-          }`}
+          className="fixed bottom-4 right-4 z-30 w-[calc(100%-2rem)] max-w-sm rounded-[10px] border border-border bg-surface-elevated p-4"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "none" : "translateY(12px) scale(0.98)",
+            transition: visible
+              ? `opacity ${ENTER_MS}ms ease-out, transform ${ENTER_MS}ms cubic-bezier(0.2, 0.8, 0.2, 1)`
+              : `opacity ${EXIT_MS}ms ease-in, transform ${EXIT_MS}ms ease-in`,
+            willChange: "opacity, transform",
+          }}
         >
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
