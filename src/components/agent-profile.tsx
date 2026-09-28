@@ -7,7 +7,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Check, ChevronDown, Minus, ChevronLeft, ChevronRight, Loader2, Lock, ShieldCheck, X } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { loadAgent, type Agent } from "@/lib/agents";
-import { chain } from "@/lib/chain";
+import { DEMO_AGENT_ID, chain } from "@/lib/chain";
+import { useToast } from "@/components/toast";
 import {
   COUNTERSIGN_LABEL,
   decryptStamp,
@@ -95,6 +96,24 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   const pages = Math.max(1, Math.ceil(entries.length / PAGE));
   const current = Math.min(page, pages - 1);
   const visible = entries.slice(current * PAGE, current * PAGE + PAGE);
+
+  const { notify } = useToast();
+
+  // The demo agent pays one of its invoices through its runtime on our server.
+  async function payDemoInvoice(invoiceId: string) {
+    const res = await fetch("/api/demo/pay-invoice", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ invoiceId }),
+    });
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      notify("Could not pay the invoice", body.error ?? `status ${res.status}`);
+      return;
+    }
+    notify("Invoice paid", "The agent paid it, the payment was stamped, and the invoice closed on Monad.");
+    await load();
+  }
 
   function goTo(p: number) {
     setPage(p);
@@ -377,7 +396,11 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
         <ul className="divide-y divide-border-subtle">
           {visible.map((e) => {
             // An invoice not yet paid sits in the list where a stamp would be.
-            if (e.kind === "invoice") return <InvoiceRow key={e.key} invoice={e.invoice} />;
+            if (e.kind === "invoice") {
+              return (
+                <InvoiceRow key={e.key} invoice={e.invoice} onPay={agentId === DEMO_AGENT_ID ? () => payDemoInvoice(e.invoice.id) : undefined} />
+              );
+            }
             const s = e.stamp;
             const paidInvoice = paidBy.get(s.receiptHash.toLowerCase());
             const isOpen = openStamp === s.receiptHash;
@@ -549,9 +572,10 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
 
 // An invoice not paid yet, in the stamp list. Same columns as a stamp row, so
 // it reads as part of the record: open (neutral) until due, unpaid (red) after.
-function InvoiceRow({ invoice }: { invoice: Invoice }) {
+function InvoiceRow({ invoice, onPay }: { invoice: Invoice; onPay?: () => Promise<void> }) {
   const now = Math.floor(Date.now() / 1000);
   const overdue = invoiceStatus(invoice, now) === "overdue";
+  const [paying, setPaying] = useState(false);
   return (
     <li className={overdue ? "bg-error-muted/40" : ""}>
       <div className="flex w-full items-center gap-4 px-5 py-4">
@@ -578,6 +602,29 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
         <div className="w-24 text-right">{overdue ? <Badge tone="error">Unpaid</Badge> : <Badge>Open</Badge>}</div>
         <span className="w-4" />
       </div>
+      {/* Demo agent only: its runtime (on our server) pays the invoice, stamps it, closes it */}
+      {onPay && (
+        <div className="-mt-2 flex items-center gap-3 px-5 pb-4">
+          <Button
+            variant="secondary"
+            loading={paying}
+            disabled={paying}
+            onClick={async () => {
+              setPaying(true);
+              try {
+                await onPay();
+              } finally {
+                setPaying(false);
+              }
+            }}
+          >
+            {paying ? "Paying…" : "Pay now, as the agent"}
+          </Button>
+          <span className="text-xs text-tertiary">
+            {overdue ? "Past its due date: it will count as paid late." : "Before its due date: it will count as paid on time."}
+          </span>
+        </div>
+      )}
     </li>
   );
 }

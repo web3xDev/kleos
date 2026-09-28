@@ -28,3 +28,6 @@ export const addresses = {
 } as const;
 
 export const x402Facilitator = "https://x402-facilitator.molandak.org";
+
+/** Kleos's own demo agent (the one /try runs). Its runtime key lives on our server. */
+export const DEMO_AGENT_ID = 1910n;
