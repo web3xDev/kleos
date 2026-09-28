@@ -39,6 +39,8 @@ type SessionContextValue = {
   busy: boolean;
   error: string | null;
   signIn: () => Promise<void>;
+  /** Step-up check before an irreversible action: one passkey prompt that must yield this session's address. */
+  confirm: () => Promise<void>;
   create: () => Promise<void>;
   end: () => void;
   secondsLeft: number;
@@ -97,6 +99,19 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signIn = useCallback(() => start(signInOwner), [start]);
+
+  // The session keys already sign without prompts; for irreversible actions we
+  // ask the passkey again and check it derives the same owner. The keys it
+  // returns are not kept: the session is unchanged.
+  const confirm = useCallback(async () => {
+    const current = sessionRef.current;
+    if (!current) throw new Error("Not signed in");
+    const keys = await signInOwner();
+    const address = toViemAccount(keys.owner.session).address;
+    if (address.toLowerCase() !== current.address.toLowerCase()) {
+      throw new Error("That passkey belongs to a different account.");
+    }
+  }, []);
   const create = useCallback(() => start(createOwner), [start]);
 
   // Session clock. Expiry ends the session, which zeroes the key.
@@ -111,8 +126,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const secondsLeft = session ? Math.max(0, Math.round((session.endsAt - now) / 1000)) : 0;
 
   const value = useMemo(
-    () => ({ session, publicClient, busy, error, signIn, create, end, secondsLeft }),
-    [session, publicClient, busy, error, signIn, create, end, secondsLeft],
+    () => ({ session, publicClient, busy, error, signIn, confirm, create, end, secondsLeft }),
+    [session, publicClient, busy, error, signIn, confirm, create, end, secondsLeft],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

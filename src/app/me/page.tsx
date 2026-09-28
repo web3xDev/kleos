@@ -10,6 +10,7 @@ import { cachedAgentIds, ensureGas, loadAgent, registerAgent, rememberAgent, typ
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { disconnectRuntime } from "@/lib/pairing";
 import { chain } from "@/lib/chain";
+import { Modal } from "@/components/modal";
 import { Badge, Button, Card, Input, Label, Mono, Shimmer, shortHex } from "@/components/ui";
 import { ConnectRuntime } from "@/components/connect-runtime";
 import { useToast } from "@/components/toast";
@@ -26,7 +27,7 @@ const steps: { key: Progress; label: string }[] = [
 let remembered: { owner: string; agents: Agent[]; summary: Map<string, { actions: number; usdc: bigint }> } | null = null;
 
 export default function MePage() {
-  const { session, publicClient, busy, error, signIn, create, end, secondsLeft } = useSession();
+  const { session, publicClient, busy, error, signIn, confirm, create, end, secondsLeft } = useSession();
   const cached = session && remembered?.owner === session.address.toLowerCase() ? remembered : null;
   const [agents, setAgents] = useState<Agent[]>(cached?.agents ?? []);
   const [loadingAgents, setLoadingAgents] = useState(false);
@@ -41,6 +42,10 @@ export default function MePage() {
   const loadRun = useRef(0);
   const [revoking, setRevoking] = useState<Agent | null>(null);
   const [revokeBusy, setRevokeBusy] = useState(false);
+  // "passkey" while Touch ID is asked, "sending" while the revoke tx lands.
+  const [revokeStage, setRevokeStage] = useState<"passkey" | "sending" | null>(null);
+  // The last agent asked about, so the modal's text survives while it animates closed.
+  const [shownRevoke, setShownRevoke] = useState<Agent | null>(null);
   const { notify } = useToast();
 
   useEffect(() => {
@@ -140,6 +145,10 @@ export default function MePage() {
     if (!session || !revoking) return;
     setRevokeBusy(true);
     try {
+      // Irreversible for this runtime: ask for the passkey even inside a live session.
+      setRevokeStage("passkey");
+      await confirm();
+      setRevokeStage("sending");
       await ensureGas(publicClient, session.address);
       await disconnectRuntime({ agentId: revoking.id, wallet: session.wallet, publicClient });
       notify("Runtime revoked", "It can no longer create stamps for this agent. Existing stamps remain verifiable.");
@@ -149,6 +158,7 @@ export default function MePage() {
       notify("Could not revoke", err instanceof Error ? err.message : String(err));
     } finally {
       setRevokeBusy(false);
+      setRevokeStage(null);
     }
   }
 
@@ -283,23 +293,27 @@ export default function MePage() {
         </div>
       )}
 
-      {revoking && (
-        <Card className="mt-8 p-6">
-          <h2 className="text-[24px] font-semibold leading-tight">Revoke this runtime?</h2>
+      {/* Confirm in a modal over the blurred page. `shownRevoke` keeps the text during the close animation. */}
+      <Modal open={Boolean(revoking)} onClose={() => setRevoking(null)} locked={revokeBusy} labelledBy="revoke-title">
+        {shownRevoke && (
+        <Card className="p-6">
+          <h2 id="revoke-title" className="text-[24px] font-semibold leading-tight">Revoke this runtime?</h2>
           <p className="mt-2 text-sm text-secondary">
-            <Mono className="text-primary">{shortHex(revoking.wallet ?? "")}</Mono> will no longer be able to create stamps for{" "}
-            {revoking.name}. Existing stamps remain verifiable.
+            <Mono className="text-primary">{shortHex(shownRevoke.wallet ?? "")}</Mono> will no longer be able to create stamps for{" "}
+            {shownRevoke.name}. Existing stamps remain verifiable. You will confirm with your passkey.
           </p>
           <div className="mt-5 flex gap-2">
             <Button variant="danger" onClick={onRevoke} loading={revokeBusy} disabled={revokeBusy}>
-              Revoke runtime
+              {!revokeBusy && <Fingerprint size={16} strokeWidth={1.5} />}
+              {revokeStage === "passkey" ? "Waiting for passkey…" : revokeStage === "sending" ? "Revoking…" : "Revoke with passkey"}
             </Button>
             <Button variant="ghost" onClick={() => setRevoking(null)} disabled={revokeBusy}>
               Cancel
             </Button>
           </div>
         </Card>
-      )}
+        )}
+      </Modal>
 
       <section className="mt-10">
         {loadingAgents && agents.length === 0 && (
@@ -430,7 +444,13 @@ export default function MePage() {
                     Connect runtime
                   </Button>
                 ) : (
-                  <Button variant="ghost" onClick={() => setRevoking(a)}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setRevoking(a);
+                      setShownRevoke(a);
+                    }}
+                  >
                     <Unlink size={16} strokeWidth={1.5} />
                     Revoke runtime
                   </Button>
