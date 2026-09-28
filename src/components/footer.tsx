@@ -85,7 +85,7 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-12 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-16 flex flex-wrap items-center justify-between gap-3">
           <span className="text-xs text-tertiary">© 2026 Kleos</span>
           <Mono className="text-xs text-tertiary">Built on ERC-8004 · x402 · {chain.name}</Mono>
         </div>
