@@ -1,4 +1,14 @@
-export { networks, agentWalletDomain, agentWalletTypes, identityRegistryAbi, kleosStampsAbi, META_ENCRYPTION_KEY } from "./chain.js";
+export {
+  networks,
+  agentWalletDomain,
+  agentWalletTypes,
+  identityRegistryAbi,
+  kleosStampsAbi,
+  kleosCreditAbi,
+  creditDomain,
+  creditRequestTypes,
+  META_ENCRYPTION_KEY,
+} from "./chain.js";
 export type { NetworkName } from "./chain.js";
 export { seal, open } from "./crypto.js";
 export type { Sealed } from "./crypto.js";
@@ -27,6 +37,19 @@ export type {
   CountersignFields,
 } from "./receipt.js";
 export { countersignPaidCall, readPayment } from "./tool.js";
+export {
+  CREDIT_HEADER,
+  INVOICE_HEADER,
+  readAgentRecord,
+  decideCredit,
+  grantCredit,
+  requestCredit,
+  payInvoice,
+  encodeCredit,
+  decodeCreditRequest,
+  decodeInvoiceNotice,
+} from "./credit.js";
+export type { CreditTerms, CreditRequest, InvoiceNotice, AgentRecord, CreditDecision } from "./credit.js";
 export {
   Stamper,
   pair,

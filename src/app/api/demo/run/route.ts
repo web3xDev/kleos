@@ -4,12 +4,10 @@
 
 import { Stamper, networks, payingFetch, readCountersign, readSettlement } from "kleos";
 import { privateKeyToAccount } from "viem/accounts";
-import { TOOL_ID } from "../tool/route";
+import { TOOL_ID } from "@/lib/demo-tool";
+import { acquireDemo, busyResponse } from "@/lib/demo-lock";
 
 export const dynamic = "force-dynamic";
-
-let lastRun = 0;
-const MIN_GAP_MS = 15_000;
 
 type Step = { step: string; status: "start" | "done" | "error"; detail?: string; ms?: number };
 
@@ -18,13 +16,7 @@ export async function POST(req: Request) {
   const agentId = process.env.KLEOS_DEMO_AGENT_ID;
   if (!key || !agentId) return new Response("demo not configured", { status: 503 });
 
-  if (Date.now() - lastRun < MIN_GAP_MS) {
-    return new Response(JSON.stringify({ error: "The demo agent is busy. Try again in a few seconds." }), {
-      status: 429,
-      headers: { "content-type": "application/json" },
-    });
-  }
-  lastRun = Date.now();
+  if (!acquireDemo()) return busyResponse();
 
   const origin = new URL(req.url).origin;
   const kleosUrl = process.env.KLEOS_URL ?? origin;

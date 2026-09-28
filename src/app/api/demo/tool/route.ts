@@ -5,31 +5,14 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { withX402 } from "@x402/next";
-import { createPublicClient, http } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import { countersignPaidCall } from "kleos";
-import { chain } from "@/lib/chain";
+import { TOOL_ID, latestBlockAnswer, toolAccount } from "@/lib/demo-tool";
 import { MONAD_TESTNET, payTo, resourceServer } from "@/lib/x402-server";
 
-export const TOOL_ID = "kleos-demo/monad-block";
-
-// The key behind payTo. Verifiers accept a countersignature only from the
-// address that was paid, so the tool signs with the same key it is paid to.
-function toolAccount() {
-  const key = (process.env.KLEOS_TOOL_KEY ?? process.env.DRIP_PRIVATE_KEY) as `0x${string}` | undefined;
-  return key ? privateKeyToAccount(key) : null;
-}
+export { TOOL_ID };
 
 async function handler(req: NextRequest) {
-  const client = createPublicClient({ chain, transport: http() });
-  const block = await client.getBlock();
-  const answer = JSON.stringify({
-    tool: TOOL_ID,
-    network: chain.name,
-    blockNumber: block.number.toString(),
-    timestamp: Number(block.timestamp),
-    hash: block.hash,
-  });
+  const answer = await latestBlockAnswer();
   const res = new NextResponse(answer, { headers: { "content-type": "application/json" } });
 
   // Countersign: "I was paid for this call, and this is the answer I served."
