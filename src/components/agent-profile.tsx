@@ -81,6 +81,9 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
   const paidBy = useMemo(() => new Map((invoices ?? []).filter((i) => i.receiptHash).map((i) => [i.receiptHash!.toLowerCase(), i])), [invoices]);
   const unpaid = useMemo(() => (invoices ?? []).filter((i) => i.paidAt === null), [invoices]);
   const overdueCount = unpaid.filter((i) => invoiceStatus(i) === "overdue").length;
+  const openCount = unpaid.length - overdueCount;
+  const paidOnTime = (invoices ?? []).filter((i) => invoiceStatus(i) === "paid").length;
+  const paidLate = (invoices ?? []).filter((i) => invoiceStatus(i) === "paid-late").length;
   const entries = useMemo(
     () =>
       [
@@ -188,12 +191,19 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             <div className="metric">{loading ? <Shimmer>0</Shimmer> : stampsError ? "–" : record.platforms}</div>
             <Label className="mt-1">Platforms</Label>
           </div>
-          {/* Credit served and not paid past its due date: red, because it is a fact against the agent */}
+          {/* Credit history in one place: how many invoices, and how they stand. Overdue ones turn it red. */}
           <div>
             <div className={`metric ${overdueCount > 0 ? "text-error" : ""}`}>
-              {loading ? <Shimmer>0</Shimmer> : invoices === null ? "–" : overdueCount}
+              {loading ? <Shimmer>0</Shimmer> : invoices === null ? "–" : invoices.length}
             </div>
-            <Label className="mt-1">Unpaid invoices</Label>
+            <Label className="mt-1">Invoices</Label>
+            {!loading && invoices !== null && invoices.length > 0 && (
+              <div className="mt-1 text-xs text-tertiary">
+                {paidOnTime} paid on time
+                {paidLate > 0 && <> · {paidLate} paid late</>} · <span className={openCount > 0 ? "text-secondary" : ""}>{openCount} open</span> ·{" "}
+                <span className={overdueCount > 0 ? "font-medium text-error" : ""}>{overdueCount} unpaid</span>
+              </div>
+            )}
           </div>
         </div>
         <p className="mt-3 text-xs text-tertiary">
