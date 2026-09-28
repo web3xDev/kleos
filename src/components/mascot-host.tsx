@@ -19,7 +19,7 @@ export function MascotHost({
   children: ReactNode;
   className?: string;
 }) {
-  const [ref, inView] = useInView<HTMLDivElement>("0px 0px -12% 0px");
+  const [ref, inView] = useInView<HTMLDivElement>("0px 0px -25% 0px");
   const [hover, setHover] = useState(false);
   const left = side === "left";
 

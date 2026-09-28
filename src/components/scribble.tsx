@@ -6,7 +6,7 @@
 import { useInView } from "@/components/reveal";
 
 export function Scribble({ note, children }: { note: string; children: React.ReactNode }) {
-  const [ref, inView] = useInView<HTMLSpanElement>("0px 0px -20% 0px");
+  const [ref, inView] = useInView<HTMLSpanElement>("0px 0px -35% 0px");
   return (
     <span ref={ref} className="inline-block">
       <span className="relative inline-block">

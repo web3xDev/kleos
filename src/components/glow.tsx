@@ -5,7 +5,7 @@
 import { useInView } from "@/components/reveal";
 
 export function ClosingGlow() {
-  const [ref, inView] = useInView<HTMLDivElement>("0px 0px -10% 0px");
+  const [ref, inView] = useInView<HTMLDivElement>("0px 0px -30% 0px");
   return (
     <div
       ref={ref}

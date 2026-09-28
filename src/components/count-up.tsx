@@ -27,7 +27,7 @@ function format(n: number, { prefix, decimals, grouped }: { prefix: string; deci
 }
 
 export function CountUp({ value }: { value: string }) {
-  const [ref, inView] = useInView<HTMLSpanElement>("0px 0px -10% 0px");
+  const [ref, inView] = useInView<HTMLSpanElement>("0px 0px -25% 0px");
   const parsed = parse(value);
   const [shown, setShown] = useState(() => (parsed ? format(0, parsed) : value));
 
