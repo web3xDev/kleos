@@ -16,7 +16,6 @@ import { Pipeline } from "@/components/pipeline";
 import { Faq } from "@/components/faq";
 import { MascotHost } from "@/components/mascot-host";
 import { Scribble } from "@/components/scribble";
-import { CountUp } from "@/components/count-up";
 import { ClosingGlow } from "@/components/glow";
 
 type ExploreData = {
@@ -541,7 +540,7 @@ function StampCardSkeleton() {
 function Stat({ value, label }: { value: string | null; label: string }) {
   return (
     <div>
-      <div className="metric">{value === null ? <Shimmer>0,000</Shimmer> : <CountUp value={value} />}</div>
+      <div className="metric">{value === null ? <Shimmer>0,000</Shimmer> : value}</div>
       <Label className="mt-1">{label}</Label>
     </div>
   );
