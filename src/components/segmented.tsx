@@ -39,7 +39,8 @@ export function Segmented<T extends string>({
       {pill && (
         <span
           aria-hidden
-          className="absolute bottom-1 top-1 rounded-[8px] bg-surface-elevated"
+          // A step lighter than the track, with a hairline edge and a soft drop, so the selection reads at a glance.
+          className="absolute bottom-1 top-1 rounded-[8px] border border-border-hover bg-border shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
           style={{ left: pill.left, width: pill.width, transition: "left 280ms cubic-bezier(0.2, 0, 0, 1), width 280ms cubic-bezier(0.2, 0, 0, 1)" }}
         />
       )}
