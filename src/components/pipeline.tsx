@@ -24,7 +24,7 @@ const STEP_MS = 400;
 const DRAW_MS = STEP_MS * 3;
 
 export function Pipeline({ stamp }: { stamp: StampLite }) {
-  const [ref, inView] = useInView<HTMLOListElement>("0px 0px -40% 0px");
+  const [ref, inView] = useInView<HTMLOListElement>("0px 0px -25% 0px");
 
   return (
     <ol ref={ref} className="relative mt-12 grid gap-10 md:grid-cols-4 md:gap-6">
