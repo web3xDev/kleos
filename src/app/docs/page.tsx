@@ -307,6 +307,7 @@ curl "https://kleos.xyz/api/verify/0xa238…ed6f?agentId=1910"
                 ["ERC-8004 Identity Registry", addresses.identityRegistry],
                 ["ERC-8004 Reputation Registry", addresses.reputationRegistry],
                 ["KleosStamps", addresses.kleosStamps],
+                ["KleosCredit", addresses.kleosCredit],
                 ["USDC", addresses.usdc],
                 ["x402 facilitator", x402Facilitator],
               ].map(([label, value]) => (
