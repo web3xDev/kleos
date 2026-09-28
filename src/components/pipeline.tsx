@@ -20,8 +20,8 @@ const STEPS = [
 ];
 
 // Timing of the sequence, in ms from the moment the section is in view.
-const STEP_MS = 300;
-const DRAW_MS = 900;
+const STEP_MS = 400;
+const DRAW_MS = STEP_MS * 3;
 
 export function Pipeline({ stamp }: { stamp: StampLite }) {
   const [ref, inView] = useInView<HTMLOListElement>("0px 0px -40% 0px");
