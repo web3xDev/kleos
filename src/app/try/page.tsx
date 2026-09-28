@@ -13,6 +13,7 @@ import { chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 import { Wordmark } from "@/components/mark";
+import { Segmented } from "@/components/segmented";
 
 type Status = "idle" | "start" | "done" | "declined" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
@@ -165,27 +166,17 @@ export default function TryPage() {
       </div>
 
       {/* Two ways to buy the same tool call */}
-      <div role="tablist" aria-label="Demo" className="mt-8 inline-flex gap-1 rounded-[10px] border border-border bg-surface p-1">
-        {(
-          [
-            ["first", "Pay first"],
-            ["later", "Pay later, with a track record"],
-          ] as [Mode, string][]
-        ).map(([m, label]) => (
-          <button
-            key={m}
-            role="tab"
-            aria-selected={mode === m}
-            disabled={running}
-            onClick={() => switchMode(m)}
-            className={`h-9 rounded-[8px] px-3 text-sm transition-colors duration-[180ms] disabled:cursor-not-allowed ${
-              mode === m ? "bg-surface-elevated text-primary" : "text-secondary hover:text-primary"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        label="Demo"
+        className="mt-8"
+        options={[
+          ["first", "Pay first"],
+          ["later", "Pay later, with a track record"],
+        ]}
+        value={mode}
+        onChange={switchMode}
+        disabled={running}
+      />
 
       {/* Run bar: what is about to run, and who pays for it */}
       <Card className="mt-4 p-5">
