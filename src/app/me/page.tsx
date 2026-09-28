@@ -291,7 +291,7 @@ export default function MePage() {
             {revoking.name}. Existing stamps remain verifiable.
           </p>
           <div className="mt-5 flex gap-2">
-            <Button onClick={onRevoke} loading={revokeBusy} disabled={revokeBusy}>
+            <Button variant="danger" onClick={onRevoke} loading={revokeBusy} disabled={revokeBusy}>
               Revoke runtime
             </Button>
             <Button variant="ghost" onClick={() => setRevoking(null)} disabled={revokeBusy}>

@@ -10,7 +10,7 @@ function cx(...parts: Array<string | false | null | undefined>): string {
 }
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "accent" | "secondary" | "ghost";
+  variant?: "primary" | "accent" | "secondary" | "ghost" | "danger";
   size?: "md" | "lg";
   loading?: boolean;
 };
@@ -24,6 +24,8 @@ export function Button({ variant = "primary", size = "md", loading, className, c
     accent: "bg-accent text-white hover:bg-accent-hover",
     secondary: "border border-border bg-transparent text-primary hover:border-border-hover hover:bg-surface-hover",
     ghost: "text-secondary hover:bg-surface-hover hover:text-primary",
+    // Destructive, irreversible actions (e.g. revoking a runtime): red, but tinted rather than solid.
+    danger: "border border-error/40 bg-error-muted text-error hover:border-error/70 hover:bg-error/20",
   };
   return (
     <button className={cx(base, sizes[size], variants[variant], className)} disabled={disabled || loading} {...rest}>
