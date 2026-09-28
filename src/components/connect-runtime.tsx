@@ -4,7 +4,7 @@
 // passkey session, the registry records the runtime as the agent's wallet.
 
 import { useState } from "react";
-import { Check, Loader2, Terminal } from "lucide-react";
+import { Check, ChevronRight, Loader2, Terminal } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { ensureGas, type Agent } from "@/lib/agents";
 import { connectRuntime, decodePairing } from "@/lib/pairing";
@@ -16,6 +16,7 @@ type Step = "idle" | "gas" | "submitting" | "done";
 export function ConnectRuntime({ agent, onDone, onCancel }: { agent: Agent; onDone: () => void; onCancel: () => void }) {
   const { session, publicClient } = useSession();
   const [code, setCode] = useState("");
+  const [explainer, setExplainer] = useState(false);
   const [step, setStep] = useState<Step>("idle");
   const [error, setError] = useState<string | null>(null);
   const [runtime, setRuntime] = useState<`0x${string}` | null>(null);
@@ -53,12 +54,28 @@ export function ConnectRuntime({ agent, onDone, onCancel }: { agent: Agent; onDo
         Your runtime is the software that runs {agent.name} and spends its wallet: an MCP server, a bot, a wallet process.
       </p>
 
-      <details className="mt-4 rounded-[8px] border border-border-subtle bg-background p-4">
-        <summary className="cursor-pointer text-xs text-tertiary hover:text-secondary">What is what: you, agent, runtime, tool, stamp</summary>
-        <div className="mt-4">
-          <MentalModel compact />
+      {/* A button + animated grid row instead of <details>, which can only open and close instantly */}
+      <div className="mt-4 rounded-[8px] border border-border-subtle bg-background p-4">
+        <button
+          type="button"
+          onClick={() => setExplainer((o) => !o)}
+          aria-expanded={explainer}
+          className="flex w-full items-center gap-1.5 text-left text-xs text-tertiary hover:text-secondary"
+        >
+          <ChevronRight size={12} strokeWidth={1.5} className={`transition-transform duration-300 ${explainer ? "rotate-90" : ""}`} />
+          What is what: you, agent, runtime, tool, stamp
+        </button>
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${explainer ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+          inert={!explainer}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div className="pt-4">
+              <MentalModel compact />
+            </div>
+          </div>
         </div>
-      </details>
+      </div>
 
       <div className="mt-4 rounded-[8px] border border-border-subtle bg-background p-4">
         <div className="flex items-center gap-2 text-xs text-tertiary">
