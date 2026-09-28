@@ -1,18 +1,36 @@
 "use client";
 
 // See a stamp being born. One click runs the demo agent through a real
-// paid call on Monad and shows every step as it lands.
+// paid call on Monad and shows every step as it lands. Two modes:
+//   Pay first: the classic x402 call, stamped.
+//   Pay later: the same tool reads the agent's Kleos record and, by its own
+//   rule, serves it before payment; the credit is an invoice on KleosCredit.
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Check, Loader2, Play, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Ban, Check, Loader2, Play, X } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 import { Wordmark } from "@/components/mark";
 
-type Status = "idle" | "start" | "done" | "error";
+type Status = "idle" | "start" | "done" | "declined" | "error";
 type Row = { key: string; title: string; who: string; status: Status; detail?: string; ms?: number };
+type Mode = "first" | "later";
+type Kind = "classic" | "credit" | "newcomer";
+
+const PAY_LATER_ROWS: Omit<Row, "status">[] = [
+  { key: "ask", title: "Agent asks to pay later", who: "Signs consent to be invoiced (EIP-712, by its runtime)" },
+  { key: "record", title: "Tool checks the Kleos record", who: "Reads stamps and invoices from Monad, applies its own rule" },
+  { key: "served", title: "Served before payment", who: "The answer arrives now. Nothing has been paid yet" },
+  { key: "invoice", title: "Invoice opened on Monad", who: "KleosCredit.open() · only with the agent's signed consent" },
+  { key: "pay", title: "Agent pays the invoice", who: "x402 · $0.01 to the tool" },
+  { key: "stamp", title: "Stamp anchored, countersigned", who: "The payment joins the track record" },
+  { key: "close", title: "Invoice closed on Monad", who: "KleosCredit.pay() · closed by that stamp" },
+];
+
+// Detail values that are transaction hashes, per mode (they link to the explorer).
+const TX_KEYS: Record<Mode, string[]> = { first: ["payment", "anchor"], later: ["invoice", "pay", "stamp", "close"] };
 
 const ROWS: Omit<Row, "status">[] = [
   { key: "agent", title: "Agent wakes up", who: "Agent #1910 · runtime checks it is the registered wallet" },
@@ -43,25 +61,54 @@ function plainError(msg: string): string {
   return msg.split("\n")[0].slice(0, 160);
 }
 
+const idle = (mode: Mode): Row[] => (mode === "first" ? ROWS : PAY_LATER_ROWS).map((r) => ({ ...r, status: "idle" }));
+
 export default function TryPage() {
-  const [rows, setRows] = useState<Row[]>(ROWS.map((r) => ({ ...r, status: "idle" })));
+  const [mode, setMode] = useState<Mode>("first");
+  const [kind, setKind] = useState<Kind>("classic");
+  const [rows, setRows] = useState<Row[]>(idle("first"));
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<string | null>(null);
   const [answer, setAnswer] = useState<string | null>(null);
+  // Pay later outcomes other than "paid": credit declined, or invoice left unpaid (dev only).
+  const [declined, setDeclined] = useState<string | null>(null);
+  const [unpaid, setUnpaid] = useState(false);
 
   function update(key: string, patch: Partial<Row>) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   }
 
-  async function run() {
-    setRunning(true);
+  function reset(next: Mode) {
     setError(null);
     setProfile(null);
     setAnswer(null);
-    setRows(ROWS.map((r) => ({ ...r, status: "idle" })));
+    setDeclined(null);
+    setUnpaid(false);
+    setRows(idle(next));
+  }
+
+  function switchMode(next: Mode) {
+    if (running || next === mode) return;
+    setMode(next);
+    reset(next);
+  }
+
+  async function run(k: Kind, opts: { skipPayment?: boolean } = {}) {
+    setRunning(true);
+    setKind(k);
+    reset(k === "classic" ? "first" : "later");
+    // The step that carries the tool's answer, per flow.
+    const answerStep = k === "classic" ? "tool" : "served";
     try {
-      const res = await fetch("/api/demo/run", { method: "POST" });
+      const res =
+        k === "classic"
+          ? await fetch("/api/demo/run", { method: "POST" })
+          : await fetch("/api/demo/credit", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ as: k === "credit" ? "agent" : "newcomer", skipPayment: opts.skipPayment }),
+            });
       if (!res.ok || !res.body) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? `demo failed (${res.status})`);
@@ -87,8 +134,14 @@ export default function TryPage() {
             setRows((rs) => rs.map((r) => (r.status === "start" ? { ...r, status: "error" } : r)));
             continue;
           }
-          if (ev.step === "tool" && ev.status === "done") setAnswer(ev.detail ?? null);
-          update(ev.step, { status: ev.status, detail: ev.step === "tool" && ev.status === "done" ? undefined : ev.detail, ms: ev.ms });
+          if (ev.step === "declined") {
+            setDeclined(ev.detail ?? "Credit declined.");
+            continue;
+          }
+          if (ev.step === "pay" && ev.status === "declined") setUnpaid(true);
+          const isAnswer = ev.step === answerStep && ev.status === "done";
+          if (isAnswer) setAnswer(ev.detail ?? null);
+          update(ev.step, { status: ev.status, detail: isAnswer ? undefined : ev.detail, ms: ev.ms });
         }
       }
     } catch (e) {
@@ -111,18 +164,72 @@ export default function TryPage() {
         </div>
       </div>
 
+      {/* Two ways to buy the same tool call */}
+      <div role="tablist" aria-label="Demo" className="mt-8 inline-flex gap-1 rounded-[10px] border border-border bg-surface p-1">
+        {(
+          [
+            ["first", "Pay first"],
+            ["later", "Pay later, with a track record"],
+          ] as [Mode, string][]
+        ).map(([m, label]) => (
+          <button
+            key={m}
+            role="tab"
+            aria-selected={mode === m}
+            disabled={running}
+            onClick={() => switchMode(m)}
+            className={`h-9 rounded-[8px] px-3 text-sm transition-colors duration-[180ms] disabled:cursor-not-allowed ${
+              mode === m ? "bg-surface-elevated text-primary" : "text-secondary hover:text-primary"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {/* Run bar: what is about to run, and who pays for it */}
-      <Card className="mt-8 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <Mono className="text-[11px] tracking-[0.14em] text-primary">DEMO AGENT #1910 · {chain.name.toUpperCase()} · REAL SETTLEMENT</Mono>
-            <div className="mt-1.5 text-xs text-tertiary">Kleos-owned, funded by us · $0.01 per run</div>
+      <Card className="mt-4 p-5">
+        {mode === "first" ? (
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <Mono className="text-[11px] tracking-[0.14em] text-primary">DEMO AGENT #1910 · {chain.name.toUpperCase()} · REAL SETTLEMENT</Mono>
+              <div className="mt-1.5 text-xs text-tertiary">Kleos-owned, funded by us · $0.01 per run</div>
+            </div>
+            <Button variant="accent" onClick={() => run("classic")} loading={running} disabled={running}>
+              <Play size={16} strokeWidth={1.5} />
+              Run an action
+            </Button>
           </div>
-          <Button variant="accent" onClick={run} loading={running} disabled={running}>
-            <Play size={16} strokeWidth={1.5} />
-            Run an action
-          </Button>
-        </div>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="max-w-md">
+              <Mono className="text-[11px] tracking-[0.14em] text-primary">SAME TOOL · ASKED FOR CREDIT</Mono>
+              <div className="mt-1.5 text-xs text-tertiary">
+                The tool reads the agent&apos;s Kleos record and applies its own rule: at least 20 verified actions, no unpaid
+                invoices. Kleos gives the facts; the tool decides.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={() => run("newcomer")} disabled={running}>
+                Run as a new agent
+              </Button>
+              <Button variant="accent" onClick={() => run("credit")} loading={running && kind === "credit"} disabled={running}>
+                <Play size={16} strokeWidth={1.5} />
+                Run as Agent #1910
+              </Button>
+            </div>
+          </div>
+        )}
+        {/* Dev only: take credit and do not pay, to see an overdue invoice on the profile */}
+        {mode === "later" && process.env.NODE_ENV === "development" && (
+          <button
+            className="mt-3 text-xs text-tertiary underline decoration-dotted underline-offset-2 hover:text-secondary"
+            onClick={() => run("credit", { skipPayment: true })}
+            disabled={running}
+          >
+            Dev: take credit and leave the invoice unpaid
+          </button>
+        )}
       </Card>
 
       {/* Desktop: the steps on the left, what they produce (record, answer) on the right */}
@@ -132,7 +239,7 @@ export default function TryPage() {
       <ol>
         {rows.map((r, i) => {
           const last = i === rows.length - 1;
-          const isTx = r.key === "payment" || r.key === "anchor";
+          const isTx = TX_KEYS[mode].includes(r.key);
           return (
             <li key={r.key} className="relative flex gap-4 pb-6 last:pb-0">
               {!last && <span aria-hidden className="absolute left-[9px] top-7 bottom-1 w-px bg-border-subtle" />}
@@ -143,6 +250,9 @@ export default function TryPage() {
                   <Check size={18} strokeWidth={2} className="text-success" />
                 ) : r.status === "error" ? (
                   <X size={18} strokeWidth={2} className="text-error" />
+                ) : r.status === "declined" ? (
+                  // A decision, not a failure: neutral, not red.
+                  <Ban size={18} strokeWidth={1.5} className="text-secondary" />
                 ) : (
                   <span className="block h-[18px] w-[18px] rounded-full border border-border" />
                 )}
@@ -182,7 +292,7 @@ export default function TryPage() {
                           >
                             {shortHex(r.detail, 12, 10)} <ArrowUpRight size={12} strokeWidth={1.5} />
                           </a>
-                        ) : r.key === "stamp" && r.detail.startsWith("0x") ? (
+                        ) : mode === "first" && r.key === "stamp" && r.detail.startsWith("0x") ? (
                           <Mono className="text-xs text-secondary">
                             <span className="text-tertiary">Receipt hash </span>
                             {shortHex(r.detail, 12, 10)}
@@ -207,14 +317,37 @@ export default function TryPage() {
       {/* Every block grows open and fades in (Expand), so nothing pops in or pushes others abruptly */}
       <div className="lg:sticky lg:top-24">
       {/* Before the first run, say what will land here */}
-      <Expand open={!profile && !answer} slow>
+      <Expand open={!profile && !answer && !declined} slow>
         <div className="pb-6">
         <div className="rounded-[10px] border border-dashed border-border p-6">
           <Wordmark size={20} muted />
           <p className="mt-4 text-sm text-secondary">The result lands here.</p>
-          <p className="mt-1 text-sm text-tertiary">First what the tool answered, then the agent&apos;s updated track record.</p>
+          <p className="mt-1 text-sm text-tertiary">
+            {mode === "first"
+              ? "First what the tool answered, then the agent's updated track record."
+              : "The tool's decision, then either the answer before payment or a request to pay first."}
+          </p>
         </div>
         </div>
+      </Expand>
+
+      {/* Pay later, declined: the record was not enough for this tool's rule */}
+      <Expand open={Boolean(declined)} slow>
+      {declined && (
+        <div className="pb-6">
+        <Card className="p-6">
+          <Wordmark size={20} />
+          <div className="mt-4 text-lg font-semibold text-primary">Credit declined</div>
+          <div className="mt-1 text-sm text-secondary">{declined}</div>
+          <p className="mt-3 text-xs text-tertiary">
+            Same tool, same request. The only difference between this agent and #1910 is a record anyone can verify.
+          </p>
+          <Button variant="accent" className="mt-5" onClick={() => run("credit")} disabled={running}>
+            Now run as Agent #1910 <ArrowRight size={14} strokeWidth={1.5} />
+          </Button>
+        </Card>
+        </div>
+      )}
       </Expand>
 
       {/* The point of the run: the record moved */}
@@ -224,10 +357,18 @@ export default function TryPage() {
         <Card className="p-6">
           <Wordmark size={20} />
           <div className="mt-4 flex items-baseline justify-between gap-4">
-            <div className="text-lg font-semibold text-primary">Track record updated</div>
+            <div className="text-lg font-semibold text-primary">
+              {kind === "classic" ? "Track record updated" : unpaid ? "Invoice left unpaid" : "Served first, paid after"}
+            </div>
             <Mono className="text-secondary">#1910</Mono>
           </div>
-          <div className="mt-1 text-sm text-secondary">One more verified action, provable by anyone.</div>
+          <div className="mt-1 text-sm text-secondary">
+            {kind === "classic"
+              ? "One more verified action, provable by anyone."
+              : unpaid
+                ? "It turns overdue in 5 minutes, and the agent's profile will show it as unpaid."
+                : "The invoice closed with a countersigned stamp: one more verified action, and a clean credit history."}
+          </div>
           <Link href={profile} className="mt-5 inline-block">
             <Button variant="accent">
               View agent profile <ArrowRight size={14} strokeWidth={1.5} />
