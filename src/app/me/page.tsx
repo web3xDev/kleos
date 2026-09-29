@@ -228,17 +228,18 @@ export default function MePage() {
           <Button variant="ghost" onClick={end}>
             End session
           </Button>
-          <Button variant="accent" onClick={() => setShowRegister((v) => !v)}>
+          <Button variant="accent" onClick={() => setShowRegister(true)}>
             <Plus size={16} strokeWidth={1.5} />
             Register your agent
           </Button>
         </div>
       </div>
 
-      {showRegister && (
-        <Card className="mt-8 p-6">
+      {/* Register in a modal over the blurred page; it cannot be dismissed while the transaction runs */}
+      <Modal open={showRegister} onClose={() => setShowRegister(false)} locked={working} labelledBy="register-title">
+        <Card className="p-6">
           <form onSubmit={onRegister}>
-            <h2 className="text-[24px] font-semibold leading-tight">Register your agent</h2>
+            <h2 id="register-title" className="text-[24px] font-semibold leading-tight">Register your agent</h2>
             <p className="mt-1 text-sm text-secondary">Give your agent an onchain identity.</p>
             <div className="mt-5 flex gap-2">
               <Input
@@ -277,9 +278,14 @@ export default function MePage() {
               Confirms with your passkey session. Registers an ERC-8004 identity and writes your agent&apos;s
               encryption key next to it.
             </p>
+            <div className="mt-5 flex justify-end">
+              <Button type="button" variant="ghost" onClick={() => setShowRegister(false)} disabled={working}>
+                Cancel
+              </Button>
+            </div>
           </form>
         </Card>
-      )}
+      </Modal>
 
       {/* Connect a runtime in a modal, opened right where the button was pressed. `shownConnect`
           keeps the form on screen while the modal fades out. */}
