@@ -1,0 +1,61 @@
+# Everything here is derived from onchain events; nothing is self-reported.
+
+type Agent {
+  # ERC-8004 token id, as a decimal string
+  id: ID!
+  owner: String! @index
+  uri: String
+  # From an inline data: registration card, when there is one
+  name: String
+  # The ERC-8004 agentWallet when it is a runtime (unset, or equal to the owner, means none)
+  wallet: String
+  # Registered through Kleos: carries the kleos.encryptionKey metadata
+  kleos: Boolean!
+  registeredAt: Int!
+  registeredBlock: Int!
+  stampCount: Int!
+  usdcSettled: BigInt!
+  lastStampAt: Int
+  invoiceCount: Int!
+  invoicesPaid: Int!
+  stamps: [Stamp!]! @derivedFrom(field: "agent")
+  invoices: [Invoice!]! @derivedFrom(field: "agent")
+}
+
+type Stamp {
+  # receipt hash
+  id: ID!
+  agent: Agent!
+  settlementTx: String!
+  tool: String!
+  platform: String!
+  amount: BigInt!
+  wallet: String!
+  timestamp: Int!
+  anchorTx: String!
+  blockNumber: Int!
+}
+
+type Invoice {
+  # invoice id
+  id: ID!
+  agent: Agent!
+  creditor: String!
+  amount: BigInt!
+  tool: String!
+  openedAt: Int!
+  dueAt: Int!
+  paidAt: Int
+  receiptHash: String
+  openTx: String!
+}
+
+# One row, id "monad-testnet": network totals for the Explore strip.
+type Network {
+  id: ID!
+  agents: Int!
+  agentsWithRecord: Int!
+  stamps: Int!
+  usdcSettled: BigInt!
+  invoices: Int!
+}

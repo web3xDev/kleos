@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+# Kleos indexer (Envio HyperIndex) on Monad testnet.
+# Three contracts: the ERC-8004 Identity Registry (agents, owners, runtimes),
+# KleosStamps (verified actions) and KleosCredit (invoices). The site reads the
+# resulting GraphQL API instead of scanning the chain call by call.
+name: kleos-indexer
+description: Agents, stamps and invoices for Kleos on Monad testnet
+contracts:
+  - name: IdentityRegistry
+    events:
+      - event: "Registered(uint256 indexed agentId, string agentURI, address indexed owner)"
+      - event: "URIUpdated(uint256 indexed agentId, string newURI, address indexed updatedBy)"
+      - event: "MetadataSet(uint256 indexed agentId, string indexed indexedMetadataKey, string metadataKey, bytes metadataValue)"
+      - event: "Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
+  - name: KleosStamps
+    events:
+      - event: "Stamped(uint256 indexed agentId, bytes32 indexed receiptHash, bytes32 settlementTx, bytes32 indexed toolId, string tool, string platform, uint256 amount, address wallet, uint64 timestamp)"
+  - name: KleosCredit
+    events:
+      - event: "InvoiceOpened(bytes32 indexed invoiceId, uint256 indexed agentId, address indexed creditor, uint256 amount, uint64 dueAt, string tool)"
+      - event: "InvoicePaid(bytes32 indexed invoiceId, uint256 indexed agentId, bytes32 receiptHash, uint64 paidAt)"
+
+chains:
+  - id: 10143
+    start_block: 0
+    contracts:
+      - name: IdentityRegistry
+        address: "0x8004A818BFB912233c491871b3d84c89A494BD9e"
+        handler: ./src/handlers/IdentityRegistry.ts
+      - name: KleosStamps
+        address: "0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18"
+        handler: ./src/handlers/KleosStamps.ts
+      - name: KleosCredit
+        address: "0xa5314F72F599412763b03D47150Bb7Ed5E166B43"
+        handler: ./src/handlers/KleosCredit.ts
+
+# Block number and timestamp come with every event; the tx hash has to be asked for.
+field_selection:
+  transaction_fields:
+    - hash

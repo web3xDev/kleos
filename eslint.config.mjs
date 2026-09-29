@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The Envio indexer is its own project (own deps, own typecheck).
+    "indexer/**",
   ]),
 ]);
 
