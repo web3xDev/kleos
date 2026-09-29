@@ -22,7 +22,7 @@ const STEPS = [
 // Timing of the sequence, in ms from the moment the section is in view.
 // One knob for the whole sequence: every duration and delay below is its
 // design value times SPEED, so the parts stay in proportion (1 = original).
-const SPEED = 0.75;
+const SPEED = 0.8;
 const t = (ms: number) => Math.round(ms * SPEED);
 const STEP_MS = t(400);
 const DRAW_MS = STEP_MS * 3;
