@@ -20,7 +20,11 @@ const STEPS = [
 ];
 
 // Timing of the sequence, in ms from the moment the section is in view.
-const STEP_MS = 330;
+// One knob for the whole sequence: every duration and delay below is its
+// design value times SPEED, so the parts stay in proportion (1 = original).
+const SPEED = 0.75;
+const t = (ms: number) => Math.round(ms * SPEED);
+const STEP_MS = t(400);
 const DRAW_MS = STEP_MS * 3;
 
 export function Pipeline({ stamp }: { stamp: StampLite }) {
@@ -46,7 +50,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
         style={{
           left: inView ? "calc(75% + 18px)" : "0px",
           opacity: inView ? 0 : 1,
-          transition: `left ${DRAW_MS}ms linear, opacity 200ms ${DRAW_MS}ms`,
+          transition: `left ${DRAW_MS}ms linear, opacity ${t(200)}ms ${DRAW_MS}ms`,
         }}
       />
       {STEPS.map((st, i) => {
@@ -58,7 +62,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
             className="relative pl-6 md:pl-0 md:pt-6"
             style={{
               opacity: active ? 1 : 0.45,
-              transition: `opacity 400ms cubic-bezier(0.2,0,0,1) ${delay}ms`,
+              transition: `opacity ${t(400)}ms cubic-bezier(0.2,0,0,1) ${delay}ms`,
             }}
           >
             {/* Mobile: a vertical rail instead of the horizontal one, one segment down to the next
@@ -82,7 +86,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
               className="absolute left-0 top-[9px] h-[7px] w-[7px] rounded-full md:top-0"
               style={{
                 background: active ? "var(--accent)" : "var(--border-hover)",
-                transition: `background 300ms ${delay}ms`,
+                transition: `background ${t(300)}ms ${delay}ms`,
               }}
             />
 
@@ -105,7 +109,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
             {i === 2 && stamp && (
               <div
                 className="mt-4 inline-flex items-baseline gap-2 rounded-[8px] border border-border bg-surface px-3 py-2"
-                style={{ opacity: active ? 1 : 0, transition: `opacity 400ms ${delay + 250}ms` }}
+                style={{ opacity: active ? 1 : 0, transition: `opacity ${t(400)}ms ${delay + t(250)}ms` }}
               >
                 <span className="text-lg font-semibold leading-none">{stamp.amount}</span>
                 <Mono className="text-xs text-tertiary">USDC</Mono>
@@ -134,7 +138,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                 style={{
                   opacity: active ? 1 : 0,
                   transform: active ? "none" : "translateY(8px)",
-                  transition: `opacity 450ms ${delay + 300}ms, transform 450ms cubic-bezier(0.2,0,0,1) ${delay + 300}ms`,
+                  transition: `opacity ${t(450)}ms ${delay + t(300)}ms, transform ${t(450)}ms cubic-bezier(0.2,0,0,1) ${delay + t(300)}ms`,
                 }}
               >
                 <Card hover className="relative overflow-hidden p-4">
@@ -145,7 +149,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                     style={{
                       opacity: active ? 0.5 : 0,
                       transform: `translateY(-50%) scale(${active ? 1 : 1.6})`,
-                      transition: `opacity 220ms ease-out ${delay + 800}ms, transform 260ms cubic-bezier(0.3, 0, 0.2, 1.4) ${delay + 800}ms`,
+                      transition: `opacity ${t(220)}ms ease-out ${delay + t(800)}ms, transform ${t(260)}ms cubic-bezier(0.3, 0, 0.2, 1.4) ${delay + t(800)}ms`,
                     }}
                   >
                     {/* drop-shadow follows the strokes themselves, not a box */}
