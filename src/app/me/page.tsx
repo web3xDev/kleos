@@ -46,6 +46,7 @@ export default function MePage() {
   const [revokeStage, setRevokeStage] = useState<"passkey" | "sending" | null>(null);
   // The last agent asked about, so the modal's text survives while it animates closed.
   const [shownRevoke, setShownRevoke] = useState<Agent | null>(null);
+  const [shownConnect, setShownConnect] = useState<Agent | null>(null);
   const { notify } = useToast();
 
   useEffect(() => {
@@ -280,18 +281,21 @@ export default function MePage() {
         </Card>
       )}
 
-      {connecting && (
-        <div className="mt-8">
+      {/* Connect a runtime in a modal, opened right where the button was pressed. `shownConnect`
+          keeps the form on screen while the modal fades out. */}
+      <Modal open={Boolean(connecting)} onClose={() => setConnecting(null)} width="xl" labelledBy="connect-title">
+        {shownConnect && (
           <ConnectRuntime
-            agent={connecting}
+            key={String(shownConnect.id)}
+            agent={shownConnect}
             onCancel={() => setConnecting(null)}
             onDone={() => {
               setConnecting(null);
               void refresh();
             }}
           />
-        </div>
-      )}
+        )}
+      </Modal>
 
       {/* Confirm in a modal over the blurred page. `shownRevoke` keeps the text during the close animation. */}
       <Modal open={Boolean(revoking)} onClose={() => setRevoking(null)} locked={revokeBusy} labelledBy="revoke-title">
@@ -439,7 +443,13 @@ export default function MePage() {
 
               <div className="mt-5 flex items-center gap-2">
                 {!a.wallet ? (
-                  <Button variant="secondary" onClick={() => setConnecting(a)}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setConnecting(a);
+                      setShownConnect(a);
+                    }}
+                  >
                     <Link2 size={16} strokeWidth={1.5} />
                     Connect runtime
                   </Button>

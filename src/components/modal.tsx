@@ -1,8 +1,11 @@
 "use client";
 
-// Centered dialog over a blurred page. Fades and scales in, and out again
-// (it stays mounted for the closing animation). Esc and a click on the
+// Centered dialog over a blurred page. Fades and scales in, and out again.
+// Always mounted once the page is hydrated (hidden when closed), so opening
+// only flips styles and the transition runs every time; mounting on open
+// raced the first frame and sometimes popped in. Esc and a click on the
 // backdrop close it, unless `locked` (e.g. while a transaction is in flight).
+// Callers keep rendering the last content while it closes.
 
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -14,29 +17,20 @@ export function Modal({
   onClose,
   locked = false,
   labelledBy,
+  width = "md",
   children,
 }: {
   open: boolean;
   onClose: () => void;
   locked?: boolean;
   labelledBy?: string;
+  /** md: confirmations; xl: forms with more to read (connect a runtime). */
+  width?: "md" | "xl";
   children: ReactNode;
 }) {
-  const [mounted, setMounted] = useState(open);
-  const [visible, setVisible] = useState(false);
-
-  // Mount, then flip to visible on the next frame so the enter transition runs;
-  // on close, fade out first and unmount after the transition.
-  useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const r = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
-      return () => cancelAnimationFrame(r);
-    }
-    setVisible(false);
-    const t = setTimeout(() => setMounted(false), DURATION);
-    return () => clearTimeout(t);
-  }, [open]);
+  const [client, setClient] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- one flag on mount: the portal needs document
+  useEffect(() => setClient(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -52,23 +46,29 @@ export function Modal({
     };
   }, [open, locked, onClose]);
 
-  if (!mounted) return null;
+  if (!client) return null;
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      aria-hidden={!open}
+      inert={!open}
+      // Hidden only after the fade out has finished; shown at once when opening.
+      style={{ visibility: open ? "visible" : "hidden", transition: `visibility 0s linear ${open ? 0 : DURATION}ms` }}
+    >
       <div
         aria-hidden
         onClick={() => !locked && onClose()}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        style={{ opacity: visible ? 1 : 0, transition: `opacity ${DURATION}ms ease-out` }}
+        style={{ opacity: open ? 1 : 0, transition: `opacity ${DURATION}ms ease-out` }}
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
-        className="relative w-full max-w-md"
+        className={`relative max-h-[calc(100dvh-2rem)] w-full overflow-y-auto ${width === "xl" ? "max-w-xl" : "max-w-md"}`}
         style={{
-          opacity: visible ? 1 : 0,
-          transform: visible ? "none" : "translateY(8px) scale(0.98)",
+          opacity: open ? 1 : 0,
+          transform: open ? "none" : "translateY(8px) scale(0.98)",
           transition: `opacity ${DURATION}ms ease-out, transform ${DURATION}ms cubic-bezier(0.2, 0, 0, 1)`,
         }}
       >

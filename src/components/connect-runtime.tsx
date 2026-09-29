@@ -49,7 +49,7 @@ export function ConnectRuntime({ agent, onDone, onCancel }: { agent: Agent; onDo
 
   return (
     <Card className="p-6">
-      <h2 className="text-[24px] font-semibold leading-tight">Connect your runtime</h2>
+      <h2 id="connect-title" className="text-[24px] font-semibold leading-tight">Connect your runtime</h2>
       <p className="mt-1 text-sm text-secondary">
         Your runtime is the software that runs {agent.name} and spends its wallet: an MCP server, a bot, a wallet process.
       </p>
