@@ -6,7 +6,7 @@
 //   Pay later: the same tool reads the agent's Kleos record and, by its own
 //   rule, serves it before payment; the credit is an invoice on KleosCredit.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Ban, Check, Loader2, Play, X } from "lucide-react";
 import { chain } from "@/lib/chain";
