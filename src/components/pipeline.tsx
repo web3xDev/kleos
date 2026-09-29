@@ -55,15 +55,31 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
         return (
           <li
             key={st.n}
-            className="relative md:pt-6"
+            className="relative pl-6 md:pl-0 md:pt-6"
             style={{
               opacity: active ? 1 : 0.45,
               transition: `opacity 400ms cubic-bezier(0.2,0,0,1) ${delay}ms`,
             }}
           >
+            {/* Mobile: a vertical rail instead of the horizontal one, one segment down to the next
+                step's dot (the 40px gap plus the 9px dot offset), drawn in step order */}
+            {i < STEPS.length - 1 && (
+              <>
+                <span aria-hidden className="absolute left-[3px] top-[20px] w-px bg-border md:hidden" style={{ bottom: -49 }} />
+                <span
+                  aria-hidden
+                  className="absolute left-[3px] top-[20px] w-px origin-top bg-accent md:hidden"
+                  style={{
+                    bottom: -49,
+                    transform: inView ? "scaleY(1)" : "scaleY(0)",
+                    transition: `transform ${STEP_MS}ms linear ${delay}ms`,
+                  }}
+                />
+              </>
+            )}
             <span
               aria-hidden
-              className="absolute top-0 left-0 hidden h-[7px] w-[7px] rounded-full md:block"
+              className="absolute left-0 top-[9px] h-[7px] w-[7px] rounded-full md:top-0"
               style={{
                 background: active ? "var(--accent)" : "var(--border-hover)",
                 transition: `background 300ms ${delay}ms`,
