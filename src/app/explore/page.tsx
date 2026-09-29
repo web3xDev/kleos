@@ -30,7 +30,8 @@ const PAGE = 12;
 function Metric({ value, label, accent }: { value: number | string | undefined; label: string; accent?: boolean }) {
   return (
     <div>
-      <div className={`text-[24px] font-semibold leading-none tabular-nums ${accent ? "text-accent-text" : "text-primary"}`}>
+      {/* The contrast number uses the brand purple itself, the same as the network map's lit squares */}
+      <div className={`text-[24px] font-semibold leading-none tabular-nums ${accent ? "text-accent" : "text-primary"}`}>
         {value === undefined ? <Shimmer>0,000</Shimmer> : typeof value === "number" ? value.toLocaleString("en-US") : value}
       </div>
       <Label className="mt-1.5">{label}</Label>
