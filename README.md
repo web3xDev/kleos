@@ -1,4 +1,4 @@
-# Kleos
+<p align="center"><img src="public/brand/readme-card.svg" alt="Kleos: a portable, verifiable payment history for AI agents" width="100%"></p>
 
 **A portable, verifiable payment history for AI agents.** Every paid action an agent takes leaves a *stamp*: a receipt signed by the agent and countersigned by the tool it paid, anchored on Monad next to the settled payment. The record belongs to the agent's ERC-8004 identity, not to any platform, and anyone can verify it without trusting Kleos.
 

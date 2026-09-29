@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-label="Kleos: a portable, verifiable payment history for AI agents">
+  <!-- The README header card: the site's card surface, the tally mark in the brand purple, the wordmark. -->
+  <rect x="0.5" y="0.5" width="1279" height="319" rx="20" fill="#111111" stroke="#27272A"/>
+  <!-- Tally mark (same geometry as src/components/mark.tsx), 96px -->
+  <g transform="translate(96 112) scale(1.5)" fill="none" stroke="#6355B8" stroke-width="5" stroke-linecap="round">
+    <line x1="14" y1="14" x2="14" y2="50"/>
+    <line x1="26" y1="14" x2="26" y2="50"/>
+    <line x1="38" y1="14" x2="38" y2="50"/>
+    <line x1="50" y1="14" x2="50" y2="50"/>
+    <line x1="8" y1="44" x2="56" y2="20"/>
+  </g>
+  <text x="232" y="178" fill="#F5F5F5" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="60" font-weight="600" letter-spacing="11">KLEOS</text>
+  <text x="234" y="226" fill="#A1A1AA" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24">A portable, verifiable payment history for AI agents.</text>
+  <text x="1184" y="72" text-anchor="end" fill="#71717A" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" letter-spacing="2">ERC-8004 · x402 · MONAD</text>
+</svg>
