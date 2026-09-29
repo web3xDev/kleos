@@ -117,7 +117,7 @@ export function Mono({ children, className }: { children: ReactNode; className?:
  */
 export function Shimmer({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <span aria-hidden className={cx("animate-pulse select-none rounded-[4px] bg-surface-elevated text-transparent", className)}>
+    <span aria-hidden className={cx("animate-pulse select-none rounded-[6px] bg-surface-elevated text-transparent", className)}>
       {children}
     </span>
   );

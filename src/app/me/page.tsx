@@ -370,7 +370,7 @@ export default function MePage() {
                   </div>
                 </dl>
                 <div className="mt-5 flex items-center gap-2">
-                  <span className="h-10 w-40 animate-pulse rounded-[8px] bg-surface-elevated" />
+                  <span className="h-10 w-40 animate-pulse rounded-[10px] bg-surface-elevated" />
                 </div>
               </Card>
             ))}
