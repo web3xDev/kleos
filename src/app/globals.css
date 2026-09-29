@@ -215,7 +215,7 @@ button:hover svg.lucide-arrow-up-right {
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  animation: border-sweep 1800ms linear infinite;
+  animation: border-sweep 1100ms linear infinite;
 }
 
 /* One purple light travels once around a card's border, then fades (the Try
