@@ -10,7 +10,6 @@ import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Info, Search } from
 import { chain } from "@/lib/chain";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { Card, Input, Label, Mono, Shimmer, shortHex } from "@/components/ui";
-import { Mark } from "@/components/mark";
 import { NetworkMap } from "@/components/network-map";
 
 type ExploreAgent = {
@@ -207,11 +206,13 @@ export default function ExplorePage() {
       {/* Before the scan lands, hold the space of one record card so the table does not jump */}
       {!data && !error && (
         <section className="mt-10" aria-hidden>
-          <div className="flex items-center gap-2 pb-[9px]">
-            <Mark size={18} className="text-surface-elevated" />
-            <Mono className="text-[11px] leading-none tracking-[0.14em]">
-              <Shimmer>AGENT WITH A KLEOS TRACK RECORD</Shimmer>
-            </Mono>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 className="text-[20px] font-semibold leading-tight">
+              <Shimmer>Agent with a track record</Shimmer>
+            </h2>
+            <span className="text-xs">
+              <Shimmer>Paid actions, stamped by Kleos</Shimmer>
+            </span>
           </div>
           <div className="mt-4 grid gap-3 md:max-w-xl">
             <Card className="p-5">
@@ -229,16 +230,15 @@ export default function ExplorePage() {
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
         <section className="mt-10">
-          {/* One centered row; the accent rule hangs under the label only, not the info icon */}
-          <div className="flex items-center gap-2 pb-[9px]">
-            <div className="relative flex items-center gap-2">
-              <Mark size={18} className="text-accent" />
-              <Mono className="text-[11px] leading-none tracking-[0.14em] text-primary">
-                {featured.length > 1 ? "AGENTS WITH A KLEOS TRACK RECORD" : "AGENT WITH A KLEOS TRACK RECORD"}
-              </Mono>
-              <span aria-hidden className="absolute -bottom-[9px] left-0 h-px w-full bg-accent" />
-            </div>
-            <RecordInfo />
+          {/* A plain section heading, like the profile's "Stamps"; the purple lives in the cards and the map */}
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 className="text-[20px] font-semibold leading-tight">
+              {featured.length > 1 ? "Agents with a track record" : "Agent with a track record"}
+            </h2>
+            <span className="inline-flex items-center gap-1.5 text-xs text-tertiary">
+              Paid actions, stamped by Kleos
+              <RecordInfo />
+            </span>
           </div>
           <div className={`mt-4 grid gap-3 ${featured.length === 1 ? "md:max-w-xl" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
             {featured.map((a) => (
