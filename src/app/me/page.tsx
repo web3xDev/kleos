@@ -4,7 +4,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Check, Fingerprint, Loader2, Plus, Link2, Unlink } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BadgeCheck, Check, Fingerprint, Fuel, Loader2, Lock, Plus, Link2, Unlink, X } from "lucide-react";
+import { Mark } from "@/components/mark";
 import { useSession, SESSION_MINUTES, hadSession } from "@/lib/session";
 import { cachedAgentIds, ensureGas, loadAgent, registerAgent, rememberAgent, type Agent } from "@/lib/agents";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
@@ -256,50 +257,102 @@ export default function MePage() {
 
       {/* Register in a modal over the blurred page; it cannot be dismissed while the transaction runs */}
       <Modal open={showRegister} onClose={() => setShowRegister(false)} locked={working} labelledBy="register-title">
-        <Card className="p-6">
+        <Card className="overflow-hidden">
           <form onSubmit={onRegister}>
-            <h2 id="register-title" className="text-[24px] font-semibold leading-tight">Register your agent</h2>
-            <p className="mt-1 text-sm text-secondary">Give your agent an onchain identity.</p>
-            <div className="mt-5 flex gap-2">
+            {/* Header: brand tile, title, close */}
+            <div className="flex items-start gap-4 px-6 pt-6">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-accent/15">
+                <Mark size={22} className="text-accent" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 id="register-title" className="text-[22px] font-semibold leading-tight">Register your agent</h2>
+                <p className="mt-1 text-sm text-secondary">Give it an onchain identity it keeps across platforms.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRegister(false)}
+                disabled={working}
+                aria-label="Close"
+                className="-mr-2 -mt-1 inline-flex h-8 w-8 items-center justify-center rounded-[8px] text-tertiary enabled:hover:bg-surface-hover enabled:hover:text-primary disabled:opacity-40"
+              >
+                <X size={16} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Name */}
+            <div className="px-6 pt-6">
+              <Label>Agent name</Label>
               <Input
-                placeholder="Agent name"
+                className="mt-2"
+                placeholder="e.g. Research Agent"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={working}
                 autoFocus
               />
-              <Button type="submit" variant="accent" disabled={!name.trim() || working} loading={working} className="shrink-0">
-                Register
-              </Button>
+              <p className="mt-1.5 text-xs text-tertiary">Public. Shown on Explore and on the agent&apos;s profile.</p>
             </div>
-            {working && (
-              <ol className="mt-5 space-y-2 text-sm">
-                {steps.map((s, i) => {
-                  const done = steps.findIndex((x) => x.key === progress) > i;
-                  const active = s.key === progress;
-                  return (
-                    <li key={s.key} className={`flex items-center gap-2 ${done || active ? "text-primary" : "text-tertiary"}`}>
-                      {done ? (
-                        <Check size={16} strokeWidth={2} className="text-success" />
-                      ) : active ? (
-                        <Loader2 size={16} strokeWidth={1.5} className="animate-spin text-secondary" />
-                      ) : (
-                        <span className="inline-block h-4 w-4" />
-                      )}
-                      {s.label}
-                    </li>
-                  );
-                })}
-              </ol>
-            )}
-            {txError && <p className="mt-4 text-sm text-error">{txError}</p>}
-            <p className="mt-5 text-xs text-tertiary">
-              Confirms with your passkey session. Registers an ERC-8004 identity and writes your agent&apos;s
-              encryption key next to it.
-            </p>
-            <div className="mt-5 flex justify-end">
+
+            {/* What happens, or live progress once it runs */}
+            <div className="mx-6 mt-5 rounded-[10px] border border-border-subtle bg-background p-4">
+              {working ? (
+                <ol className="space-y-2.5 text-sm">
+                  {steps.map((s, i) => {
+                    const done = steps.findIndex((x) => x.key === progress) > i;
+                    const active = s.key === progress;
+                    return (
+                      <li key={s.key} className={`flex items-center gap-3 ${done || active ? "text-primary" : "text-tertiary"}`}>
+                        {done ? (
+                          <Check size={16} strokeWidth={2} className="text-success" />
+                        ) : active ? (
+                          <Loader2 size={16} strokeWidth={1.5} className="animate-spin text-secondary" />
+                        ) : (
+                          <span className="inline-block h-4 w-4 rounded-full border border-border" />
+                        )}
+                        {s.label}
+                      </li>
+                    );
+                  })}
+                </ol>
+              ) : (
+                <ul className="space-y-3 text-sm">
+                  <li className="flex gap-3">
+                    <Fingerprint size={16} strokeWidth={1.5} className="mt-0.5 shrink-0 text-accent" />
+                    <span className="text-secondary">
+                      <span className="text-primary">Confirmed by your passkey session.</span> No wallet pop-up.
+                    </span>
+                  </li>
+                  <li className="flex gap-3">
+                    <BadgeCheck size={16} strokeWidth={1.5} className="mt-0.5 shrink-0 text-accent" />
+                    <span className="text-secondary">
+                      <span className="text-primary">An ERC-8004 identity on {chain.name},</span> owned by your passkey address.
+                    </span>
+                  </li>
+                  <li className="flex gap-3">
+                    <Lock size={16} strokeWidth={1.5} className="mt-0.5 shrink-0 text-accent" />
+                    <span className="text-secondary">
+                      <span className="text-primary">Your encryption key is written next to it,</span> so only you can read what
+                      the agent was paid to get.
+                    </span>
+                  </li>
+                  <li className="flex gap-3">
+                    <Fuel size={16} strokeWidth={1.5} className="mt-0.5 shrink-0 text-accent" />
+                    <span className="text-secondary">
+                      <span className="text-primary">Gas is on us</span> on testnet.
+                    </span>
+                  </li>
+                </ul>
+              )}
+            </div>
+            {txError && <p className="mx-6 mt-4 text-sm text-error">{txError}</p>}
+
+            {/* Footer */}
+            <div className="mt-6 flex items-center justify-between gap-3 border-t border-border-subtle px-6 py-4">
               <Button type="button" variant="ghost" onClick={() => setShowRegister(false)} disabled={working}>
                 Cancel
+              </Button>
+              <Button type="submit" variant="accent" disabled={!name.trim() || working} loading={working}>
+                {working ? "Registering…" : "Register agent"}
               </Button>
             </div>
           </form>
