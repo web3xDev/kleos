@@ -136,7 +136,7 @@ export default function Home() {
         </div>
 
         {/* Live agent card, with the mascot peeking from behind it */}
-        <MascotHost side="left" top="22%" className="md:w-full md:max-w-sm md:justify-self-end">
+        <MascotHost side="left" top="22%" mobileTop className="md:w-full md:max-w-sm md:justify-self-end">
           <Card className="overflow-hidden">
             <Chrome path={example ? `AGENT #${example.id}` : "AGENT"} />
             {example ? (
