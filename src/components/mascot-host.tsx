@@ -73,7 +73,8 @@ export function MascotHost({
 
   return (
     <div ref={ref} className={`relative ${className}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <div className={`absolute z-0 ${left ? "-left-[66px]" : "-right-[66px] -scale-x-100"}`} style={{ top }} aria-hidden>
+      {/* Hidden below md, like the top variant: on a full-width card there is no room beside it */}
+      <div className={`absolute z-0 hidden md:block ${left ? "-left-[66px]" : "-right-[66px] -scale-x-100"}`} style={{ top }} aria-hidden>
         <Mascot
           size={112}
           className="origin-bottom-right transition-transform duration-[360ms] ease-out"
@@ -82,7 +83,7 @@ export function MascotHost({
       </div>
       <MascotHand
         size={24}
-        className={`absolute z-20 transition-[opacity,transform] duration-[220ms] ${left ? "-left-[6px]" : "-right-[6px]"}`}
+        className={`absolute z-20 hidden transition-[opacity,transform] duration-[220ms] md:block ${left ? "-left-[6px]" : "-right-[6px]"}`}
         style={{
           top: `calc(${top} + 100px)`,
           opacity: on ? 1 : 0,
