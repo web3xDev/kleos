@@ -20,7 +20,7 @@ const STEPS = [
 ];
 
 // Timing of the sequence, in ms from the moment the section is in view.
-const STEP_MS = 360;
+const STEP_MS = 330;
 const DRAW_MS = STEP_MS * 3;
 
 export function Pipeline({ stamp }: { stamp: StampLite }) {
