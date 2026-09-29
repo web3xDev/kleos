@@ -200,25 +200,31 @@ button:hover svg.lucide-arrow-up-right {
   to { opacity: 1; }
 }
 
-/* Explore's network map: an agent with a track record carries a thin ring of
-   light that keeps running around it, the Try card's border sweep in a loop.
-   Uses the --sweep angle registered below (@property). */
+/* Explore's network map: an agent with a track record sends out a slow radar
+   ping, a thin purple ring that grows from the square and fades. Reads as
+   "live signal" in a grey field, not as a loading spinner. */
 .record-dot {
   position: relative;
   z-index: 1;
 }
-.record-dot::before {
+.record-dot::before,
+.record-dot::after {
   content: "";
   position: absolute;
-  inset: -3px;
-  padding: 1px;
-  border-radius: 4px;
+  inset: 0;
+  border-radius: 3px;
+  border: 1px solid var(--accent-text);
   pointer-events: none;
-  background: conic-gradient(from var(--sweep), transparent 0deg, var(--accent) 140deg, var(--accent-text) 200deg, transparent 220deg, transparent 360deg);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  animation: border-sweep 1100ms linear infinite;
+  opacity: 0;
+  animation: record-ping 2600ms cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+/* A second ring, half a beat behind, so the ping has depth */
+.record-dot::after {
+  animation-delay: 1300ms;
+}
+@keyframes record-ping {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(3.2); opacity: 0; }
 }
 
 /* One purple light travels once around a card's border, then fades (the Try
