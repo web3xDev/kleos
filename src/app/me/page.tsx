@@ -152,16 +152,20 @@ export default function MePage() {
           encryption: session.keys.encryption,
           keyIndex: agents.length,
         });
-      let agent: Agent;
-      try {
-        agent = await register();
-      } catch (first) {
-        // Monad checks balances against state a few blocks behind; right after the
-        // gas drip that can still read as "insufficient". One retry a moment later.
-        if (!/insufficient balance/i.test(String(first))) throw first;
-        await new Promise((r) => setTimeout(r, 4000));
-        agent = await register();
+      // Monad checks balances against state a few blocks behind, and the public RPC
+      // sits in front of several nodes, some of which lag further. A funded account
+      // can still get "insufficient balance" from one of them: try again, backing off.
+      let agent: Agent | null = null;
+      for (const wait of [0, 3000, 6000]) {
+        if (wait) await new Promise((r) => setTimeout(r, wait));
+        try {
+          agent = await register();
+          break;
+        } catch (err) {
+          if (!/insufficient balance/i.test(String(err)) || wait === 6000) throw err;
+        }
       }
+      if (!agent) throw new Error("registration did not go through");
       setProgress("done");
       setAgents((a) => [agent, ...a]);
       setName("");
