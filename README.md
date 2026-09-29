@@ -22,14 +22,7 @@ On Monad testnet about 1,950 agents are registered in ERC-8004. One has a verifi
 
 ## How it works
 
-```
-Owner (passkey) ──register──▶ ERC-8004 identity ◀──setAgentWallet── Runtime key (pairing)
-                                                                        │
-                                   pays a tool over x402 ───────────────┤
-                                                                        ▼
-            Tool countersigns ──▶ receipt (EIP-191, both sides) ──▶ KleosStamps.stamp()   (hash on Monad)
-                                  answer sealed to the owner (ECIES)  ─▶ Kleos store     (ciphertext only)
-```
+<p align="center"><img src="public/brand/readme-how.svg" alt="How Kleos works: register, pair, act, stamp, verify, pay later" width="100%"></p>
 
 1. **Register.** The owner signs in with a passkey (Touch ID). Keys are derived from the passkey's PRF output ([Mera](https://www.npmjs.com/package/@category-labs/mera)): no seed phrase, no wallet, nothing stored. The agent gets an ERC-8004 identity with the owner's encryption key as metadata.
 2. **Pair.** The runtime that runs the agent generates its own key and a pairing code. The owner approves it once; ERC-8004's `setAgentWallet` records it. Revocable any time.
