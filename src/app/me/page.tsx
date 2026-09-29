@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BadgeCheck, Check, Fingerprint, Fuel, Loader2, Lock, Plus, Link2, Unlink, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BadgeCheck, Check, Fingerprint, Fuel, Loader2, Lock, LogOut, Plus, Link2, Unlink, X } from "lucide-react";
 import { Mark } from "@/components/mark";
 import { useSession, SESSION_MINUTES, hadSession } from "@/lib/session";
 import { cachedAgentIds, ensureGas, loadAgent, registerAgent, rememberAgent, type Agent } from "@/lib/agents";
@@ -26,6 +26,29 @@ const steps: { key: Progress; label: string }[] = [
 // Last known list per owner, kept for the life of the tab so navigating back
 // to this page shows the agents at once instead of reloading from nothing.
 let remembered: { owner: string; agents: Agent[]; summary: Map<string, { actions: number; usdc: bigint }> } | null = null;
+
+/** Time left in the session as a small ring; turns amber in the last two minutes. */
+function SessionRing({ fraction, low }: { fraction: number; low: boolean }) {
+  const r = 5.5;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden className="-rotate-90">
+      <circle cx="7" cy="7" r={r} fill="none" stroke="var(--border)" strokeWidth="1.5" />
+      <circle
+        cx="7"
+        cy="7"
+        r={r}
+        fill="none"
+        stroke={low ? "var(--warning)" : "var(--success)"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeDasharray={c}
+        strokeDashoffset={c * (1 - Math.min(1, Math.max(0, fraction)))}
+        style={{ transition: "stroke-dashoffset 1s linear, stroke 180ms" }}
+      />
+    </svg>
+  );
+}
 
 export default function MePage() {
   const { session, publicClient, busy, error, signIn, confirm, create, end, secondsLeft } = useSession();
@@ -275,13 +298,43 @@ export default function MePage() {
             </a>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-tertiary">
-            Session ends in <Mono className="text-xs text-secondary">{mm}:{ss}</Mono> of {SESSION_MINUTES}
-          </span>
-          <Button variant="ghost" onClick={end}>
-            End session
-          </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Session pill: a ring that empties as the session runs out, the time left, and a way out */}
+          <div className="flex h-9 items-center rounded-full border border-border bg-surface pl-3 pr-1">
+            <span tabIndex={0} aria-describedby="session-info" className="group/time relative flex items-center outline-none">
+              <SessionRing fraction={secondsLeft / (SESSION_MINUTES * 60)} low={secondsLeft < 120} />
+              <span className="ml-2 text-[13px] text-secondary">
+                Signed in <span className="text-tertiary">·</span>{" "}
+                <span className="font-mono tabular-nums text-primary">
+                  {mm}:{ss}
+                </span>
+              </span>
+              <span
+                id="session-info"
+                role="tooltip"
+                className="pointer-events-none absolute left-0 top-full z-20 mt-3 w-60 rounded-[8px] border border-border bg-surface-elevated p-3 text-xs leading-relaxed text-secondary opacity-0 transition-opacity duration-[120ms] group-hover/time:opacity-100 group-focus-visible/time:opacity-100"
+              >
+                Time left before you are signed out. To continue after that, sign in again with your passkey.
+              </span>
+            </span>
+            <span aria-hidden className="mx-2 h-4 w-px bg-border" />
+            <span className="group/end relative flex">
+              <button
+                type="button"
+                onClick={end}
+                aria-label="End session"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-tertiary hover:bg-surface-hover hover:text-primary"
+              >
+                <LogOut size={14} strokeWidth={1.5} />
+              </button>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-[8px] border border-border bg-surface-elevated px-2.5 py-1.5 text-xs text-secondary opacity-0 transition-opacity duration-[120ms] group-hover/end:opacity-100 group-focus-within/end:opacity-100"
+              >
+                End session
+              </span>
+            </span>
+          </div>
           <Button variant="accent" onClick={openRegister}>
             <Plus size={16} strokeWidth={1.5} />
             Register your agent

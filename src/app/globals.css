@@ -82,6 +82,14 @@ body {
   line-height: 1.5;
 }
 
+/* Thin scrollbars everywhere: a grey thumb on no track. Standard properties
+   only, no ::-webkit-scrollbar: those turn macOS overlay scrollbars into
+   always-visible ones, while these keep "show when scrolling" intact. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hover) transparent;
+}
+
 ::selection {
   background: rgba(245, 245, 245, 0.18);
   color: var(--text-primary);
