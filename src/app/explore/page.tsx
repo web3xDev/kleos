@@ -64,8 +64,8 @@ function RecordCard({ agent, summary }: { agent: ExploreAgent; summary?: { usdc:
         <div className="mt-1 text-xs text-tertiary">
           {summary?.last ? <>Last stamp {ago(summary.last)}</> : <span className="invisible">Last stamp</span>}
         </div>
-        {/* White at rest, the logo's purple when the card is hovered */}
-        <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors duration-[180ms] group-hover:text-accent">
+        {/* Grey at rest, white when the card is hovered, like the site's other links */}
+        <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-secondary transition-colors duration-[180ms] group-hover:text-primary">
           View profile <ArrowRight size={14} strokeWidth={1.5} />
         </span>
       </Card>
