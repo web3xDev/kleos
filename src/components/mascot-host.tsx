@@ -8,37 +8,51 @@ import { useState, type ReactNode } from "react";
 import { Mascot, MascotHand } from "@/components/mascot";
 import { useInView } from "@/components/reveal";
 
-// Rises from behind the card's top edge, over its right half, two hands
-// gripping the edge. `visibility` picks the breakpoints it shows at.
-function TopPeek({ on, hover, visibility }: { on: boolean; hover: boolean; visibility: string }) {
+// Rises from behind the card's top edge, two hands gripping the edge.
+// `visibility` picks the breakpoints it shows at; `scale` and `right` size and
+// place it (the desktop default is full size, 22% from the right edge).
+function TopPeek({
+  on,
+  hover,
+  visibility,
+  scale = 1,
+  right = "22%",
+}: {
+  on: boolean;
+  hover: boolean;
+  visibility: string;
+  scale?: number;
+  right?: string;
+}) {
+  const s = (px: number) => Math.round(px * scale);
   const up = hover ? "translateY(-18px)" : "translateY(0)";
-  const down = "translateY(86px)";
+  const down = `translateY(${s(86)}px)`;
   return (
     <>
-      <div className={`absolute right-[22%] z-0 ${visibility}`} style={{ top: -82 }} aria-hidden>
+      <div className={`absolute z-0 ${visibility}`} style={{ top: -s(82), right }} aria-hidden>
         <Mascot
-          size={112}
+          size={s(112)}
           className="transition-transform duration-[360ms] ease-out"
           style={{ transform: on ? up : down, transitionDelay: hover ? "0ms" : "140ms" }}
         />
       </div>
       {/* two hands on the edge, one each side of the head */}
       <MascotHand
-        size={24}
+        size={s(24)}
         className={`absolute z-20 transition-[opacity,transform] duration-[220ms] ${visibility}`}
         style={{
-          right: "calc(22% + 92px)",
-          top: -8,
+          right: `calc(${right} + ${s(92)}px)`,
+          top: -s(8),
           opacity: on ? 1 : 0,
           transform: `rotate(90deg) scaleY(-1) ${on && hover ? "translateX(-4px)" : ""}`,
         }}
       />
       <MascotHand
-        size={24}
+        size={s(24)}
         className={`absolute z-20 transition-[opacity,transform] duration-[220ms] ${visibility}`}
         style={{
-          right: "calc(22% - 4px)",
-          top: -8,
+          right: `calc(${right} - ${s(4)}px)`,
+          top: -s(8),
           opacity: on ? 1 : 0,
           transform: `rotate(90deg) ${on && hover ? "translateX(-4px)" : ""}`,
         }}
@@ -85,11 +99,11 @@ export function MascotHost({
     <div
       ref={ref}
       // Room above the card on mobile for the head that rises from its top edge
-      className={`relative ${mobileTop ? "mt-16 md:mt-0" : ""} ${className}`}
+      className={`relative ${mobileTop ? "mt-12 md:mt-0" : ""} ${className}`}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      {mobileTop && <TopPeek on={inView} hover={hover} visibility="md:hidden" />}
+      {mobileTop && <TopPeek on={inView} hover={hover} visibility="md:hidden" scale={0.75} right="8%" />}
       {/* Hidden below md, like the top variant: on a full-width card there is no room beside it */}
       <div className={`absolute z-0 hidden md:block ${left ? "-left-[66px]" : "-right-[66px] -scale-x-100"}`} style={{ top }} aria-hidden>
         <Mascot
