@@ -135,20 +135,39 @@ export default function MePage() {
       setProgress("gas");
       await ensureGas(publicClient, session.address);
       setProgress("signing");
-      const agent = await registerAgent({
-        name: name.trim(),
-        wallet: session.wallet,
-        publicClient,
-        encryption: session.keys.encryption,
-        keyIndex: agents.length,
-      });
+      const register = () =>
+        registerAgent({
+          name: name.trim(),
+          wallet: session.wallet,
+          publicClient,
+          encryption: session.keys.encryption,
+          keyIndex: agents.length,
+        });
+      let agent: Agent;
+      try {
+        agent = await register();
+      } catch (first) {
+        // Monad checks balances against state a few blocks behind; right after the
+        // gas drip that can still read as "insufficient". One retry a moment later.
+        if (!/insufficient balance/i.test(String(first))) throw first;
+        await new Promise((r) => setTimeout(r, 4000));
+        agent = await register();
+      }
       setProgress("done");
       setAgents((a) => [agent, ...a]);
       setName("");
       setShowRegister(false);
       setProgress("idle");
     } catch (err) {
-      setTxError(err instanceof Error ? err.message : String(err));
+      // Chain errors are pages long; show one sentence.
+      const msg = err instanceof Error ? err.message : String(err);
+      setTxError(
+        /insufficient balance/i.test(msg)
+          ? "Your account's gas hasn't reached Monad yet. Wait a few seconds and try again."
+          : /user rejected|denied|not allowed/i.test(msg)
+            ? "The passkey prompt was dismissed."
+            : msg.split("\n")[0].slice(0, 160),
+      );
       setProgress("idle");
     }
   }

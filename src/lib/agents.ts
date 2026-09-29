@@ -47,7 +47,13 @@ export async function ensureGas(publicClient: PublicClient, address: `0x${string
   }
 
   for (let i = 0; i < 30; i++) {
-    if ((await publicClient.getBalance({ address })) >= GAS_FLOOR) return;
+    if ((await publicClient.getBalance({ address })) >= GAS_FLOOR) {
+      // Monad checks a sender's balance against state a few blocks behind the
+      // tip; a transfer that just landed can still read as "insufficient" to it.
+      // Give it a few blocks before the caller sends its transaction.
+      await new Promise((r) => setTimeout(r, 3000));
+      return;
+    }
     await new Promise((r) => setTimeout(r, 1000));
   }
   throw new Error("gas drip did not land in time, try again");
