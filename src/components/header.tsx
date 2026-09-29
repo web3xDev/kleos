@@ -116,7 +116,7 @@ function MobileDrawer({
   if (!client) return null;
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] md:hidden"
+      className="fixed inset-0 z-[60] overflow-hidden md:hidden"
       aria-hidden={!visible}
       inert={!visible}
       // Hidden only after the slide out has finished; shown at once when opening.

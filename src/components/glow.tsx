@@ -10,7 +10,8 @@ export function ClosingGlow() {
     <div
       ref={ref}
       aria-hidden
-      className="pointer-events-none absolute inset-x-[-32px] bottom-0 top-1/4 md:inset-x-[-120px]"
+      // Mobile: out to the screen edges exactly (the page gutter is 16px), never past them
+      className="pointer-events-none absolute inset-x-[-16px] bottom-0 top-1/4 md:inset-x-[-120px]"
       style={{
         background:
           "radial-gradient(ellipse 70% 55% at 50% 100%, rgba(99, 85, 184, 0.16), rgba(99, 85, 184, 0.06) 40%, transparent 72%)",

@@ -226,7 +226,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             </div>
             <Label className="mt-1">Invoices</Label>
             {!loading && invoices !== null && invoices.length > 0 && (
-              <div className="mt-1 whitespace-nowrap text-xs text-tertiary">
+              <div className="mt-1 text-xs text-tertiary md:whitespace-nowrap">
                 {paidOnTime} paid
                 {paidLate > 0 && <> · {paidLate} late</>} · <span className={openCount > 0 ? "text-secondary" : ""}>{openCount} open</span> ·{" "}
                 <span className={overdueCount > 0 ? "font-medium text-error" : ""}>{overdueCount} unpaid</span>
