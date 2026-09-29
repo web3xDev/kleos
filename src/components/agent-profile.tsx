@@ -119,7 +119,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
       notify("Could not pay the invoice", body.error ?? `status ${res.status}`);
       return;
     }
-    notify("Invoice paid", "The agent paid it, the payment was stamped, and the invoice closed on Monad.");
+    notify("Invoice paid", "The agent paid it, the payment was stamped, and the invoice closed on Monad.", undefined, "success");
     await load();
   }
 

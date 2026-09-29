@@ -4,11 +4,13 @@
 // never for decoration.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { Check, X } from "lucide-react";
 
-type Toast = { id: number; title: string; body?: string };
+/** "success": a completed, verifiable action (green check, per the color rule: green = real states). */
+type Tone = "neutral" | "success";
+type Toast = { id: number; title: string; body?: string; tone: Tone };
 
-type ToastContextValue = { notify: (title: string, body?: string, ms?: number) => void };
+type ToastContextValue = { notify: (title: string, body?: string, ms?: number, tone?: Tone) => void };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
@@ -43,10 +45,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const notify = useCallback(
-    (title: string, body?: string, ms = 8000) => {
+    (title: string, body?: string, ms = 8000, tone: Tone = "neutral") => {
       clearAll();
       const enter = () => {
-        setToast({ id: ++seq.current, title, body });
+        setToast({ id: ++seq.current, title, body, tone });
         // Two frames: the toast is painted hidden first, so the enter transition always runs.
         frame.current = requestAnimationFrame(() => {
           frame.current = requestAnimationFrame(() => show(true));
@@ -83,6 +85,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           }}
         >
           <div className="flex items-start gap-3">
+            {toast.tone === "success" && (
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-success/30 bg-success-muted text-success">
+                <Check size={18} strokeWidth={2.25} />
+              </span>
+            )}
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium text-primary">{toast.title}</div>
               {toast.body && <div className="mt-1 text-sm text-secondary">{toast.body}</div>}
