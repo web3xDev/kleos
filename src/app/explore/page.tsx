@@ -6,11 +6,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Info, Search } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Info, Search } from "lucide-react";
 import { chain } from "@/lib/chain";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { Card, Input, Label, Mono, Shimmer, shortHex } from "@/components/ui";
 import { Mark } from "@/components/mark";
+import { NetworkMap } from "@/components/network-map";
 
 type ExploreAgent = {
   id: number;
@@ -101,6 +102,8 @@ export default function ExplorePage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [page, setPage] = useState(0);
+  // The full list starts folded; the map and the record cards carry the page.
+  const [listOpen, setListOpen] = useState(false);
   // USDC settled and last stamp time per agent with a record, read from their stamps.
   const [settled, setSettled] = useState<Map<number, { usdc: bigint; last: number | null }>>(new Map());
 
@@ -158,6 +161,9 @@ export default function ExplorePage() {
       .catch(() => setSettledFailed(true));
   }, [recorded]);
 
+  // The map shows the registry in token order, oldest agent first.
+  const mapAgents = useMemo(() => (data ? [...data.agents].sort((a, b) => a.id - b.id) : []), [data]);
+
   const rows = useMemo(() => {
     if (!data) return [];
     const needle = q.trim().toLowerCase();
@@ -191,9 +197,15 @@ export default function ExplorePage() {
       </div>
       <p className="mt-4 pb-3 text-xs text-tertiary">Read live from Monad: the ERC-8004 registry and KleosStamps.</p>
 
+      {/* The network, one square per agent: the contrast between identity and history, seen */}
+      <section className="mt-6">
+        <NetworkMap agents={mapAgents} loading={!data && !error} />
+        {error && <p className="mt-4 text-sm text-error">{error}</p>}
+      </section>
+
       {/* Before the scan lands, hold the space of one record card so the table does not jump */}
       {!data && !error && (
-        <section className="mt-6" aria-hidden>
+        <section className="mt-10" aria-hidden>
           <div className="flex items-center gap-2 pb-[9px]">
             <Mark size={18} className="text-surface-elevated" />
             <Mono className="text-[11px] leading-none tracking-[0.14em]">
@@ -215,7 +227,7 @@ export default function ExplorePage() {
 
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
-        <section className="mt-6">
+        <section className="mt-10">
           {/* One centered row; the accent rule hangs under the label only, not the info icon */}
           <div className="flex items-center gap-2 pb-[9px]">
             <div className="relative flex items-center gap-2">
@@ -239,9 +251,34 @@ export default function ExplorePage() {
         </section>
       )}
 
-      {/* Search and filters on one row, table right under */}
-      <section className="mt-6">
-        <div className="flex flex-wrap items-center gap-3">
+      {/* The full registry, folded: most agents have no history yet, so the list is on demand */}
+      <section className="mt-12">
+        <button
+          type="button"
+          onClick={() => setListOpen((o) => !o)}
+          aria-expanded={listOpen}
+          disabled={!data}
+          className="group flex w-full items-center justify-between gap-4 rounded-[10px] border border-border bg-surface px-5 py-4 text-left transition-colors duration-[180ms] hover:border-border-hover hover:bg-surface-hover disabled:cursor-default"
+        >
+          <span>
+            <span className="text-sm font-medium text-primary">
+              {data ? `All ${data.total.toLocaleString("en-US")} registered agents` : "All registered agents"}
+            </span>
+            <span className="mt-0.5 block text-xs text-tertiary">Search by name, id or owner, or filter to the ones with a track record.</span>
+          </span>
+          <ChevronDown
+            size={16}
+            strokeWidth={1.5}
+            className={`shrink-0 text-tertiary transition-transform duration-300 group-hover:text-primary ${listOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${listOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+          inert={!listOpen}
+        >
+        <div className="min-h-0 overflow-hidden">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:w-[420px]">
             <Search size={16} strokeWidth={1.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
             <Input className="pl-9" placeholder="Search by name, id or owner" value={q} onChange={(e) => {
@@ -269,8 +306,6 @@ export default function ExplorePage() {
             ))}
           </div>
         </div>
-
-        {error && <p className="mt-4 text-sm text-error">{error}</p>}
 
         {!data && !error && (
           <Card className="mt-4 overflow-hidden" aria-busy>
@@ -375,6 +410,8 @@ export default function ExplorePage() {
             )}
           </Card>
         )}
+        </div>
+        </div>
       </section>
     </main>
   );
