@@ -441,7 +441,12 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                   <Mono className="text-primary">{formatUsdc(BigInt(s.receipt.amount))}</Mono>
                   <span className="hidden w-20 text-right text-xs text-tertiary sm:block">{timeAgo(s.receipt.timestamp)}</span>
                   <div className="w-24 text-right">
-                    {ok === true ? <VerifiedBadge /> : ok === false ? <Badge tone="error">Failed</Badge> : null}
+                    {/* The badge fades in as each stamp's verification lands, instead of popping in */}
+                    {ok !== null && (
+                      <span key={String(ok)} className="fade-in inline-flex">
+                        {ok ? <VerifiedBadge /> : <Badge tone="error">Failed</Badge>}
+                      </span>
+                    )}
                   </div>
                   <ChevronDown size={16} className={`text-tertiary transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
                 </button>
