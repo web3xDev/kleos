@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340" role="img" aria-label="How Kleos works: register, pair, act, stamp, verify, pay later">
-  <!-- README "How it works": the landing page pipeline as a static diagram. Generated; edit the step list, not the coordinates. -->
+  <!-- README "How it works": the landing page pipeline as a static diagram.
+       Tag pills: purple only for Kleos's own contracts (KleosStamps, KleosCredit); grey for everything else. -->
   <rect x="0.5" y="0.5" width="1279" height="339" rx="20" fill="#111111" stroke="#27272A"/>
   <text x="64" y="64" fill="#71717A" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" letter-spacing="2">HOW IT WORKS</text>
   <line x1="138" y1="116" x2="1142.0" y2="116" stroke="#6355B8" stroke-width="2"/>
@@ -9,8 +10,8 @@
     <text x="138.0" y="190" fill="#F5F5F5" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="600">Register</text>
     <text x="138.0" y="220" fill="#A1A1AA" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15">Owner signs in</text>
     <text x="138.0" y="242" fill="#A1A1AA" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15">with a passkey</text>
-    <rect x="56.3" y="266" width="163.4" height="28" rx="14" fill="#6355B8" fill-opacity="0.18"/>
-    <text x="138.0" y="285" fill="#A99EE8" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">ERC-8004 identity</text>
+    <rect x="56.3" y="266" width="163.4" height="28" rx="14" fill="#27272A"/>
+    <text x="138.0" y="285" fill="#A1A1AA" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">ERC-8004 identity</text>
   </g>
   <g text-anchor="middle">
     <circle cx="338.8" cy="116" r="7" fill="#6355B8"/>
@@ -18,8 +19,8 @@
     <text x="338.8" y="190" fill="#F5F5F5" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="600">Pair</text>
     <text x="338.8" y="220" fill="#A1A1AA" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15">Runtime gets its own</text>
     <text x="338.8" y="242" fill="#A1A1AA" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15">key, owner approves</text>
-    <rect x="281.7" y="266" width="114.2" height="28" rx="14" fill="#6355B8" fill-opacity="0.18"/>
-    <text x="338.8" y="285" fill="#A99EE8" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">agentWallet</text>
+    <rect x="281.7" y="266" width="114.2" height="28" rx="14" fill="#27272A"/>
+    <text x="338.8" y="285" fill="#A1A1AA" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">agentWallet</text>
   </g>
   <g text-anchor="middle">
     <circle cx="539.6" cy="116" r="7" fill="#6355B8"/>
@@ -27,8 +28,8 @@
     <text x="539.6" y="190" fill="#F5F5F5" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="600">Act</text>
     <text x="539.6" y="220" fill="#A1A1AA" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15">Agent pays a tool</text>
     <text x="539.6" y="242" fill="#A1A1AA" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15">over x402</text>
-    <rect x="478.4" y="266" width="122.4" height="28" rx="14" fill="#6355B8" fill-opacity="0.18"/>
-    <text x="539.6" y="285" fill="#A99EE8" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">USDC settled</text>
+    <rect x="478.4" y="266" width="122.4" height="28" rx="14" fill="#27272A"/>
+    <text x="539.6" y="285" fill="#A1A1AA" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">USDC settled</text>
   </g>
   <g text-anchor="middle">
     <circle cx="740.4" cy="116" r="7" fill="#6355B8"/>
@@ -45,8 +46,8 @@
     <text x="941.2" y="190" fill="#F5F5F5" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="600">Verify</text>
     <text x="941.2" y="220" fill="#A1A1AA" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15">Anyone checks it</text>
     <text x="941.2" y="242" fill="#A1A1AA" font-family="Geist, Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15">against Monad</text>
-    <rect x="859.5" y="266" width="163.4" height="28" rx="14" fill="#6355B8" fill-opacity="0.18"/>
-    <text x="941.2" y="285" fill="#A99EE8" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">no trust in Kleos</text>
+    <rect x="859.5" y="266" width="163.4" height="28" rx="14" fill="#27272A"/>
+    <text x="941.2" y="285" fill="#A1A1AA" font-family="'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">no trust in Kleos</text>
   </g>
   <g text-anchor="middle">
     <circle cx="1142.0" cy="116" r="7" fill="#6355B8"/>
