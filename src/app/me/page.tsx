@@ -55,6 +55,16 @@ export default function MePage() {
     setEnded(hadSession());
   }, []);
 
+  // After a reload the keys are gone by design (memory only). Ask for the passkey
+  // right away instead of waiting for a click; if the prompt is dismissed or the
+  // browser wants a click first, the button is still there and no error shows.
+  const autoPrompted = useRef(false);
+  useEffect(() => {
+    if (ended !== true || session || busy || autoPrompted.current) return;
+    autoPrompted.current = true;
+    void signIn({ quiet: true });
+  }, [ended, session, busy, signIn]);
+
   const refresh = useCallback(async () => {
     if (!session) return;
     // Only the latest run may write: an older, slower run never overwrites it.
@@ -183,7 +193,7 @@ export default function MePage() {
               : "One passkey. No seed phrase, no extension, no account. Your keys are derived from your passkey each time, on any device where it syncs."}
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
-            <Button size="lg" variant="accent" disabled={busy} onClick={signIn}>
+            <Button size="lg" variant="accent" disabled={busy} onClick={() => signIn()}>
               {/* The idle labels are stacked invisibly so the button keeps its width;
                   the waiting state (spinner + "Waiting…") is narrower, so the row
                   never re-wraps when it is pressed. */}

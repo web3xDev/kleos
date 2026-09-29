@@ -38,7 +38,8 @@ type SessionContextValue = {
   publicClient: PublicClient;
   busy: boolean;
   error: string | null;
-  signIn: () => Promise<void>;
+  /** `quiet`: a failed or dismissed prompt shows no error (used for the automatic prompt after a reload). */
+  signIn: (opts?: { quiet?: boolean }) => Promise<void>;
   /** Step-up check before an irreversible action: one passkey prompt that must yield this session's address. */
   confirm: () => Promise<void>;
   create: () => Promise<void>;
@@ -64,7 +65,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const start = useCallback(
-    async (fn: () => Promise<SignInResult>) => {
+    async (fn: () => Promise<SignInResult>, quiet = false) => {
       setBusy(true);
       setError(null);
       try {
@@ -90,7 +91,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           "Your keys live only in memory. Reloading the page ends the session; your passkey brings it straight back.",
         );
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        if (!quiet) setError(e instanceof Error ? e.message : String(e));
       } finally {
         setBusy(false);
       }
@@ -98,7 +99,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     [end, notify],
   );
 
-  const signIn = useCallback(() => start(signInOwner), [start]);
+  const signIn = useCallback((opts?: { quiet?: boolean }) => start(signInOwner, opts?.quiet), [start]);
 
   // The session keys already sign without prompts; for irreversible actions we
   // ask the passkey again and check it derives the same owner. The keys it
