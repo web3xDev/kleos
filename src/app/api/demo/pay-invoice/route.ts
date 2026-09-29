@@ -10,6 +10,7 @@ import { Stamper, kleosCreditAbi, networks, payInvoice, payingFetch, type Invoic
 import { addresses, chain } from "@/lib/chain";
 import { TOOL_ID } from "@/lib/demo-tool";
 import { acquireDemo, busyResponse } from "@/lib/demo-lock";
+import { ensureRuntimeGas } from "@/lib/demo-gas";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
   const origin = new URL(req.url).origin;
   const network = "monad-testnet" as const;
   const account = privateKeyToAccount(key);
+  await ensureRuntimeGas(account.address).catch(() => {});
   const invoice: InvoiceNotice = {
     v: 1,
     invoiceId: invoiceId as `0x${string}`,

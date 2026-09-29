@@ -6,6 +6,7 @@ import { Stamper, networks, payingFetch, readCountersign, readSettlement } from 
 import { privateKeyToAccount } from "viem/accounts";
 import { TOOL_ID } from "@/lib/demo-tool";
 import { acquireDemo, busyResponse } from "@/lib/demo-lock";
+import { ensureRuntimeGas } from "@/lib/demo-gas";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export async function POST(req: Request) {
   const origin = new URL(req.url).origin;
   const kleosUrl = process.env.KLEOS_URL ?? origin;
   const account = privateKeyToAccount(key);
+  await ensureRuntimeGas(account.address).catch(() => {});
   const network = "monad-testnet" as const;
   const stamper = new Stamper({ network, agentId: BigInt(agentId), account, kleosUrl });
 

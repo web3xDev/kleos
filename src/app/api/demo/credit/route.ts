@@ -21,6 +21,7 @@ import {
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { TOOL_ID } from "@/lib/demo-tool";
 import { acquireDemo, busyResponse } from "@/lib/demo-lock";
+import { ensureRuntimeGas } from "@/lib/demo-gas";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,8 @@ export async function POST(req: Request) {
   // key asks on its behalf. The tool looks at the record first and never gets further.
   const account = asNewcomer ? privateKeyToAccount(generatePrivateKey()) : privateKeyToAccount(key);
   const agentId = BigInt(asNewcomer ? newcomerId : demoAgentId);
+  // Only the demo agent spends gas here (the newcomer is declined before any transaction).
+  if (!asNewcomer) await ensureRuntimeGas(account.address).catch(() => {});
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
