@@ -43,7 +43,8 @@ export function DocsNav({ items }: { items: [string, string][] }) {
                 href={`#${id}`}
                 onClick={() => setActive(id)}
                 className={`-ml-px block border-l py-1 pl-3 text-sm ${
-                  on ? "border-primary text-primary" : "border-transparent text-secondary hover:border-border-hover hover:text-primary"
+                  // The current section's marker is the brand purple; the label itself stays white
+                  on ? "border-accent text-primary" : "border-transparent text-secondary hover:border-border-hover hover:text-primary"
                 }`}
               >
                 {label}
