@@ -11,6 +11,7 @@ import { chain } from "@/lib/chain";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { Card, Input, Label, Mono, Shimmer, shortHex } from "@/components/ui";
 import { NetworkMap } from "@/components/network-map";
+import { Wordmark } from "@/components/mark";
 
 type ExploreAgent = {
   id: number;
@@ -49,21 +50,23 @@ function ago(ts: number): string {
 function RecordCard({ agent, summary }: { agent: ExploreAgent; summary?: { usdc: bigint; last: number | null } }) {
   return (
     <Link href={`/a/${agent.id}`} className="group block">
-      <Card className="border-accent/40 p-5 hover:border-accent hover:bg-surface-hover">
-        <div className="flex items-baseline justify-between gap-4">
+      {/* Same language as the Try result card: the wordmark, the agent, what it has proven, one way in */}
+      <Card className="border-accent/40 p-6 hover:border-accent hover:bg-surface-hover">
+        <Wordmark size={20} />
+        <div className="mt-4 flex items-baseline justify-between gap-4">
           <span className="truncate text-lg font-semibold text-primary">{agent.name ?? `Agent #${agent.id}`}</span>
-          <span className="inline-flex items-center gap-2">
-            <Mono className="text-secondary">#{agent.id}</Mono>
-            <ArrowRight size={14} strokeWidth={1.5} className="text-tertiary group-hover:text-primary" />
-          </span>
+          <Mono className="text-secondary">#{agent.id}</Mono>
         </div>
-        <Mono className="mt-1 block text-[13px] text-secondary">
+        <div className="mt-1 text-sm text-secondary">
           {agent.stamps} verified {agent.stamps === 1 ? "action" : "actions"}
           {summary && <> · {formatUsdc(summary.usdc)} settled</>}
-        </Mono>
-        <div className="mt-3 text-xs text-tertiary">
+        </div>
+        <div className="mt-1 text-xs text-tertiary">
           {summary?.last ? <>Last stamp {ago(summary.last)}</> : <span className="invisible">Last stamp</span>}
         </div>
+        <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-accent-text group-hover:text-primary">
+          View profile <ArrowRight size={14} strokeWidth={1.5} />
+        </span>
       </Card>
     </Link>
   );
@@ -215,13 +218,15 @@ export default function ExplorePage() {
             </span>
           </div>
           <div className="mt-4 grid gap-3 md:max-w-xl">
-            <Card className="p-5">
-              <div className="flex items-baseline justify-between gap-4">
+            <Card className="p-6">
+              <Wordmark size={20} muted />
+              <div className="mt-4 flex items-baseline justify-between gap-4">
                 <span className="text-lg font-semibold"><Shimmer>Agent name here</Shimmer></span>
                 <Mono><Shimmer>#0000</Shimmer></Mono>
               </div>
-              <Mono className="mt-1 block text-[13px]"><Shimmer>00 verified actions · $0.00 settled</Shimmer></Mono>
-              <div className="mt-3 text-xs"><Shimmer>Last stamp 0 h ago</Shimmer></div>
+              <div className="mt-1 text-sm"><Shimmer>00 verified actions · $0.00 settled</Shimmer></div>
+              <div className="mt-1 text-xs"><Shimmer>Last stamp 0 h ago</Shimmer></div>
+              <span className="mt-5 inline-flex text-sm font-medium"><Shimmer>View profile →</Shimmer></span>
             </Card>
           </div>
         </section>
