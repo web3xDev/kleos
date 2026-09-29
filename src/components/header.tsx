@@ -82,7 +82,9 @@ export function Header() {
 
 // Mobile navigation: a panel sliding in from the right over a blurred page.
 // Portaled to <body>: the sticky header's backdrop blur would otherwise trap a
-// fixed-position child inside the header's box. Stays mounted while it animates out.
+// fixed-position child inside the header's box. Always mounted (hidden when
+// closed), so opening only flips styles and the slide runs every time; mounting
+// on open raced the first frame and sometimes popped in.
 function MobileDrawer({
   open,
   onClose,
@@ -94,19 +96,10 @@ function MobileDrawer({
   isActive: (href: string) => boolean;
   signedIn: boolean;
 }) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const r = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
-      return () => cancelAnimationFrame(r);
-    }
-    setVisible(false);
-    const t = setTimeout(() => setMounted(false), 260);
-    return () => clearTimeout(t);
-  }, [open]);
+  // The portal needs document; render it once the page is hydrated, then keep it.
+  const [client, setClient] = useState(false);
+  useEffect(() => setClient(true), []);
+  const visible = open;
 
   useEffect(() => {
     if (!open) return;
@@ -120,9 +113,15 @@ function MobileDrawer({
     };
   }, [open, onClose]);
 
-  if (!mounted) return null;
+  if (!client) return null;
   return createPortal(
-    <div className="fixed inset-0 z-[60] md:hidden">
+    <div
+      className="fixed inset-0 z-[60] md:hidden"
+      aria-hidden={!visible}
+      inert={!visible}
+      // Hidden only after the slide out has finished; shown at once when opening.
+      style={{ visibility: visible ? "visible" : "hidden", transition: `visibility 0s linear ${visible ? 0 : 260}ms` }}
+    >
       <div
         aria-hidden
         onClick={onClose}
