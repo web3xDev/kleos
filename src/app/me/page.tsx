@@ -168,6 +168,8 @@ export default function MePage() {
       if (!agent) throw new Error("registration did not go through");
       setProgress("done");
       setAgents((a) => [agent, ...a]);
+      // Minted a moment ago: it cannot have stamps yet, so its totals are known.
+      setSummary((s) => new Map(s).set(String(agent.id), { actions: 0, usdc: 0n }));
       setName("");
       setShowRegister(false);
       setProgress("idle");
