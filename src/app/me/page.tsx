@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Fingerprint, Loader2, Plus, Link2, Unlink } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Fingerprint, Loader2, Plus, Link2, Unlink } from "lucide-react";
 import { useSession, SESSION_MINUTES, hadSession } from "@/lib/session";
 import { cachedAgentIds, ensureGas, loadAgent, registerAgent, rememberAgent, type Agent } from "@/lib/agents";
 import { fetchStamps, formatUsdc } from "@/lib/stamps";
@@ -218,7 +218,16 @@ export default function MePage() {
         <div>
           <h1 className="text-[40px] font-semibold leading-none tracking-tight">My agents</h1>
           <div className="mt-3">
-            <Mono className="text-secondary">{shortHex(session.address, 8, 6)}</Mono>
+            {/* Your owner address, open on the explorer (same arrow link as the profile's addresses) */}
+            <a
+              href={`${chain.blockExplorers.default.url}/address/${session.address}`}
+              target="_blank"
+              rel="noreferrer"
+              className="group inline-flex items-center gap-1 font-mono text-[13px] text-secondary hover:text-primary"
+            >
+              {shortHex(session.address, 8, 6)}
+              <ArrowUpRight size={12} strokeWidth={1.5} className="text-tertiary group-hover:text-primary" />
+            </a>
           </div>
         </div>
         <div className="flex items-center gap-3">
