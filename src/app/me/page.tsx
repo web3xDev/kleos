@@ -127,6 +127,15 @@ export default function MePage() {
     if (session && agents.length) remembered = { owner: session.address.toLowerCase(), agents, summary };
   }, [session, agents, summary]);
 
+  // Every open starts clean: no leftover name or error from the last attempt.
+  // (Reset on open, not on close, so the form does not blank out while it fades away.)
+  function openRegister() {
+    setName("");
+    setTxError(null);
+    setProgress("idle");
+    setShowRegister(true);
+  }
+
   async function onRegister(e: React.FormEvent) {
     e.preventDefault();
     if (!session || !name.trim()) return;
@@ -267,7 +276,7 @@ export default function MePage() {
           <Button variant="ghost" onClick={end}>
             End session
           </Button>
-          <Button variant="accent" onClick={() => setShowRegister(true)}>
+          <Button variant="accent" onClick={openRegister}>
             <Plus size={16} strokeWidth={1.5} />
             Register your agent
           </Button>
@@ -463,7 +472,7 @@ export default function MePage() {
           <Card className="p-10 text-center">
             <p className="text-secondary">No agents yet.</p>
             <p className="mt-1 text-sm text-tertiary">Register one to give it an identity and start a track record.</p>
-            <Button variant="accent" className="mt-6" onClick={() => setShowRegister(true)}>
+            <Button variant="accent" className="mt-6" onClick={openRegister}>
               <Plus size={16} strokeWidth={1.5} />
               Register your agent
             </Button>
