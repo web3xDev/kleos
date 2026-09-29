@@ -12,6 +12,8 @@ import { fetchStamps, formatUsdc } from "@/lib/stamps";
 import { Card, Input, Label, Mono, Shimmer, shortHex } from "@/components/ui";
 import { NetworkMap } from "@/components/network-map";
 import { Wordmark } from "@/components/mark";
+import { Segmented } from "@/components/segmented";
+import { SmoothHeight } from "@/components/smooth-height";
 
 type ExploreAgent = {
   id: number;
@@ -293,25 +295,18 @@ export default function ExplorePage() {
                 setPage(0);
               }} />
           </div>
-          <div className="flex gap-1">
-            {(
-              [
-                ["all", "All"],
-                ["record", "With track record"],
-              ] as [Filter, string][]
-            ).map(([k, label]) => (
-              <button
-                key={k}
-                onClick={() => {
-                  setFilter(k);
-                  setPage(0);
-                }}
-                className={`h-10 rounded-[8px] px-3 text-sm ${filter === k ? "bg-surface-elevated text-primary" : "text-secondary hover:bg-surface-hover hover:text-primary"}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            label="Filter"
+            options={[
+              ["all", "All"],
+              ["record", "With track record"],
+            ]}
+            value={filter}
+            onChange={(k) => {
+              setFilter(k);
+              setPage(0);
+            }}
+          />
         </div>
 
         {!data && !error && (
@@ -344,7 +339,9 @@ export default function ExplorePage() {
         )}
 
         {data && (
-          <Card className="mt-4 overflow-hidden">
+          // Filter or page changes: the card resizes smoothly and the new rows fade in (keyed below)
+          <SmoothHeight className="mt-4">
+          <Card className="overflow-hidden">
             <div className="hidden grid-cols-[1fr_150px_120px_130px_24px] items-center gap-4 border-b border-border-subtle px-5 py-3 md:grid">
               <Label>Agent</Label>
               <Label>Runtime</Label>
@@ -353,7 +350,7 @@ export default function ExplorePage() {
               <span />
             </div>
             {rows.length === 0 && <div className="px-5 py-10 text-center text-sm text-tertiary">No agents match.</div>}
-            <ul className="divide-y divide-border-subtle">
+            <ul key={`${filter}-${current}`} className="swap-in divide-y divide-border-subtle">
               {visible.map((a) => (
                 <li key={a.id}>
                   <Link
@@ -416,6 +413,7 @@ export default function ExplorePage() {
               </div>
             )}
           </Card>
+          </SmoothHeight>
         )}
         </div>
         </div>
