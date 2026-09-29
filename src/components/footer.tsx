@@ -63,8 +63,10 @@ export function Footer() {
   return (
     <footer className="relative z-10 border-t border-border-subtle bg-background">
       <div className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-12 md:px-8">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div className="max-w-xs">
+        {/* Mobile: brand on top, Product and Developers side by side, Contracts (long rows) full width.
+            Desktop: brand plus three columns in one row. */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:gap-10">
+          <div className="col-span-2 max-w-xs md:col-span-1">
             <Link href="/" className="inline-flex">
               <Wordmark />
             </Link>
@@ -73,7 +75,7 @@ export function Footer() {
             </p>
           </div>
           {columns.map((c) => (
-            <div key={c.title}>
+            <div key={c.title} className={c.title === "Contracts" ? "col-span-2 md:col-span-1" : ""}>
               <Mono className="text-[11px] tracking-[0.14em] text-tertiary">{c.title.toUpperCase()}</Mono>
               <ul className="mt-4 space-y-2.5">
                 {c.links.map((l) => (
@@ -85,7 +87,7 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-20 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-3 md:mt-20">
           <span className="text-xs text-tertiary">© 2026 Kleos</span>
           <Mono className="text-xs text-tertiary">Built on ERC-8004 · x402 · {chain.name}</Mono>
         </div>
