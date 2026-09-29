@@ -208,7 +208,7 @@ button:hover svg.lucide-arrow-up-right {
   content: "";
   position: absolute;
   inset: -3px;
-  padding: 1.5px;
+  padding: 1px;
   border-radius: 4px;
   pointer-events: none;
   background: conic-gradient(from var(--sweep), transparent 0deg, var(--accent) 140deg, var(--accent-text) 200deg, transparent 220deg, transparent 360deg);
