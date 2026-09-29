@@ -24,7 +24,7 @@ import { acquireDemo, busyResponse } from "@/lib/demo-lock";
 
 export const dynamic = "force-dynamic";
 
-type Step = { step: string; status: "start" | "done" | "declined" | "error"; detail?: string };
+type Step = { step: string; status: "start" | "done" | "declined" | "error"; detail?: string; dueAt?: number };
 
 const allowDefault = () => process.env.NODE_ENV === "development" || process.env.KLEOS_DEMO_ALLOW_DEFAULT === "1";
 
@@ -77,7 +77,8 @@ export async function POST(req: Request) {
         const invoice = decodeInvoiceNotice(res.headers.get(INVOICE_HEADER));
         if (!invoice) throw new Error("tool served without an invoice");
         emit({ step: "served", status: "done", detail: answer });
-        emit({ step: "invoice", status: "done", detail: invoice.openTx });
+        // The real due date, so the page can count down to it
+        emit({ step: "invoice", status: "done", detail: invoice.openTx, dueAt: invoice.dueAt });
 
         if (skipPayment) {
           emit({ step: "pay", status: "declined", detail: "Not paying. The invoice stays open and turns overdue." });

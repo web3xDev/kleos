@@ -76,6 +76,14 @@ export default function TryPage() {
   // Pay later outcomes other than "paid": credit declined, or invoice left unpaid (dev only).
   const [declined, setDeclined] = useState<string | null>(null);
   const [unpaid, setUnpaid] = useState(false);
+  // The open invoice's due date (unix seconds), and a clock that ticks while it is unpaid.
+  const [dueAt, setDueAt] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
+  useEffect(() => {
+    if (!unpaid || dueAt === null) return;
+    const t = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [unpaid, dueAt]);
 
   function update(key: string, patch: Partial<Row>) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
@@ -87,6 +95,7 @@ export default function TryPage() {
     setAnswer(null);
     setDeclined(null);
     setUnpaid(false);
+    setDueAt(null);
     setRows(idle(next));
   }
 
@@ -126,7 +135,8 @@ export default function TryPage() {
         buf = lines.pop() ?? "";
         for (const line of lines) {
           if (!line.trim()) continue;
-          const ev = JSON.parse(line) as { step: string; status: Status; detail?: string; ms?: number };
+          const ev = JSON.parse(line) as { step: string; status: Status; detail?: string; ms?: number; dueAt?: number };
+          if (ev.dueAt) setDueAt(ev.dueAt);
           if (ev.step === "done") {
             setProfile(ev.detail ?? null);
             continue;
@@ -356,7 +366,13 @@ export default function TryPage() {
           <Wordmark size={20} />
           <div className="mt-4 flex items-baseline justify-between gap-4">
             <div className="text-lg font-semibold text-primary">
-              {kind === "classic" ? "Track record updated" : unpaid ? "Invoice left unpaid" : "Served first, paid after"}
+              {kind === "classic"
+                ? "Track record updated"
+                : unpaid
+                  ? dueAt !== null && now >= dueAt
+                    ? "Invoice overdue"
+                    : "Invoice left unpaid"
+                  : "Served first, paid after"}
             </div>
             <Mono className="text-secondary">#1910</Mono>
           </div>
@@ -364,7 +380,19 @@ export default function TryPage() {
             {kind === "classic"
               ? "One more verified action, provable by anyone."
               : unpaid
-                ? "It turns overdue in 5 minutes, and the agent's profile will show it as unpaid."
+                ? dueAt === null
+                  ? "It turns overdue soon, and the agent's profile will show it as unpaid."
+                  : now < dueAt
+                    ? (
+                      <>
+                        It turns overdue in{" "}
+                        <Mono className="tabular-nums text-primary">
+                          {Math.floor((dueAt - now) / 60)}:{String((dueAt - now) % 60).padStart(2, "0")}
+                        </Mono>
+                        , and the agent&apos;s profile will show it as unpaid.
+                      </>
+                    )
+                    : <span className="text-error">It is overdue now. The agent&apos;s profile shows it as unpaid.</span>
                 : "The invoice closed with a countersigned stamp: one more verified action, and a clean credit history."}
           </div>
           <Link href={profile} className="mt-5 inline-block">
