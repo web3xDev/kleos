@@ -267,7 +267,7 @@ export default function ExplorePage() {
           onClick={() => setListOpen((o) => !o)}
           aria-expanded={listOpen}
           disabled={!data}
-          className="group flex w-full items-center justify-between gap-4 rounded-[10px] border border-border bg-surface px-5 py-4 text-left transition-colors duration-[180ms] hover:border-border-hover hover:bg-surface-hover disabled:cursor-default"
+          className="group flex w-full items-center justify-between gap-4 rounded-[10px] border border-border bg-surface px-5 py-4 text-left transition-colors duration-[180ms] enabled:hover:border-border-hover enabled:hover:bg-surface-hover disabled:cursor-default"
         >
           <span>
             <span className="text-sm font-medium text-primary">
@@ -278,7 +278,7 @@ export default function ExplorePage() {
           <ChevronDown
             size={16}
             strokeWidth={1.5}
-            className={`shrink-0 text-tertiary transition-transform duration-300 group-hover:text-primary ${listOpen ? "rotate-180" : ""}`}
+            className={`shrink-0 text-tertiary transition-transform duration-300 group-enabled:group-hover:text-primary ${listOpen ? "rotate-180" : ""}`}
           />
         </button>
 
@@ -391,7 +391,7 @@ export default function ExplorePage() {
                 </span>
                 <div className="flex items-center gap-2">
                   <button
-                    className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-transparent"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary enabled:hover:border-border-hover enabled:hover:bg-surface-hover enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                     onClick={() => setPage((p) => Math.max(0, p - 1))}
                     disabled={current === 0}
                   >
@@ -402,7 +402,7 @@ export default function ExplorePage() {
                     {current + 1} / {pages}
                   </Mono>
                   <button
-                    className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-transparent"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary enabled:hover:border-border-hover enabled:hover:bg-surface-hover enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                     onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}
                     disabled={current >= pages - 1}
                   >

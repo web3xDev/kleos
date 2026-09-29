@@ -55,7 +55,7 @@ export function Segmented<T extends string>({
           disabled={disabled}
           onClick={() => onChange(v)}
           className={`relative h-9 rounded-[8px] px-3 text-sm transition-colors duration-[280ms] disabled:cursor-not-allowed ${
-            value === v ? "text-primary" : "text-secondary hover:text-primary"
+            value === v ? "text-primary" : "text-secondary enabled:hover:text-primary"
           }`}
         >
           {text}

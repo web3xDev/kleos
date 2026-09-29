@@ -19,13 +19,14 @@ export function Button({ variant = "primary", size = "md", loading, className, c
   const base =
     "group/btn inline-flex items-center justify-center gap-2 rounded-[8px] font-medium disabled:cursor-not-allowed disabled:opacity-50";
   const sizes = { md: "h-10 px-4 text-sm", lg: "h-12 px-5 text-[15px]" };
+  // Hover styles are `enabled:` only: a disabled button never reacts to the pointer.
   const variants = {
-    primary: "bg-primary text-background hover:bg-white",
-    accent: "bg-accent text-white hover:bg-accent-hover",
-    secondary: "border border-border bg-transparent text-primary hover:border-border-hover hover:bg-surface-hover",
-    ghost: "text-secondary hover:bg-surface-hover hover:text-primary",
+    primary: "bg-primary text-background enabled:hover:bg-white",
+    accent: "bg-accent text-white enabled:hover:bg-accent-hover",
+    secondary: "border border-border bg-transparent text-primary enabled:hover:border-border-hover enabled:hover:bg-surface-hover",
+    ghost: "text-secondary enabled:hover:bg-surface-hover enabled:hover:text-primary",
     // Destructive, irreversible actions (e.g. revoking a runtime): red, but tinted rather than solid.
-    danger: "border border-error/40 bg-error-muted text-error hover:border-error/70 hover:bg-error/20",
+    danger: "border border-error/40 bg-error-muted text-error enabled:hover:border-error/70 enabled:hover:bg-error/20",
   };
   return (
     <button className={cx(base, sizes[size], variants[variant], className)} disabled={disabled || loading} {...rest}>

@@ -218,7 +218,7 @@ export default function TryPage() {
         {/* Dev only: take credit and do not pay, to see an overdue invoice on the profile */}
         {mode === "later" && process.env.NODE_ENV === "development" && (
           <button
-            className="mt-3 text-xs text-tertiary underline decoration-dotted underline-offset-2 hover:text-secondary"
+            className="mt-3 text-xs text-tertiary underline decoration-dotted underline-offset-2 enabled:hover:text-secondary disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() => run("credit", { skipPayment: true })}
             disabled={running}
           >

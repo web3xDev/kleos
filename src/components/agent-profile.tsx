@@ -315,7 +315,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                   <p className="text-xs text-tertiary">
                     Verified in your browser against {chain.name}. Kleos does not decide whether this record is valid.
                   </p>
-                  <button className="text-xs text-secondary hover:text-primary" onClick={verifyAll} disabled={verification.running}>
+                  <button className="text-xs text-secondary enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-50" onClick={verifyAll} disabled={verification.running}>
                     Run again
                   </button>
                 </div>
@@ -562,14 +562,14 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
                   {unpaid.length ? "entries" : "stamps"}
                 </span>
                 <div className="flex items-center gap-2">
-                  <button className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-transparent" onClick={() => goTo(current - 1)} disabled={current === 0}>
+                  <button className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary enabled:hover:border-border-hover enabled:hover:bg-surface-hover enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-40" onClick={() => goTo(current - 1)} disabled={current === 0}>
                     <ChevronLeft size={14} strokeWidth={1.5} />
                     Previous
                   </button>
                   <Mono className="w-16 text-center text-xs text-secondary">
                     {current + 1} / {pages}
                   </Mono>
-                  <button className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary hover:border-border-hover hover:bg-surface-hover hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-transparent" onClick={() => goTo(current + 1)} disabled={current >= pages - 1}>
+                  <button className="inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-border px-3 text-sm text-secondary enabled:hover:border-border-hover enabled:hover:bg-surface-hover enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-40" onClick={() => goTo(current + 1)} disabled={current >= pages - 1}>
                     Next
                     <ChevronRight size={14} strokeWidth={1.5} />
                   </button>
