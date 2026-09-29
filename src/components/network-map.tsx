@@ -30,7 +30,11 @@ export function NetworkMap({ agents, loading }: { agents: MapAgent[]; loading: b
         role={loading ? undefined : "list"}
         aria-label={loading ? "Loading the registry" : `${agents.length} agents, ${withRecord} with a track record`}
         className={`grid grid-cols-[repeat(auto-fill,6px)] gap-[2px] sm:grid-cols-[repeat(auto-fill,8px)] sm:gap-[3px] ${loading ? "animate-pulse" : ""}`}
-        onMouseOver={(e) => !loading && setHover(pick(e.target))}
+        // Crossing the gaps between squares keeps the last agent; the legend only returns on leaving the map.
+        onMouseOver={(e) => {
+          const a = !loading && pick(e.target);
+          if (a) setHover(a);
+        }}
         onMouseLeave={() => setHover(null)}
         onClick={(e) => {
           const a = !loading && pick(e.target);
