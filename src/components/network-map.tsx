@@ -62,13 +62,21 @@ export function NetworkMap({ agents, loading }: { agents: MapAgent[]; loading: b
 
       {/* One line under the map: the legend, or the agent under the cursor */}
       <div className="mt-4 flex h-5 flex-wrap items-center gap-x-5 text-xs text-tertiary">
-        {hover ? (
-          <span>
-            <span className="text-primary">{hover.name ?? `Agent #${hover.id}`}</span>
-            <Mono className="ml-2 text-xs">#{hover.id}</Mono>
-            <span className="ml-2">
-              {hover.stamps > 0 ? `${hover.stamps} verified ${hover.stamps === 1 ? "action" : "actions"}` : "no track record yet"}
+        {hover && hover.stamps > 0 ? (
+          // An agent with a record reads differently: the same KLEOS tag as the list, name and count in purple.
+          <span className="inline-flex items-center gap-2">
+            <Mono className="rounded bg-accent/25 px-1.5 py-0.5 text-[10px] leading-none tracking-[0.12em] text-accent-text">KLEOS</Mono>
+            <span className="font-medium text-accent-text">{hover.name ?? `Agent #${hover.id}`}</span>
+            <Mono className="text-xs">#{hover.id}</Mono>
+            <span className="text-secondary">
+              {hover.stamps} verified {hover.stamps === 1 ? "action" : "actions"}
             </span>
+          </span>
+        ) : hover ? (
+          <span>
+            <span className="text-secondary">{hover.name ?? `Agent #${hover.id}`}</span>
+            <Mono className="ml-2 text-xs">#{hover.id}</Mono>
+            <span className="ml-2">no track record yet</span>
           </span>
         ) : (
           <>
