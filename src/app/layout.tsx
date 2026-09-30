@@ -38,7 +38,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ToastProvider>
           <SessionProvider>
             <Header />
-            <div className="flex-1">{children}</div>
+            {/* Clips decoration that reaches past the page edge (glows, mascots). On this
+                wrapper, not on body: body's overflow is handed to the viewport, where
+                touch devices can still pan into whatever it hides. */}
+            <div className="flex-1 overflow-x-clip">{children}</div>
             <Footer />
           </SessionProvider>
         </ToastProvider>

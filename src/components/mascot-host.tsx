@@ -82,7 +82,7 @@ export function MascotHost({
   if (side === "top") {
     return (
       <div ref={ref} className={`relative ${className}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-        <TopPeek on={inView} hover={hover} visibility="hidden md:block" />
+        <TopPeek on={inView} hover={hover} visibility="hidden lg:block" />
         <div className="relative z-10">{children}</div>
       </div>
     );
@@ -98,14 +98,15 @@ export function MascotHost({
   return (
     <div
       ref={ref}
-      // Room above the card on mobile for the head that rises from its top edge
-      className={`relative ${mobileTop ? "mt-12 md:mt-0" : ""} ${className}`}
+      // Room above the card below lg for the head that rises from its top edge.
+      // lg, not md: at tablet widths the side mascot would stick out of the page.
+      className={`relative ${mobileTop ? "mt-12 lg:mt-0" : ""} ${className}`}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      {mobileTop && <TopPeek on={inView} hover={hover} visibility="md:hidden" scale={0.75} right="8%" />}
-      {/* Hidden below md, like the top variant: on a full-width card there is no room beside it */}
-      <div className={`absolute z-0 hidden md:block ${left ? "-left-[66px]" : "-right-[66px] -scale-x-100"}`} style={{ top }} aria-hidden>
+      {mobileTop && <TopPeek on={inView} hover={hover} visibility="lg:hidden" scale={0.75} right="8%" />}
+      {/* Hidden below lg, like the top variant: on a full-width card there is no room beside it */}
+      <div className={`absolute z-0 hidden lg:block ${left ? "-left-[66px]" : "-right-[66px] -scale-x-100"}`} style={{ top }} aria-hidden>
         <Mascot
           size={112}
           className="origin-bottom-right transition-transform duration-[360ms] ease-out"
@@ -114,7 +115,7 @@ export function MascotHost({
       </div>
       <MascotHand
         size={24}
-        className={`absolute z-20 hidden transition-[opacity,transform] duration-[220ms] md:block ${left ? "-left-[6px]" : "-right-[6px]"}`}
+        className={`absolute z-20 hidden transition-[opacity,transform] duration-[220ms] lg:block ${left ? "-left-[6px]" : "-right-[6px]"}`}
         style={{
           top: `calc(${top} + 100px)`,
           opacity: on ? 1 : 0,

@@ -31,7 +31,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
   const [ref, inView] = useInView<HTMLOListElement>("0px 0px -25% 0px");
 
   return (
-    <ol ref={ref} className="relative mt-12 grid gap-10 md:grid-cols-4 md:gap-6">
+    <ol ref={ref} className="relative mt-12 grid gap-7 md:grid-cols-4 md:gap-6">
       {/* base rail */}
       <span aria-hidden className="absolute top-[3px] left-0 hidden h-px w-[calc(75%+18px)] bg-border md:block" />
       {/* drawn rail */}
@@ -66,15 +66,15 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
             }}
           >
             {/* Mobile: a vertical rail instead of the horizontal one, one segment down to the next
-                step's dot (the 40px gap plus the 9px dot offset), drawn in step order */}
+                step's dot (the 28px gap plus the 9px dot offset), drawn in step order */}
             {i < STEPS.length - 1 && (
               <>
-                <span aria-hidden className="absolute left-[3px] top-[20px] w-px bg-border md:hidden" style={{ bottom: -49 }} />
+                <span aria-hidden className="absolute left-[3px] top-[20px] w-px bg-border md:hidden" style={{ bottom: -37 }} />
                 <span
                   aria-hidden
                   className="absolute left-[3px] top-[20px] w-px origin-top bg-accent md:hidden"
                   style={{
-                    bottom: -49,
+                    bottom: -37,
                     transform: inView ? "scaleY(1)" : "scaleY(0)",
                     transition: `transform ${STEP_MS}ms linear ${delay}ms`,
                   }}
@@ -90,25 +90,28 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
               }}
             />
 
-            <div className="flex items-baseline gap-3">
-              <Mono className="text-tertiary">{st.n}</Mono>
-              <span className="text-lg font-semibold">{st.t}</span>
-            </div>
-            {st.who === "Kleos" ? (
-              // Kleos's own step is signed with the logo, same height as the other labels
-              <div className="mt-1 flex h-[18px] items-center">
-                <Wordmark size={14} />
+            {/* Mobile: title and who share one line; desktop: stacked */}
+            <div className="flex items-center justify-between gap-3 md:block">
+              <div className="flex items-baseline gap-3">
+                <Mono className="text-tertiary">{st.n}</Mono>
+                <span className="text-lg font-semibold">{st.t}</span>
               </div>
-            ) : (
-              <Label className="mt-1">{st.who}</Label>
-            )}
-            <Mono className="mt-4 block text-secondary">{st.sub}</Mono>
+              {st.who === "Kleos" ? (
+                // Kleos's own step is signed with the logo, same height as the other labels
+                <div className="flex h-[18px] items-center md:mt-1">
+                  <Wordmark size={14} />
+                </div>
+              ) : (
+                <Label className="md:mt-1">{st.who}</Label>
+              )}
+            </div>
+            <Mono className="mt-2 block text-secondary md:mt-4">{st.sub}</Mono>
             <p className="mt-2 max-w-[26ch] text-sm text-secondary">{st.body}</p>
 
             {/* the payment appears at ACT */}
             {i === 2 && stamp && (
               <div
-                className="mt-4 inline-flex items-baseline gap-2 rounded-[8px] border border-border bg-surface px-3 py-2"
+                className="mt-3 inline-flex items-baseline gap-2 rounded-[8px] md:mt-4 border border-border bg-surface px-3 py-2"
                 style={{ opacity: active ? 1 : 0, transition: `opacity ${t(400)}ms ${delay + t(250)}ms` }}
               >
                 <span className="text-lg font-semibold leading-none">{stamp.amount}</span>
@@ -116,14 +119,15 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
               </div>
             )}
 
-            <div className="mt-4 flex items-center gap-2">
+            {/* The output hand-off; on mobile the vertical rail already says it */}
+            <div className="mt-4 hidden items-center gap-2 md:flex">
               <ArrowRight size={12} strokeWidth={1.5} className="text-tertiary" />
               <Mono className="text-xs text-tertiary">{st.out}</Mono>
             </div>
 
             {/* the real stamp appears at STAMP; until it loads, its space is held (invisible) */}
             {i === 3 && !stamp && (
-              <div aria-hidden className="invisible mt-5">
+              <div aria-hidden className="invisible mt-4 md:mt-5">
                 <Card className="p-4">
                   <div className="h-6" />
                   <div className="mt-3 text-lg font-semibold leading-tight">$0.00</div>
@@ -134,13 +138,19 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
             {i === 3 && stamp && (
               <Link
                 href={`/a/${stamp.agentId}`}
-                className="mt-5 block"
+                className="mt-4 block md:mt-5"
                 style={{
                   opacity: active ? 1 : 0,
                   transform: active ? "none" : "translateY(8px)",
                   transition: `opacity ${t(450)}ms ${delay + t(300)}ms, transform ${t(450)}ms cubic-bezier(0.2,0,0,1) ${delay + t(300)}ms`,
                 }}
               >
+                {/* The Try page's purple light, once around the card after the stamp is pressed.
+                    On a wrapper: the card clips its own overflow, which would hide the light. */}
+                <div
+                  className={`relative rounded-[10px] ${active ? "border-sweep" : ""}`}
+                  style={{ "--sweep-inset": "0px", "--sweep-delay": `${delay + t(1100)}ms` } as React.CSSProperties}
+                >
                 <Card hover className="relative overflow-hidden p-4">
                   {/* A rubber-stamp impression of the seal, pressed on after the card lands */}
                   <span
@@ -153,12 +163,14 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                     }}
                   >
                     {/* drop-shadow follows the strokes themselves, not a box */}
-                    <Mark size={64} className="[filter:drop-shadow(0_1px_1px_rgba(0,0,0,0.85))]" />
+                    {/* Smaller between md and lg, where the card is a narrow quarter column */}
+                    <Mark size={64} className="[filter:drop-shadow(0_1px_1px_rgba(0,0,0,0.85))] md:max-lg:h-10 md:max-lg:w-10" />
                   </span>
                   <VerifiedBadge />
                   <div className="mt-3 text-lg font-semibold leading-tight">{stamp.amount}</div>
                   <Mono className="mt-1 block text-secondary">Agent #{stamp.agentId}</Mono>
                 </Card>
+                </div>
               </Link>
             )}
           </li>

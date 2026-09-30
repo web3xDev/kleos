@@ -234,7 +234,6 @@ export default function Home() {
             ))}
           </ol>
         </div>
-        <MascotHost side="right" top="30%">
         <Card className="overflow-hidden">
           <Chrome path="STAMP" />
           {latest && example ? (
@@ -279,7 +278,6 @@ export default function Home() {
             <StampCardSkeleton />
           )}
         </Card>
-        </MascotHost>
       </section>
 
       {/* Network state */}
