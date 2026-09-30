@@ -1,5 +1,5 @@
 // GET /api/verify/:receiptHash?agentId=
-// The four checks, run on the server against Monad. Convenience only: the
+// The five checks, run on the server against Monad. Convenience only: the
 // same checks run in the browser on the profile, and anyone can run them.
 import { NextResponse } from "next/server";
 import { getStamp } from "@/lib/store";

@@ -41,6 +41,7 @@ const nav: [string, string][] = [
   ["stamp", "What a stamp is"],
   ["why-not-8004", "Why not ERC-8004's Reputation Registry?"],
   ["countersign", "Tool countersignature"],
+  ["pay-later", "Pay later and Kleos Engine v0"],
   ["verify", "Verifying a record"],
   ["api", "Package API"],
   ["http", "HTTP API"],
@@ -85,6 +86,10 @@ export default function DocsPage() {
               <li>The receipt body (the answer) is encrypted to the owner&apos;s passkey-derived key. Kleos cannot read it.</li>
               <li>Authorization is ERC-8004&apos;s own <Mono>agentWallet</Mono>. Revoking is standard; old stamps stay verifiable.</li>
               <li>There is no score. There are numbers anyone can check.</li>
+              <li>
+                Tools can act on those numbers. With <a href="#pay-later" className="text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">pay later</a>,
+                an agent whose record meets a tool&apos;s rule is served first and invoiced onchain; unpaid invoices stay visible.
+              </li>
             </ul>
           </section>
 
@@ -127,7 +132,9 @@ const { call, stamp } = await callAndStamp({
 
           <section>
             <H2 id="stamp">What a stamp is</H2>
-            <p className="mt-4 text-secondary">Two halves. The public receipt, whose keccak256 is the stamp&apos;s id:</p>
+            <p className="mt-4 text-secondary">
+              Two halves. The public receipt, whose keccak256 is the stamp&apos;s id. Version 1, signed by the runtime alone:
+            </p>
             <Code lang="json">{`{
   "v": 1,
   "network": "monad-testnet",
@@ -141,6 +148,18 @@ const { call, stamp } = await callAndStamp({
   "answerHash": "0xb79b…cac1",      // keccak256(salt || answer); the salt is in the sealed body
   "timestamp": 1790001139,
   "signature": "0x…"                // EIP-191 by wallet over the receipt hash
+}`}</Code>
+            <p className="mt-4 text-secondary">
+              Version 2 is the same receipt with the tool&apos;s side added (see{" "}
+              <a href="#countersign" className="text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">Tool countersignature</a>):
+            </p>
+            <Code lang="json">{`{
+  "v": 2,
+  …                                 // every version 1 field
+  "payTo": "0x3082…fE34",           // where the payment went: the tool
+  "paymentNonce": "0x…",            // the x402 payment's EIP-3009 nonce, seen in the settlement
+  "answerCommit": "0x…",            // the tool's salted commitment to the answer it served
+  "toolSignature": "0x…"            // EIP-191 by payTo over the countersign digest
 }`}</Code>
             <p className="mt-4 text-secondary">
               And the private body (request, answer, a random 32-byte salt, metadata), sealed to the owner&apos;s per-agent
@@ -209,6 +228,100 @@ return res;`}</Code>
           </section>
 
           <section>
+            <H2 id="pay-later">Pay later and Kleos Engine v0</H2>
+            <p className="mt-4 text-secondary">
+              A track record is worth something when it changes how a tool treats an agent. With pay later, a tool serves
+              an agent <em>before</em> it pays, because the agent&apos;s record says it pays. The credit is onchain too: an
+              invoice on <Mono>KleosCredit</Mono>, opened with the agent&apos;s consent and closed by the stamp of its
+              payment. <Link href="/try" className="text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">Try it</Link> runs
+              the whole flow on testnet.
+            </p>
+            <ol className="mt-4 list-decimal space-y-2 pl-5 text-secondary">
+              <li>The agent calls the tool without paying. The tool answers 402 with its credit terms: amount, due time and its rule.</li>
+              <li>The agent&apos;s runtime signs consent to be invoiced on those terms (EIP-712) and sends it in <Mono>X-Kleos-Credit</Mono>.</li>
+              <li>Kleos Engine v0 reads the agent&apos;s record from Monad and applies the tool&apos;s rule.</li>
+              <li>If the record qualifies, the tool opens the invoice on <Mono>KleosCredit</Mono> and serves the answer right away, with the invoice in <Mono>X-Kleos-Invoice</Mono>.</li>
+              <li>The agent pays the invoice over x402. The payment is stamped and countersigned like any other.</li>
+              <li>The stamp closes the invoice on <Mono>KleosCredit</Mono>. The record gains one more verified action and a paid invoice.</li>
+            </ol>
+
+            <h3 className="mt-8 text-lg font-semibold">Kleos Engine v0</h3>
+            <p className="mt-2 text-secondary">
+              The engine turns the record into a decision. In v0 that decision is a rule the tool sets, applied to facts read
+              from chain: how many verified actions the agent has, and how many of its invoices are overdue. Kleos supplies
+              the facts; the bar is the tool&apos;s. An agent without a record asking the same tool the same thing is
+              declined and pays first, like any unknown customer.
+            </p>
+            <Code>{`import { readAgentRecord, decideCredit } from "kleos";
+
+const record = await readAgentRecord(publicClient, "monad-testnet", 1910n);
+// { verifiedActions: 32, invoices: { total: 4, open: 0, overdue: 0, paidLate: 0 } }
+
+const { granted, reason } = decideCredit(record, { minVerifiedActions: 20, maxOverdueInvoices: 0 });
+// granted: true, reason: "32 verified actions, no unpaid invoices"`}</Code>
+            <p className="mt-4 text-secondary">
+              Next versions replace the fixed rule with a score from the same record: how many different tools an agent
+              has paid, whether invoices were paid on time, how far back the record goes, and self-dealing patterns such as
+              payments that always go to wallets the agent&apos;s owner controls.
+            </p>
+
+            <h3 className="mt-8 text-lg font-semibold">Tool side</h3>
+            <p className="mt-2 text-secondary">
+              <Mono>grantCredit</Mono> runs the engine, checks the request matches your terms and opens the invoice from
+              your key. Declined, it opens nothing.
+            </p>
+            <Code>{`import { grantCredit, decodeCreditRequest, encodeCredit, CREDIT_HEADER, INVOICE_HEADER } from "kleos";
+
+const terms = {
+  v: 1, network: "monad-testnet", creditor: account.address, tool: "my-tool/v1",
+  amount: "10000", asset: USDC, dueInSeconds: 300,
+  rule: { minVerifiedActions: 20, maxOverdueInvoices: 0 },
+};
+
+const request = decodeCreditRequest(req.headers.get(CREDIT_HEADER));
+if (!request) return Response.json({ kleosCredit: terms }, { status: 402 });
+
+const payUrl = \`https://my-tool.xyz/invoice/\${request.invoiceId}\`;   // an x402 route for the amount
+const { decision, invoice } = await grantCredit({ account, network: "monad-testnet", terms, request, payUrl });
+if (!invoice) return Response.json({ kleosCredit: terms, declined: decision.reason }, { status: 402 });
+
+return new Response(answer, { headers: { [INVOICE_HEADER]: encodeCredit(invoice) } });`}</Code>
+
+            <h3 className="mt-8 text-lg font-semibold">Agent side</h3>
+            <Code>{`import { requestCredit, payInvoice, encodeCredit, decodeInvoiceNotice, payingFetch, CREDIT_HEADER, INVOICE_HEADER } from "kleos";
+
+const { kleosCredit: terms } = await (await fetch(url)).json();          // the 402 with terms
+const request = await requestCredit({ account, agentId: 1910n, terms });  // signed consent
+
+const res = await fetch(url, { headers: { [CREDIT_HEADER]: encodeCredit(request) } });
+const answer = await res.text();                                          // served before payment
+const invoice = decodeInvoiceNotice(res.headers.get(INVOICE_HEADER));
+
+// Later, before invoice.dueAt: pay, stamp, close.
+await payInvoice({
+  fetch: payingFetch("monad-testnet", account), invoice, stamper, account,
+  network: "monad-testnet", tool: terms.tool, platform: "my-tool", asset: terms.asset,
+});`}</Code>
+
+            <h3 className="mt-8 text-lg font-semibold">What KleosCredit enforces</h3>
+            <ul className="mt-2 list-disc space-y-2 pl-5 text-secondary">
+              <li>An invoice opens only with a consent signed by the agent&apos;s current <Mono>agentWallet</Mono>. A tool cannot invoice an agent on its own.</li>
+              <li>The due time must be in the future, and an invoice id can be used once.</li>
+              <li>
+                <Mono>pay(invoiceId, receiptHash)</Mono> closes it only with a KleosStamps stamp of the same agent, for at least
+                the invoice amount, anchored after the invoice opened. Each stamp pays one invoice.
+              </li>
+              <li>Anyone may call <Mono>pay</Mono>: the stamp is the proof, not the caller.</li>
+            </ul>
+            <p className="mt-4 text-secondary">
+              On the profile an invoice shows as <strong className="text-primary">Open</strong> until it is due and, past due
+              and unpaid, as <strong className="text-error">Unpaid</strong>. A paid one appears as the stamp that closed it,
+              marked as paid later (and whether that was after the due date). Unpaid invoices stay visible to every tool that
+              reads the record, and they fail a rule like the one above.
+            </p>
+          </section>
+
+          <section>
             <H2 id="verify">Verifying a record</H2>
             <p className="mt-4 text-secondary">
               The profile page&apos;s &quot;Verify this profile&quot; runs in your browser against Monad. For each stamp:
@@ -224,7 +337,8 @@ return res;`}</Code>
               </li>
             </ol>
             <p className="mt-4 text-secondary">
-              Kleos&apos;s API is not consulted. Kleos does not decide whether a record is valid.
+              Kleos serves the receipts, but none of these checks trusts it: each one reads Monad. A receipt Kleos altered
+              or invented fails them. Kleos does not decide whether a record is valid.
             </p>
             <Code>{`import { verifyReceiptSignature, receiptHash } from "kleos";
 
@@ -238,12 +352,20 @@ const hash = receiptHash(publicPart);                     // compare with the an
               {[
                 ["kleos pair <agentId>", "CLI. Creates the runtime key if needed and prints a pairing code: an EIP-712 AgentWalletSet signature for the agent's current owner, valid 4 minutes."],
                 ["kleos whoami", "CLI. Prints the runtime address and key path."],
+                ["loadOrCreateRuntimeKey(key?)", "The runtime's account: an explicit key or KLEOS_RUNTIME_KEY (no file written), else ~/.kleos/runtime.json, created once."],
                 ["new Stamper({ agentId, account, network?, kleosUrl?, ownerPublicKey? })", "One per agent. Reads the owner's encryption key from ERC-8004 metadata when not given."],
-                ["stamper.stamp({ tool, platform, amount, asset, settlementTx, answer, request?, meta? })", "Signs, seals, stores, anchors. Returns { receiptHash, anchorTx, receipt }."],
+                ["stamper.stamp({ tool, platform, amount, asset, settlementTx, answer, request?, meta?, countersign? })", "Signs, seals, stores, anchors. With the tool's countersign it writes a version 2 receipt. Returns { receiptHash, anchorTx, receipt }."],
                 ["stamper.isPaired()", "True while this runtime is the agent's agentWallet."],
                 ["payingFetch(network, account, { maxPerCall? })", "A fetch that pays x402 402s on Monad with the runtime key. Only this network's USDC, capped per call (default 0.05)."],
-                ["callAndStamp({ fetch, url, tool, platform, amount, asset, stamper })", "Call a paid tool and stamp it. No settlement, no stamp."],
-                ["verifyReceiptSignature(receipt) · receiptHash(pub) · answerHash(answer)", "Pure helpers for verifiers."],
+                ["callAndStamp({ fetch, url, tool, platform, amount, asset, stamper })", "Call a paid tool and stamp it, countersigned when the tool sends one. No settlement, no stamp."],
+                ["readCountersign(response)", "The tool's countersignature from a paid response, or null."],
+                ["countersignPaidCall({ account, headers, tool, answer })", "Tool side. Countersigns a paid call; returns the header to set, or null when the request carried no payment."],
+                ["readAgentRecord(publicClient, network, agentId)", "Verified actions and invoice history (open, overdue, paid late), read from chain."],
+                ["decideCredit(record, rule)", "Kleos Engine v0: the tool's rule applied to a record. Returns { granted, reason }."],
+                ["grantCredit({ account, network, terms, request, payUrl })", "Tool side. Runs the engine and, if granted, opens the invoice on KleosCredit."],
+                ["requestCredit({ account, agentId, terms })", "Agent side. Signs consent to be invoiced on the tool's terms (EIP-712)."],
+                ["payInvoice({ fetch, invoice, stamper, account, network, tool, platform, asset })", "Agent side. Pays the invoice over x402, stamps it, closes it on KleosCredit."],
+                ["verifyReceiptSignature(receipt) · receiptHash(pub) · answerHash(answer, salt)", "Pure helpers for verifiers."],
                 ["seal(bytes, publicKey) · open(sealed, privateKey)", "The receipt-body encryption, for runtimes and owners."],
               ].map(([sig, desc]) => (
                 <div key={sig}>
@@ -260,15 +382,15 @@ const hash = receiptHash(publicPart);                     // compare with the an
             <H2 id="http">HTTP API</H2>
             <p className="mt-4 text-secondary">
               For applications that want to read an agent&apos;s record without a wallet library. Public, no key, CORS
-              open, 15-second cache. Every number is computed from chain; the verify endpoint runs the same four checks
+              open, 15-second cache. Every number is computed from chain; the verify endpoint runs the same five checks
               the profile runs in the browser.
             </p>
             <dl className="mt-4 space-y-5">
               {[
                 ["GET /api/agents?withRecord=1&limit=50&offset=0", "Every ERC-8004 agent on the network with its Kleos stamp count. withRecord=1 keeps only agents with at least one stamp."],
-                ["GET /api/agents/:id", "Identity, runtime, encryption key, track record (verifiedActions, usdcSettled, daysActive, tools, platforms) and the latest ten public receipts."],
+                ["GET /api/agents/:id", "Identity, runtime, encryption key, track record (verifiedActions, usdcSettled, daysActive, tools, platforms), invoices from KleosCredit (open, overdue, paid, paidLate and the latest ten) and the latest ten public receipts."],
                 ["GET /api/agents/:id/stamps?limit=50&offset=0", "Public receipts, newest first: tool, platform, amount, asset, settlementTx, answerHash, timestamp, signer, signature, receiptHash. Bodies are never served."],
-                ["GET /api/verify/:receiptHash?agentId=", "Recomputes the hash, recovers the signer, reads the anchor from KleosStamps and fetches the settlement. Returns valid plus the four checks."],
+                ["GET /api/verify/:receiptHash?agentId=", "Recomputes the hash, recovers the signer, reads the anchor from KleosStamps and fetches the settlement and, for version 2, checks the tool's countersignature. Returns valid plus the five checks."],
               ].map(([sig, desc]) => (
                 <div key={sig}>
                   <dt>
@@ -279,13 +401,16 @@ const hash = receiptHash(publicPart);                     // compare with the an
               ))}
             </dl>
             <Code lang="bash">{`curl https://kleos.xyz/api/agents/1910
-# { "agent": {...}, "trackRecord": { "verifiedActions": 11, "usdcSettled": "110000", ... }, "latestStamps": [...] }
+# { "agent": {...}, "trackRecord": { "verifiedActions": 79, ... }, "invoices": { "total": 19, "overdue": 0, ... }, "latestStamps": [...] }
 
 curl "https://kleos.xyz/api/verify/0xa238…ed6f?agentId=1910"
 # { "valid": true, "checks": [ { "label": "receiptHashRecomputed", "ok": true }, ... ] }`}</Code>
             <p className="mt-4 text-secondary">
-              A gate is one line: <Mono>if (trackRecord.verifiedActions &gt;= 50) allowDeferredSettlement()</Mono>. Kleos publishes facts; what
-              they are worth is the caller&apos;s decision.
+              Kleos publishes facts; what they are worth is the caller&apos;s decision. To serve agents first and bill them
+              after, see{" "}
+              <a href="#pay-later" className="text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">Pay later and Kleos Engine v0</a>:
+              the same facts, read from chain by <Mono>readAgentRecord</Mono>, with your rule applied by{" "}
+              <Mono>decideCredit</Mono>.
             </p>
           </section>
 

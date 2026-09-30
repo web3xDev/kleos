@@ -23,7 +23,7 @@ type Kind = "classic" | "credit" | "newcomer";
 
 const PAY_LATER_ROWS: Omit<Row, "status">[] = [
   { key: "ask", title: "Agent asks to pay later", who: "Signs consent to be invoiced (EIP-712, by its runtime)" },
-  { key: "record", title: "Tool checks the Kleos record", who: "Reads stamps and invoices from Monad, applies its own rule" },
+  { key: "record", title: "Kleos Engine v0 decides", who: "Reads stamps and invoices from Monad, applies the tool's rule" },
   { key: "served", title: "Served before payment", who: "The answer arrives now. Nothing has been paid yet" },
   { key: "invoice", title: "Invoice opened on Monad", who: "KleosCredit.open() · only with the agent's signed consent" },
   { key: "pay", title: "Agent pays the invoice", who: "x402 · $0.01 to the tool" },

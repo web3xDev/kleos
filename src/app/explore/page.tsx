@@ -109,7 +109,8 @@ export default function ExplorePage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [page, setPage] = useState(0);
   // The full list starts folded; the map and the record cards carry the page.
-  const [listOpen, setListOpen] = useState(false);
+  // Open by default: browsing the registry is what this page is for.
+  const [listOpen, setListOpen] = useState(true);
   // USDC settled and last stamp time per agent with a record, read from their stamps.
   const [settled, setSettled] = useState<Map<number, { usdc: bigint; last: number | null }>>(new Map());
 

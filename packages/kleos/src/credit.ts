@@ -103,7 +103,11 @@ export async function readAgentRecord(publicClient: PublicClient, network: Netwo
   };
 }
 
-/** The tool's own rule, applied to the record. Kleos gives the facts; the tool decides. */
+/**
+ * Kleos Engine v0: the tool's own rule, applied to the record. Kleos gives the
+ * facts; the tool sets the bar. Later versions score the record (counterparty
+ * spread, payment timeliness, self-dealing patterns) instead of a fixed rule.
+ */
 export function decideCredit(record: AgentRecord, rule: CreditTerms["rule"]): CreditDecision {
   if (record.verifiedActions < rule.minVerifiedActions) {
     return { granted: false, reason: `${record.verifiedActions} verified actions, rule needs ${rule.minVerifiedActions}`, record };

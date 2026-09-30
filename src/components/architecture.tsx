@@ -35,18 +35,27 @@ const layers: Layer[] = [
     title: "The software that runs the agent",
     items: [
       { k: "key", v: "its own · paired once · revocable" },
-      { k: "first", v: "OnchainRouter wallet MCP" },
       { k: "any", v: "an x402-paying runtime with the kleos package" },
     ],
     arrow: "tool call → x402 payment → settlement on Monad",
   },
   {
-    where: "Kleos",
-    title: "Stamp",
+    where: "Tool",
+    title: "The x402 service the agent pays",
     items: [
-      { k: "receipt", v: "signed by the runtime · public fields, fixed order" },
+      { k: "countersign", v: "signs \"I was paid for this call\" · X-Kleos-Countersign · only payTo counts" },
+      { k: "pay later", v: "serves first when Kleos Engine v0 grants credit · opens the invoice" },
+    ],
+    arrow: "receipt, signed by both sides",
+  },
+  {
+    where: "Kleos",
+    title: "Stamp and invoice",
+    items: [
+      { k: "receipt", v: "signed by the runtime, countersigned by the tool (v2) · public fields, fixed order" },
       { k: "body", v: "sealed to the owner · ECIES · the store holds ciphertext only" },
       { k: "anchor", v: "KleosStamps.stamp() · only the agentWallet · settlement required" },
+      { k: "invoice", v: "KleosCredit · opened with the agent's consent · closed by a stamp" },
     ],
     arrow: "read by anyone, from chain",
   },
@@ -55,8 +64,9 @@ const layers: Layer[] = [
     title: "Track record",
     items: [
       { k: "explore", v: "the whole registry, stamp counts from KleosStamps" },
-      { k: "profile", v: "verified actions · USDC settled · days · tools · platforms" },
-      { k: "verify", v: "recompute hash · recover signer · read anchor · fetch settlement, in the browser" },
+      { k: "profile", v: "verified actions · USDC settled · days · tools · invoices" },
+      { k: "verify", v: "recompute hash · recover signer · read anchor · fetch settlement · check the countersignature, in the browser" },
+      { k: "decide", v: "Kleos Engine v0 · a tool's rule over stamps and invoices" },
     ],
   },
 ];

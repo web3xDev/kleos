@@ -16,9 +16,9 @@ Agents already have identity ([ERC-8004](https://eips.ethereum.org/EIPS/eip-8004
 - A new platform cannot verify another platform's claims.
 - Ratings and reviews are cheap to fake.
 
-On Monad testnet about 1,950 agents are registered in ERC-8004. One has a verifiable history. Kleos is that missing layer.
+On Monad testnet almost 2,000 agents are registered in ERC-8004. One has a verifiable history, Kleos's own demo agent (#1910). Kleos is that missing layer.
 
-**What Kleos does not do:** it gives no score and makes no decision. It keeps facts (verified actions, USDC settled, days active, invoices paid or unpaid) that any risk engine can read and apply its own rule to. It does not make faking impossible; it makes it expensive (every stamp costs a real payment) and visible (every payment is public).
+**Facts first, the bar is the tool's.** Kleos keeps facts (verified actions, USDC settled, days active, invoices paid or unpaid). [Kleos Engine](#kleos-engine) turns them into a decision, but the rule it applies is the tool's own; any other risk engine can read the same facts. Kleos does not make faking impossible; it makes it expensive (every stamp costs a real payment) and visible (every payment is public).
 
 ## How it works
 
@@ -28,15 +28,30 @@ On Monad testnet about 1,950 agents are registered in ERC-8004. One has a verifi
 2. **Pair.** The runtime that runs the agent generates its own key and a pairing code. The owner approves it once; ERC-8004's `setAgentWallet` records it. Revocable any time.
 3. **Act.** The agent pays a tool over x402; the payment settles in USDC on Monad.
 4. **Stamp.** The runtime signs a receipt (tool, amount, settlement tx, salted answer hash). The tool countersigns: *"I was paid for this call, and this is the answer I served."* The receipt hash is anchored on `KleosStamps`; the answer is encrypted to the owner.
-5. **Verify.** Anyone recomputes the hash, checks both signatures, reads the anchor and the settlement from Monad. The profile page does this in the browser; Kleos is not consulted.
-6. **Pay later.** A tool reads the agent's record from chain and, by its own rule, serves first. The agent's signed consent opens an invoice on `KleosCredit`; the stamp of its payment closes it. Past due and unpaid, it shows on the profile in red.
+5. **Verify.** Anyone recomputes the hash, checks both signatures, reads the anchor and the settlement from Monad: five checks. The profile page runs them in the browser. Kleos serves the receipts, but none of the checks trusts it; a receipt it altered or invented fails them.
+6. **Pay later.** A tool reads the agent's record from chain and, through Kleos Engine and its own rule, serves first. The agent's signed consent opens an invoice on `KleosCredit`; the stamp of its payment closes it. Past due and unpaid, it shows on the profile in red.
+
+## Kleos Engine
+
+The record is the data; the engine is what turns it into a decision: *should this tool trust this agent, and how far?*
+
+**v0 (live, in the Pay later demo).** A rule over the record, set by the tool: for example *at least 20 verified actions and no overdue invoices*. It reads stamps and invoices straight from Monad (`readAgentRecord`) and answers yes or no with the reason (`decideCredit`). A newcomer agent asking the same tool the same thing is declined.
+
+**Next.** A score instead of a fixed rule, from signals the record already holds or can hold:
+
+- how many different tools an agent has paid, not just how many times;
+- whether invoices were paid on time, late, or not at all;
+- how long the record goes back;
+- self-dealing patterns, such as payments that always go to wallets the agent's owner controls.
+
+The output is meant for a tool to act on in one call: serve or not, and up to what credit limit.
 
 ## What is in this repo
 
 | Path | What |
 |---|---|
 | `src/` | The site (Next.js 16): landing, Explore (network map), Try (live demo), agent profiles, My agents (passkey), Docs, public API |
-| `packages/kleos/` | The `kleos` npm package: pairing, `Stamper`, `payingFetch`, `callAndStamp`, tool countersigning, credit (`requestCredit`, `grantCredit`, `payInvoice`), CLI |
+| `packages/kleos/` | The `kleos` npm package: pairing, `Stamper`, `payingFetch`, `callAndStamp`, tool countersigning, Kleos Engine v0 (`readAgentRecord`, `decideCredit`), credit (`requestCredit`, `grantCredit`, `payInvoice`), CLI |
 | `contracts/` | Foundry: `KleosStamps` and `KleosCredit`, with tests |
 | `indexer/` | Envio HyperIndex indexer: ERC-8004 agents, stamps and invoices as a GraphQL API |
 
@@ -87,16 +102,24 @@ if (cs) res.headers.set(cs.name, cs.value);
 **Tool: serve first for agents with a record.**
 
 ```ts
-import { grantCredit, readAgentRecord, decideCredit } from "kleos";
+import { readAgentRecord, decideCredit } from "kleos";
 
-// Facts from chain; the rule is yours.
+// Kleos Engine v0: facts from chain, your rule.
 const record = await readAgentRecord(publicClient, "monad-testnet", agentId);
 const { granted, reason } = decideCredit(record, { minVerifiedActions: 20, maxOverdueInvoices: 0 });
+// grantCredit() runs the same decision and, if granted, opens the invoice on KleosCredit.
 ```
 
-Full reference: `/docs` on the site.
+Full reference, including the agent side of pay later: `/docs` on the site.
 
-**Public HTTP API** (read only, CORS open): `GET /api/agents`, `GET /api/agents/:id`, `GET /api/agents/:id/stamps`, `GET /api/verify/:receiptHash?agentId=`.
+**Public HTTP API** (read only, CORS open):
+
+| Endpoint | Returns |
+|---|---|
+| `GET /api/agents` | Every ERC-8004 agent with its stamp count (`withRecord=1` for agents with a record) |
+| `GET /api/agents/:id` | Identity, runtime, track record, invoices from KleosCredit, latest receipts |
+| `GET /api/agents/:id/stamps` | Public receipts, newest first |
+| `GET /api/verify/:receiptHash?agentId=` | The five checks, run against Monad |
 
 ## Run it locally
 
@@ -109,21 +132,24 @@ Environment (`.env.local`):
 
 | Variable | Purpose |
 |---|---|
-| `DRIP_PRIVATE_KEY` | Funds new passkey accounts with testnet gas; also the demo tool's key |
-| `KLEOS_PAY_TO` | Where demo tool payments go (the address of the key above) |
+| `DRIP_PRIVATE_KEY` | Funds new passkey accounts with testnet gas; also the demo tool's key unless `KLEOS_TOOL_KEY` is set |
+| `KLEOS_TOOL_KEY` | Optional: a separate key for the demo tool (countersigns, opens invoices) |
+| `KLEOS_PAY_TO` | Where demo tool payments go (the address of the tool's key) |
 | `KLEOS_DEMO_RUNTIME_KEY` | The demo agent's runtime key (paired to `KLEOS_DEMO_AGENT_ID`) |
 | `KLEOS_DEMO_AGENT_ID` | The demo agent, `1910` |
+| `KLEOS_DEMO_NEWCOMER_ID` | The agent without a record in the Pay later demo, `1909` by default |
+| `KLEOS_DEMO_ALLOW_DEFAULT` | Optional: `1` allows the "leave the invoice unpaid" demo outside development |
 | `KLEOS_URL` | Base URL of the stamp store (defaults to the site itself) |
 | `BLOB_READ_WRITE_TOKEN` | Optional: Vercel Blob for the stamp store (local files otherwise) |
 
 Passkey sign-in needs a platform authenticator with the WebAuthn PRF extension: iCloud Keychain (Safari, and Chromium browsers on macOS) or Google Password Manager.
 
-Contracts: `cd contracts && forge test`. Indexer: see `indexer/config.yaml` (deployed on Envio's hosted service).
+Contracts: `cd contracts && forge test`. Indexer: see `indexer/config.yaml`; it runs on Envio's hosted service (deploy pending).
 
 ## Sponsor tech
 
 - **Mera**: passkey PRF, two salts in one ceremony, per-agent keys derived in memory. No seed phrase, no server secret.
-- **Envio**: HyperIndex over ERC-8004, KleosStamps and KleosCredit on Monad testnet, so the chain (not Kleos's store) is the source of every list.
+- **Envio**: HyperIndex over ERC-8004, KleosStamps and KleosCredit on Monad testnet (in `indexer/`), so lists of agents, stamps and invoices come straight from chain events. The indexer is written and builds; its hosted deploy and the site's switch to it are in progress.
 
 ## Limits, stated plainly
 
