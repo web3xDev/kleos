@@ -64,9 +64,10 @@ export function Footer() {
     <footer className="relative z-10 border-t border-border-subtle bg-background">
       <div className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-12 md:px-8">
         {/* Mobile: brand on top, Product and Developers side by side, Contracts (long rows) full width.
-            Desktop: brand plus three columns in one row. */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:gap-10">
-          <div className="col-span-2 max-w-xs md:col-span-1">
+            Tablet: brand on top, three columns below, Contracts widest.
+            Desktop: brand plus three columns in one row, Contracts widest so its rows stay on one line. */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[1fr_1fr_1.4fr] md:gap-10 lg:grid-cols-[1.2fr_1fr_1fr_1.6fr]">
+          <div className="col-span-2 max-w-xs md:col-span-3 lg:col-span-1">
             <Link href="/" className="inline-flex">
               <Wordmark />
             </Link>

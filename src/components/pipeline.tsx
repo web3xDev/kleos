@@ -155,7 +155,7 @@ export function Pipeline({ stamp }: { stamp: StampLite }) {
                   {/* A rubber-stamp impression of the seal, pressed on after the card lands */}
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute right-3 top-1/2 text-secondary"
+                    className="pointer-events-none absolute right-3 top-1/2 text-accent"
                     style={{
                       opacity: active ? 0.5 : 0,
                       transform: `translateY(-50%) scale(${active ? 1 : 1.6})`,

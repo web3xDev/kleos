@@ -45,12 +45,32 @@ const ROWS: Omit<Row, "status">[] = [
 
 // Grows a step's details open instead of popping them in: animates the
 // row's height (grid 0fr → 1fr) and fades the content.
+// Opens its height first; the content then settles in: it rises a little,
+// comes into focus and fades in, slightly behind the height so it never
+// appears before there is room for it. Closing reverses without the delay.
 function Expand({ open, children, slow = false }: { open: boolean; children: React.ReactNode; slow?: boolean }) {
+  const ease = "cubic-bezier(0.2, 0, 0, 1)";
+  const height = slow ? 600 : 320;
+  const content = slow ? 520 : 280;
   return (
     <div
-      className={`grid transition-[grid-template-rows,opacity] ease-out ${slow ? "duration-500" : "duration-300"} ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+      className={`grid ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+      style={{ transition: `grid-template-rows ${height}ms ${ease}` }}
     >
-      <div className="min-h-0 overflow-hidden">{children}</div>
+      <div className="min-h-0 overflow-hidden">
+        <div
+          style={{
+            opacity: open ? 1 : 0,
+            transform: open ? "none" : "translateY(12px) scale(0.985)",
+            filter: open ? "none" : "blur(6px)",
+            transformOrigin: "50% 0",
+            transition: `opacity ${content}ms ${ease}, transform ${content}ms ${ease}, filter ${content}ms ${ease}`,
+            transitionDelay: open ? `${Math.round(height / 5)}ms` : "0ms",
+          }}
+        >
+          {children}
+        </div>
+      </div>
     </div>
   );
 }
