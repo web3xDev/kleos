@@ -135,4 +135,4 @@ Contracts: `cd contracts && forge test`. Indexer: see `indexer/config.yaml` (dep
 ## License
 
 - **The site** (everything outside the folders below) is [AGPL-3.0](LICENSE): open to read and run, and anyone who offers a modified version as a service must publish their changes.
-- **The protocol pieces** are [MIT](packages/kleos/LICENSE), so anyone can build on them without restriction: the `kleos` package (`packages/kleos`), the contracts (`contracts`) and the indexer (`indexer`).
+- **The protocol pieces** are [Apache-2.0](packages/kleos/LICENSE), so anyone can build on them without restriction, with an explicit patent grant from every contributor: the `kleos` package (`packages/kleos`), the contracts (`contracts`) and the indexer (`indexer`).

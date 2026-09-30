@@ -2,7 +2,7 @@
   "name": "kleos-indexer",
   "version": "0.0.1",
   "private": true,
-  "license": "MIT",
+  "license": "Apache-2.0",
   "description": "Envio HyperIndex indexer for Kleos: ERC-8004 agents, KleosStamps and KleosCredit on Monad testnet",
   "scripts": {
     "codegen": "envio codegen",

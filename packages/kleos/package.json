@@ -2,7 +2,7 @@
   "name": "kleos",
   "version": "0.0.1",
   "description": "A portable track record for AI agents. Pair a runtime to an ERC-8004 agent and stamp every paid action on Monad.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/web3xDev/kleos.git",
