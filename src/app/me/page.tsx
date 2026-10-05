@@ -124,16 +124,18 @@ export default function MePage() {
       list.forEach((a) => rememberAgent(session.address, a.id));
       setAgents(list);
 
+      // Each card fills in as soon as its own stamps arrive: one slow agent (a long
+      // record over a slow RPC) never holds the others' numbers back.
       const sums = new Map(previous?.summary);
-      const results = await Promise.allSettled(list.map((a) => fetchStamps(a.id)));
-      results.forEach((res, i) => {
-        if (res.status === "fulfilled") {
-          const st = res.value;
-          sums.set(String(list[i].id), { actions: st.length, usdc: st.reduce((t, x) => t + BigInt(x.receipt.amount), 0n) });
-        }
-      });
+      await Promise.allSettled(
+        list.map(async (a) => {
+          const st = await fetchStamps(a.id);
+          if (run !== loadRun.current) return;
+          sums.set(String(a.id), { actions: st.length, usdc: st.reduce((t, x) => t + BigInt(x.receipt.amount), 0n) });
+          setSummary(new Map(sums));
+        }),
+      );
       if (run !== loadRun.current) return;
-      setSummary(sums);
       remembered = { owner, agents: list, summary: sums };
     } finally {
       if (run === loadRun.current) setLoadingAgents(false);

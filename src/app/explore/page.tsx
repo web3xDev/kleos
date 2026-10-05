@@ -102,8 +102,13 @@ function KleosTag() {
   );
 }
 
+// Last scan and settled totals, kept for the life of the tab: coming back to
+// Explore shows them at once (then refreshes) instead of flashing placeholders.
+let lastData: ExploreData | null = null;
+let lastSettled = new Map<number, { usdc: bigint; last: number | null }>();
+
 export default function ExplorePage() {
-  const [data, setData] = useState<ExploreData | null>(null);
+  const [data, setData] = useState<ExploreData | null>(() => lastData);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -112,13 +117,14 @@ export default function ExplorePage() {
   // Open by default: browsing the registry is what this page is for.
   const [listOpen, setListOpen] = useState(true);
   // USDC settled and last stamp time per agent with a record, read from their stamps.
-  const [settled, setSettled] = useState<Map<number, { usdc: bigint; last: number | null }>>(new Map());
+  const [settled, setSettled] = useState<Map<number, { usdc: bigint; last: number | null }>>(() => lastSettled);
 
   useEffect(() => {
     fetch("/api/explore")
       .then(async (r) => {
         if (!r.ok) throw new Error(`Could not read the registry (${r.status}). Try again in a moment.`);
-        setData(await r.json());
+        lastData = await r.json();
+        setData(lastData);
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -164,7 +170,10 @@ export default function ExplorePage() {
         ] as const;
       }),
     )
-      .then((pairs) => setSettled(new Map(pairs)))
+      .then((pairs) => {
+        lastSettled = new Map(pairs);
+        setSettled(lastSettled);
+      })
       .catch(() => setSettledFailed(true));
   }, [recorded]);
 
@@ -238,7 +247,7 @@ export default function ExplorePage() {
 
       {/* Agents with a track record: one card design, one or many */}
       {featured.length > 0 && (
-        <section className="mt-10">
+        <section className="fade-in mt-10">
           {/* A plain section heading, like the profile's "Stamps"; the purple lives in the cards and the map */}
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h2 className="text-[20px] font-semibold leading-tight">
@@ -341,7 +350,7 @@ export default function ExplorePage() {
 
         {data && (
           // Filter or page changes: the card resizes smoothly and the new rows fade in (keyed below)
-          <SmoothHeight className="mt-4">
+          <SmoothHeight className="fade-in mt-4">
           <Card className="overflow-hidden">
             <div className="hidden grid-cols-[1fr_150px_120px_130px_24px] items-center gap-4 border-b border-border-subtle px-5 py-3 md:grid">
               <Label>Agent</Label>

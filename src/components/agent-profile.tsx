@@ -191,7 +191,6 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
             Owned by a verified passkey{isOwner ? " (you)" : ""}. ERC-8004 identity on {chain.name}.
           </p>
         </div>
-        <div className="flex items-center gap-2">{isOwner && <Badge tone="accent">Owner view</Badge>}</div>
       </header>
 
       {/* Track record */}

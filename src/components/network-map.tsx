@@ -54,7 +54,8 @@ export function NetworkMap({ agents, loading }: { agents: MapAgent[]; loading: b
             <span
               key={a.id}
               data-i={i}
-              className={`aspect-square rounded-[2px] ${loading ? "bg-surface-elevated" : "cursor-pointer bg-border hover:bg-border-hover"}`}
+              // Colours ease in when the scan lands instead of switching all at once
+              className={`aspect-square rounded-[2px] transition-colors duration-500 ${loading ? "bg-surface-elevated" : "cursor-pointer bg-border hover:bg-border-hover hover:duration-150"}`}
             />
           ),
         )}
