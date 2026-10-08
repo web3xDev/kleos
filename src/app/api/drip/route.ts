@@ -6,12 +6,13 @@ import { NextResponse } from "next/server";
 import { createPublicClient, createWalletClient, http, parseEther, isAddress, formatEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { chain } from "@/lib/chain";
+import { checkDripLimits, ipKey, recordDrip } from "@/lib/drip-limits";
 
 const DRIP = parseEther("0.2");
 const THRESHOLD = parseEther("0.05");
-
-// Best-effort rate limit per process; the balance threshold is the real guard.
-const lastDrip = new Map<string, number>();
+// Never drip below this: the demo agent's runtime is topped up from the same
+// wallet (see demo-gas.ts: one 1 MON top-up plus its 0.5 MON floor).
+const RESERVE = parseEther("1.5");
 
 export async function POST(req: Request) {
   const key = process.env.DRIP_PRIVATE_KEY as `0x${string}` | undefined;
@@ -24,11 +25,22 @@ export async function POST(req: Request) {
   const balance = await publicClient.getBalance({ address });
   if (balance >= THRESHOLD) return NextResponse.json({ dripped: false, balance: formatEther(balance) });
 
-  const last = lastDrip.get(address.toLowerCase()) ?? 0;
-  if (Date.now() - last < 60_000) return NextResponse.json({ error: "try again in a minute" }, { status: 429 });
-  lastDrip.set(address.toLowerCase(), Date.now());
+  // Limits per account, per network (hashed IP) and per day, counted from durable records.
+  const ip = ipKey(req);
+  const refused = await checkDripLimits(address, ip);
+  if (refused) return NextResponse.json({ error: refused }, { status: 429 });
 
-  const wallet = createWalletClient({ account: privateKeyToAccount(key), chain, transport: http() });
+  const account = privateKeyToAccount(key);
+  const dripBalance = await publicClient.getBalance({ address: account.address });
+  if (dripBalance < DRIP + RESERVE) {
+    console.warn(`[drip] below reserve (${formatEther(dripBalance)} MON); refill it from the faucet`);
+    return NextResponse.json({ error: "Testnet gas is running low. Try again later." }, { status: 503 });
+  }
+
+  // Recorded before sending, so parallel calls see each other.
+  await recordDrip(address, ip);
+
+  const wallet = createWalletClient({ account, chain, transport: http() });
   const hash = await wallet.sendTransaction({ to: address, value: DRIP });
   await publicClient.waitForTransactionReceipt({ hash });
   return NextResponse.json({ dripped: true, hash });
