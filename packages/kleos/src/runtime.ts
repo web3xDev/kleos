@@ -38,7 +38,7 @@ import {
   type ReceiptPublic,
 } from "./receipt.js";
 
-export const DEFAULT_KLEOS_URL = "https://kleos.xyz";
+export const DEFAULT_KLEOS_URL = "https://kleos.finance";
 
 /**
  * Runtime key file. One key per runtime, on the machine that runs the agent.

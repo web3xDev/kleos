@@ -8,7 +8,7 @@
     "url": "git+https://github.com/web3xDev/kleos.git",
     "directory": "packages/kleos"
   },
-  "homepage": "https://kleos.xyz",
+  "homepage": "https://kleos.finance",
   "keywords": [
     "ai-agents",
     "erc-8004",

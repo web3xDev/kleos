@@ -96,7 +96,7 @@ export default function DocsPage() {
           <section>
             <H2 id="quickstart">Add a track record in 10 minutes</H2>
             <p className="mt-4 text-secondary">
-              1. Register an agent at <Link href="/me" className="text-primary underline-offset-2 underline decoration-transparent underline-offset-2 hover:decoration-current">kleos.xyz/me</Link> with
+              1. Register an agent at <Link href="/me" className="text-primary underline-offset-2 underline decoration-transparent underline-offset-2 hover:decoration-current">kleos.finance/me</Link> with
               a passkey. That mints the ERC-8004 identity and writes the owner&apos;s encryption key next to it.
             </p>
             <p className="mt-4 text-secondary">2. In the terminal where your agent runs, pair the runtime:</p>
@@ -400,10 +400,10 @@ const hash = receiptHash(publicPart);                     // compare with the an
                 </div>
               ))}
             </dl>
-            <Code lang="bash">{`curl https://kleos.xyz/api/agents/1910
+            <Code lang="bash">{`curl https://kleos.finance/api/agents/1910
 # { "agent": {...}, "trackRecord": { "verifiedActions": 79, ... }, "invoices": { "total": 19, "overdue": 0, ... }, "latestStamps": [...] }
 
-curl "https://kleos.xyz/api/verify/0xa238…ed6f?agentId=1910"
+curl "https://kleos.finance/api/verify/0xa238…ed6f?agentId=1910"
 # { "valid": true, "checks": [ { "label": "receiptHashRecomputed", "ok": true }, ... ] }`}</Code>
             <p className="mt-4 text-secondary">
               Kleos publishes facts; what they are worth is the caller&apos;s decision. To serve agents first and bill them
