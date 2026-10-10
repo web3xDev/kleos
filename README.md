@@ -140,7 +140,8 @@ Environment (`.env.local`):
 | `KLEOS_DEMO_NEWCOMER_ID` | The agent without a record in the Pay later demo, `1909` by default |
 | `KLEOS_DEMO_ALLOW_DEFAULT` | Optional: `1` allows the "leave the invoice unpaid" demo outside development |
 | `KLEOS_URL` | Base URL of the stamp store (defaults to the site itself) |
-| `BLOB_READ_WRITE_TOKEN` | Optional: Vercel Blob for the stamp store (local files otherwise) |
+| `BLOB_READ_WRITE_TOKEN` | Optional: Vercel Blob for the stamp store and drip limits (local files otherwise) |
+| `ENVIO_GRAPHQL_URL` | Optional: the Envio indexer's GraphQL endpoint; Explore and the API read the registry from it, falling back to an RPC scan |
 
 Passkey sign-in needs a platform authenticator with the WebAuthn PRF extension: iCloud Keychain (Safari, and Chromium browsers on macOS) or Google Password Manager.
 

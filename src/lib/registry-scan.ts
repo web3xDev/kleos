@@ -1,8 +1,12 @@
-// Server-side scan of the whole ERC-8004 registry on Monad via Multicall3.
-// Public RPC caps eth_getLogs at 100 blocks, so events are useless for a
-// full listing; reading token state directly is not. ~2k agents is a
-// handful of multicalls, cached for a minute. HyperSync can replace this
-// once an API token is configured.
+// The whole ERC-8004 registry on Monad, for Explore and the public API.
+//
+// Primary source: the Envio indexer (indexer/), one GraphQL query over every
+// agent, built from Registered / MetadataSet / Transfer and KleosStamps events.
+// Used when ENVIO_GRAPHQL_URL is set.
+//
+// Fallback: a direct scan via Multicall3. Public RPC caps eth_getLogs at 100
+// blocks, so it reads token state instead: ~2k agents is a handful of
+// multicalls, but slow on a cold start. It also runs whenever Envio errors.
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -149,9 +153,64 @@ async function scan(): Promise<ExploreData> {
   return { total: agents.length, withTrackRecord, totalStamps, agents, scannedAt: Date.now() };
 }
 
+const ENVIO_PAGE = 1000;
+
+type EnvioAgent = { id: string; name: string | null; owner: string; wallet: string | null; kleos: boolean; stampCount: number };
+
+/** Every agent from the Envio indexer, paged. Throws on any error so the caller can fall back. */
+async function fromEnvio(url: string): Promise<ExploreData> {
+  const query = `query Agents($limit: Int!, $offset: Int!) {
+    Agent(limit: $limit, offset: $offset, order_by: { registeredBlock: asc }) { id name owner wallet kleos stampCount }
+  }`;
+  const rows: EnvioAgent[] = [];
+  for (let offset = 0; ; offset += ENVIO_PAGE) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query, variables: { limit: ENVIO_PAGE, offset } }),
+      signal: AbortSignal.timeout(8_000),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`envio ${res.status}`);
+    const body = (await res.json()) as { data?: { Agent: EnvioAgent[] }; errors?: { message: string }[] };
+    if (body.errors?.length || !body.data) throw new Error(`envio: ${body.errors?.[0]?.message ?? "no data"}`);
+    rows.push(...body.data.Agent);
+    if (body.data.Agent.length < ENVIO_PAGE) break;
+  }
+  // An indexer that has not synced yet answers with nothing; that is not "no agents".
+  if (rows.length === 0) throw new Error("envio: no agents indexed yet");
+
+  const agents: ExploreAgent[] = rows
+    .map((r) => ({
+      id: Number(r.id),
+      name: r.name,
+      owner: r.owner as `0x${string}`,
+      wallet: (r.wallet as `0x${string}` | null) ?? null,
+      stamps: r.stampCount,
+      kleos: r.kleos,
+    }))
+    .sort((a, b) => a.id - b.id);
+  const withTrackRecord = agents.filter((a) => a.stamps > 0).length;
+  const totalStamps = agents.reduce((s, a) => s + a.stamps, 0);
+  return { total: agents.length, withTrackRecord, totalStamps, agents, scannedAt: Date.now() };
+}
+
+/** Envio when configured, the RPC scan otherwise or when Envio fails. */
+async function load(): Promise<ExploreData> {
+  const url = process.env.ENVIO_GRAPHQL_URL;
+  if (url) {
+    try {
+      return await fromEnvio(url);
+    } catch (e) {
+      console.warn(`[explore] Envio unavailable, scanning the registry over RPC: ${e instanceof Error ? e.message : e}`);
+    }
+  }
+  return scan();
+}
+
 function refresh(): Promise<ExploreData> {
   if (!inflight) {
-    inflight = scan()
+    inflight = load()
       .then((data) => {
         cache = { data, at: Date.now() };
         saveSnapshot(data);
