@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.24;
 
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import {IIdentityRegistry} from "./KleosStamps.sol";
 
 /// @dev The part of KleosStamps that KleosCredit reads to close an invoice.
@@ -26,13 +28,17 @@ interface IKleosStamps {
 ///
 /// Neither side can write the other's history alone:
 /// - An invoice opens only with the agent's signed consent (EIP-712, signed by
-///   the agent's ERC-8004 `agentWallet`), so a tool cannot invent debt.
+///   the agent's ERC-8004 `agentWallet`, an EOA or an ERC-1271 contract
+///   wallet), so a tool cannot invent debt.
 /// - The tool that opens it is the creditor (`msg.sender`), so an agent cannot
 ///   hide debt it signed for.
-/// - It closes only against a KleosStamps receipt for the same agent, of at
-///   least the invoiced amount, anchored after the invoice opened. Each receipt
-///   can pay one invoice.
-contract KleosCredit {
+/// - It closes only with both halves of the payment: a KleosStamps receipt for
+///   the same agent, of at least the invoiced amount, anchored after the
+///   invoice opened; and the creditor's signed acknowledgement that it was paid
+///   for this invoice. The stamp keeps the record; the acknowledgement stops an
+///   agent from closing an invoice with a payment that went somewhere else.
+///   Each receipt can pay one invoice.
+contract KleosCredit is EIP712 {
     IIdentityRegistry public immutable identity;
     IKleosStamps public immutable stamps;
 
@@ -50,8 +56,8 @@ contract KleosCredit {
     bytes32 public constant CREDIT_REQUEST_TYPEHASH = keccak256(
         "CreditRequest(uint256 agentId,address creditor,uint256 amount,uint64 dueAt,bytes32 invoiceId,string tool)"
     );
-    bytes32 private constant DOMAIN_TYPEHASH =
-        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    /// The creditor's "I was paid for this invoice", signed when its payment arrives.
+    bytes32 public constant PAYMENT_RECEIVED_TYPEHASH = keccak256("PaymentReceived(bytes32 invoiceId,uint256 amount)");
 
     mapping(bytes32 => Invoice) private _invoices;
     mapping(uint256 => bytes32[]) private _agentInvoices;
@@ -70,16 +76,15 @@ contract KleosCredit {
     error AlreadyPaid(bytes32 invoiceId);
     error ReceiptAlreadyUsed(bytes32 receiptHash);
     error StampDoesNotPay(bytes32 receiptHash);
+    error NotCreditorAcknowledgement();
 
-    constructor(IIdentityRegistry identity_, IKleosStamps stamps_) {
+    constructor(IIdentityRegistry identity_, IKleosStamps stamps_) EIP712("KleosCredit", "2") {
         identity = identity_;
         stamps = stamps_;
     }
 
-    function domainSeparator() public view returns (bytes32) {
-        return keccak256(
-            abi.encode(DOMAIN_TYPEHASH, keccak256("KleosCredit"), keccak256("1"), block.chainid, address(this))
-        );
+    function domainSeparator() external view returns (bytes32) {
+        return _domainSeparatorV4();
     }
 
     /// @notice Record credit a tool has extended. Called by the tool (creditor).
@@ -100,8 +105,8 @@ contract KleosCredit {
         bytes32 structHash = keccak256(
             abi.encode(CREDIT_REQUEST_TYPEHASH, agentId, msg.sender, amount, dueAt, invoiceId, keccak256(bytes(tool)))
         );
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator(), structHash));
-        if (_recover(digest, agentSig) != wallet) revert NotAgentConsent();
+        // EOA (ECDSA, low-s only) or contract wallet (ERC-1271): ERC-8004 allows both as agentWallet.
+        if (!SignatureChecker.isValidSignatureNow(wallet, _hashTypedDataV4(structHash), agentSig)) revert NotAgentConsent();
 
         _invoices[invoiceId] = Invoice({
             agentId: agentId,
@@ -118,8 +123,9 @@ contract KleosCredit {
     }
 
     /// @notice Close an invoice with the stamp of the payment that settled it.
-    /// Anyone may call it; the stamp is the proof.
-    function pay(bytes32 invoiceId, bytes32 receiptHash) external {
+    /// Anyone may call it; the stamp and the creditor's acknowledgement are the proof.
+    /// @param creditorSig the creditor's EIP-712 PaymentReceived(invoiceId, amount) signature.
+    function pay(bytes32 invoiceId, bytes32 receiptHash, bytes calldata creditorSig) external {
         Invoice storage inv = _invoices[invoiceId];
         if (inv.openedAt == 0) revert UnknownInvoice(invoiceId);
         if (inv.paidAt != 0) revert AlreadyPaid(invoiceId);
@@ -129,6 +135,8 @@ contract KleosCredit {
         if (s.timestamp == 0 || s.agentId != inv.agentId || s.amount < inv.amount || s.timestamp < inv.openedAt) {
             revert StampDoesNotPay(receiptHash);
         }
+        bytes32 ack = _hashTypedDataV4(keccak256(abi.encode(PAYMENT_RECEIVED_TYPEHASH, invoiceId, inv.amount)));
+        if (!SignatureChecker.isValidSignatureNow(inv.creditor, ack, creditorSig)) revert NotCreditorAcknowledgement();
 
         receiptUsed[receiptHash] = true;
         inv.paidAt = uint64(block.timestamp);
@@ -143,16 +151,5 @@ contract KleosCredit {
     /// @notice Every invoice ever opened for an agent, oldest first.
     function invoicesOf(uint256 agentId) external view returns (bytes32[] memory) {
         return _agentInvoices[agentId];
-    }
-
-    /// @dev ECDSA recovery for a 65-byte signature, rejecting malleable (high-s) forms.
-    function _recover(bytes32 digest, bytes calldata sig) private pure returns (address) {
-        if (sig.length != 65) return address(0);
-        bytes32 r = bytes32(sig[0:32]);
-        bytes32 s = bytes32(sig[32:64]);
-        uint8 v = uint8(sig[64]);
-        if (v < 27) v += 27;
-        if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) return address(0);
-        return ecrecover(digest, v, r, s);
     }
 }

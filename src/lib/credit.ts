@@ -30,8 +30,9 @@ export function invoiceStatus(inv: Invoice, now = Math.floor(Date.now() / 1000))
 
 /** Every invoice opened for an agent, newest first. */
 export async function fetchInvoices(publicClient: PublicClient, agentId: bigint): Promise<Invoice[]> {
+  const address = addresses.kleosCredit;
   const ids = await publicClient.readContract({
-    address: addresses.kleosCredit,
+    address,
     abi: kleosCreditAbi,
     functionName: "invoicesOf",
     args: [agentId],
@@ -39,7 +40,7 @@ export async function fetchInvoices(publicClient: PublicClient, agentId: bigint)
   if (!ids.length) return [];
   const rows = await publicClient.multicall({
     allowFailure: false,
-    contracts: ids.map((id) => ({ address: addresses.kleosCredit, abi: kleosCreditAbi, functionName: "getInvoice" as const, args: [id] })),
+    contracts: ids.map((id) => ({ address, abi: kleosCreditAbi, functionName: "getInvoice" as const, args: [id] })),
   });
   return rows
     .map((r, i) => ({

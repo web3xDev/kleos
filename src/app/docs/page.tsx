@@ -286,6 +286,14 @@ const { decision, invoice } = await grantCredit({ account, network: "monad-testn
 if (!invoice) return Response.json({ kleosCredit: terms, declined: decision.reason }, { status: 402 });
 
 return new Response(answer, { headers: { [INVOICE_HEADER]: encodeCredit(invoice) } });`}</Code>
+            <p className="mt-4 text-secondary">
+              On the invoice&apos;s x402 route (<Mono>payUrl</Mono>), acknowledge the payment. KleosCredit closes an invoice
+              only with this signature from its creditor, and x402 only delivers the response once the payment settled:
+            </p>
+            <Code>{`import { acknowledgePayment } from "kleos";
+
+const ack = await acknowledgePayment({ account, network: "monad-testnet", invoiceId, amount: invoice.amount });
+res.headers.set(ack.name, ack.value);   // X-Kleos-Paid`}</Code>
 
             <h3 className="mt-8 text-lg font-semibold">Agent side</h3>
             <Code>{`import { requestCredit, payInvoice, encodeCredit, decodeInvoiceNotice, payingFetch, CREDIT_HEADER, INVOICE_HEADER } from "kleos";
@@ -297,7 +305,7 @@ const res = await fetch(url, { headers: { [CREDIT_HEADER]: encodeCredit(request)
 const answer = await res.text();                                          // served before payment
 const invoice = decodeInvoiceNotice(res.headers.get(INVOICE_HEADER));
 
-// Later, before invoice.dueAt: pay, stamp, close.
+// Later, before invoice.dueAt: pay, stamp, close (with the tool's X-Kleos-Paid acknowledgement).
 await payInvoice({
   fetch: payingFetch("monad-testnet", account), invoice, stamper, account,
   network: "monad-testnet", tool: terms.tool, platform: "my-tool", asset: terms.asset,
@@ -305,13 +313,19 @@ await payInvoice({
 
             <h3 className="mt-8 text-lg font-semibold">What KleosCredit enforces</h3>
             <ul className="mt-2 list-disc space-y-2 pl-5 text-secondary">
-              <li>An invoice opens only with a consent signed by the agent&apos;s current <Mono>agentWallet</Mono>. A tool cannot invoice an agent on its own.</li>
+              <li>
+                An invoice opens only with a consent signed by the agent&apos;s current <Mono>agentWallet</Mono>, an EOA or an
+                ERC-1271 contract wallet (checked with OpenZeppelin&apos;s <Mono>SignatureChecker</Mono>). A tool cannot invoice an
+                agent on its own.
+              </li>
               <li>The due time must be in the future, and an invoice id can be used once.</li>
               <li>
-                <Mono>pay(invoiceId, receiptHash)</Mono> closes it only with a KleosStamps stamp of the same agent, for at least
-                the invoice amount, anchored after the invoice opened. Each stamp pays one invoice.
+                <Mono>pay(invoiceId, receiptHash, creditorSig)</Mono> closes it only with both halves of the payment: a
+                KleosStamps stamp of the same agent, for at least the invoice amount, anchored after the invoice opened; and
+                the creditor&apos;s EIP-712 <Mono>PaymentReceived(invoiceId, amount)</Mono>. An agent cannot close an invoice with
+                a payment that went somewhere else. Each stamp pays one invoice.
               </li>
-              <li>Anyone may call <Mono>pay</Mono>: the stamp is the proof, not the caller.</li>
+              <li>Anyone may call <Mono>pay</Mono>: the signatures are the proof, not the caller.</li>
             </ul>
             <p className="mt-4 text-secondary">
               On the profile an invoice shows as <strong className="text-primary">Open</strong> until it is due and, past due
@@ -364,7 +378,8 @@ const hash = receiptHash(publicPart);                     // compare with the an
                 ["decideCredit(record, rule)", "Kleos Engine v0: the tool's rule applied to a record. Returns { granted, reason }."],
                 ["grantCredit({ account, network, terms, request, payUrl })", "Tool side. Runs the engine and, if granted, opens the invoice on KleosCredit."],
                 ["requestCredit({ account, agentId, terms })", "Agent side. Signs consent to be invoiced on the tool's terms (EIP-712)."],
-                ["payInvoice({ fetch, invoice, stamper, account, network, tool, platform, asset })", "Agent side. Pays the invoice over x402, stamps it, closes it on KleosCredit."],
+                ["acknowledgePayment({ account, network, invoiceId, amount })", "Tool side. Signs \"I was paid for this invoice\" for the paid invoice response; KleosCredit needs it to close the invoice."],
+                ["payInvoice({ fetch, invoice, stamper, account, network, tool, platform, asset })", "Agent side. Pays the invoice over x402, stamps it, closes it on KleosCredit with the tool's acknowledgement."],
                 ["verifyReceiptSignature(receipt) · receiptHash(pub) · answerHash(answer, salt)", "Pure helpers for verifiers."],
                 ["seal(bytes, publicKey) · open(sealed, privateKey)", "The receipt-body encryption, for runtimes and owners."],
               ].map(([sig, desc]) => (

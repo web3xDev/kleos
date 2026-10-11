@@ -4,12 +4,14 @@
 // answers 4xx and x402 cancels the settlement, so nothing is charged.
 //
 // The answer is countersigned like any other call, so the agent's stamp for
-// this payment is two-sided, and KleosCredit.pay can close the invoice with it.
+// this payment is two-sided. The response also carries the tool's signed
+// "I was paid for this invoice", which KleosCredit.pay requires from the
+// creditor; x402 only delivers this response once the payment settled.
 
 import { NextResponse, type NextRequest } from "next/server";
 import { withX402 } from "@x402/next";
 import { createPublicClient, http, isAddressEqual } from "viem";
-import { countersignPaidCall, kleosCreditAbi } from "kleos";
+import { acknowledgePayment, countersignPaidCall, kleosCreditAbi } from "kleos";
 import { addresses, chain } from "@/lib/chain";
 import { PRICE_ATOMIC, TOOL_ID, toolAccount } from "@/lib/demo-tool";
 import { MONAD_TESTNET, payTo, resourceServer } from "@/lib/x402-server";
@@ -43,6 +45,8 @@ async function handler(req: NextRequest) {
   if (account) {
     const cs = await countersignPaidCall({ account, headers: req.headers, tool: TOOL_ID, answer }).catch(() => null);
     if (cs) res.headers.set(cs.name, cs.value);
+    const ack = await acknowledgePayment({ account, network: "monad-testnet", invoiceId: id as `0x${string}`, amount: inv.amount });
+    res.headers.set(ack.name, ack.value);
   }
   return res;
 }

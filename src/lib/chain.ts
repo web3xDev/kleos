@@ -21,8 +21,9 @@ export const addresses = {
   reputationRegistry: "0x8004B663056A597Dffe9eCcC1965A193B7388713",
   // Kleos, deployed 2026-09-21 from contracts/script/Deploy.s.sol.
   kleosStamps: "0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18",
-  // Invoices for work served before payment, deployed 2026-09-28 from contracts/script/DeployCredit.s.sol.
-  kleosCredit: "0xa5314F72F599412763b03D47150Bb7Ed5E166B43",
+  // Invoices for work served before payment, v2, deployed 2026-10-11 (block 70093523) from
+  // contracts/script/DeployCredit.s.sol. Closing needs the creditor's acknowledgement.
+  kleosCredit: "0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88",
   // Monad testnet USDC, the x402 asset.
   usdc: "0x534b2f3A21130d7a60830c2Df862319e593943A3",
 } as const;

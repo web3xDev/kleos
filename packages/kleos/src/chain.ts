@@ -18,7 +18,7 @@ export const networks = {
     chain: monadTestnet,
     identityRegistry: "0x8004A818BFB912233c491871b3d84c89A494BD9e",
     kleosStamps: "0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18",
-    kleosCredit: "0xa5314F72F599412763b03D47150Bb7Ed5E166B43",
+    kleosCredit: "0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88",
     usdc: "0x534b2f3A21130d7a60830c2Df862319e593943A3",
   },
 } as const;
@@ -40,7 +40,7 @@ export const kleosStampsAbi = parseAbi([
 
 export const kleosCreditAbi = parseAbi([
   "function open(uint256 agentId, uint256 amount, uint64 dueAt, bytes32 invoiceId, string tool, bytes agentSig)",
-  "function pay(bytes32 invoiceId, bytes32 receiptHash)",
+  "function pay(bytes32 invoiceId, bytes32 receiptHash, bytes creditorSig)",
   "function getInvoice(bytes32 invoiceId) view returns ((uint256 agentId, address creditor, uint256 amount, uint64 openedAt, uint64 dueAt, uint64 paidAt, bytes32 receiptHash, string tool))",
   "function invoicesOf(uint256 agentId) view returns (bytes32[])",
   "event InvoiceOpened(bytes32 indexed invoiceId, uint256 indexed agentId, address indexed creditor, uint256 amount, uint64 dueAt, string tool)",
@@ -59,9 +59,17 @@ export const creditRequestTypes = {
   ],
 } as const;
 
+/** The creditor's acknowledgement that an invoice was paid (KleosCredit.pay). */
+export const paymentReceivedTypes = {
+  PaymentReceived: [
+    { name: "invoiceId", type: "bytes32" },
+    { name: "amount", type: "uint256" },
+  ],
+} as const;
+
 export function creditDomain(network: NetworkName) {
   const n = networks[network];
-  return { name: "KleosCredit", version: "1", chainId: n.chain.id, verifyingContract: n.kleosCredit } as const;
+  return { name: "KleosCredit", version: "2", chainId: n.chain.id, verifyingContract: n.kleosCredit } as const;
 }
 
 /** EIP-712 domain and type of the ERC-8004 agentWallet proof. */

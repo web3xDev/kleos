@@ -3,19 +3,31 @@
 // invoice on KleosCredit: opened with the agent's signed consent, closed by
 // the stamp of the payment. Unpaid invoices stay visible past their due date.
 //
-// Wire format (all base64url JSON):
+// Wire format (all base64url JSON, except the signature header):
 //   402 body `{ kleosCredit: CreditTerms }`   tool → agent: what credit it offers
 //   X-Kleos-Credit: CreditRequest               agent → tool: signed consent to be invoiced
 //   X-Kleos-Invoice: InvoiceNotice              tool → agent: the invoice it opened
+//   X-Kleos-Paid: 0x… signature                 tool → agent, on the paid invoice call:
+//                                               "I was paid for this invoice" (EIP-712)
 
 import type { LocalAccount, PublicClient } from "viem";
 import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
-import { creditDomain, creditRequestTypes, identityRegistryAbi, kleosCreditAbi, kleosStampsAbi, networks, type NetworkName } from "./chain.js";
+import {
+  creditDomain,
+  creditRequestTypes,
+  identityRegistryAbi,
+  kleosCreditAbi,
+  kleosStampsAbi,
+  networks,
+  paymentReceivedTypes,
+  type NetworkName,
+} from "./chain.js";
 import { clients, type Stamper, type StampResult } from "./runtime.js";
 import { readCountersign, readSettlement } from "./x402.js";
 
 export const CREDIT_HEADER = "x-kleos-credit";
 export const INVOICE_HEADER = "x-kleos-invoice";
+export const PAID_HEADER = "x-kleos-paid";
 
 /** What a tool offers: its terms and the rule it applies to the agent's record. */
 export type CreditTerms = {
@@ -167,6 +179,28 @@ export async function grantCredit(input: {
   };
 }
 
+/**
+ * Tool side, on the paid invoice call: sign "I was paid for this invoice".
+ * KleosCredit only closes an invoice with this signature from its creditor, so
+ * an agent cannot close it with a payment that went somewhere else. Return it
+ * in the PAID_HEADER of the paid response; x402 only delivers that response
+ * once the payment settled.
+ */
+export async function acknowledgePayment(input: {
+  account: LocalAccount; // the creditor (tool) key
+  network: NetworkName;
+  invoiceId: `0x${string}`;
+  amount: bigint;
+}): Promise<{ name: string; value: `0x${string}` }> {
+  const value = await input.account.signTypedData({
+    domain: creditDomain(input.network),
+    types: paymentReceivedTypes,
+    primaryType: "PaymentReceived",
+    message: { invoiceId: input.invoiceId, amount: input.amount },
+  });
+  return { name: PAID_HEADER, value };
+}
+
 /* ------------------------------------------------------------------ */
 /* Agent side                                                          */
 /* ------------------------------------------------------------------ */
@@ -191,7 +225,8 @@ export async function requestCredit(input: {
 
 /**
  * Pay an invoice: pay its x402 URL, stamp the payment (countersigned by the
- * tool), then close the invoice on KleosCredit with that stamp.
+ * tool), then close the invoice on KleosCredit with that stamp and the tool's
+ * acknowledgement from the paid response.
  */
 export async function payInvoice(input: {
   fetch: typeof fetch; // a paying fetch (payingFetch)
@@ -207,6 +242,8 @@ export async function payInvoice(input: {
   const answer = await res.text();
   const settlement = readSettlement(res);
   if (!res.ok || !settlement?.success || !settlement.transaction) throw new Error(`invoice payment did not settle (${res.status})`);
+  const creditorSig = res.headers.get(PAID_HEADER) as `0x${string}` | null;
+  if (!creditorSig) throw new Error("the tool did not acknowledge the payment (no X-Kleos-Paid header); the invoice cannot close without it");
 
   const stamp = await input.stamper.stamp({
     tool: input.tool,
@@ -226,7 +263,7 @@ export async function payInvoice(input: {
     address: networks[input.network].kleosCredit,
     abi: kleosCreditAbi,
     functionName: "pay",
-    args: [input.invoice.invoiceId, stamp.receiptHash],
+    args: [input.invoice.invoiceId, stamp.receiptHash, creditorSig],
   });
   await publicClient.waitForTransactionReceipt({ hash: closeTx });
   return { stamp, settlementTx: settlement.transaction, closeTx };

@@ -7,6 +7,7 @@ export {
   kleosCreditAbi,
   creditDomain,
   creditRequestTypes,
+  paymentReceivedTypes,
   META_ENCRYPTION_KEY,
 } from "./chain.js";
 export type { NetworkName } from "./chain.js";
@@ -40,6 +41,8 @@ export { countersignPaidCall, readPayment } from "./tool.js";
 export {
   CREDIT_HEADER,
   INVOICE_HEADER,
+  PAID_HEADER,
+  acknowledgePayment,
   readAgentRecord,
   decideCredit,
   grantCredit,

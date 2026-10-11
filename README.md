@@ -61,8 +61,7 @@ The output is meant for a tool to act on in one call: serve or not, and up to wh
 |---|---|
 | ERC-8004 Identity Registry | [`0x8004A818BFB912233c491871b3d84c89A494BD9e`](https://testnet.monadvision.com/address/0x8004A818BFB912233c491871b3d84c89A494BD9e) |
 | KleosStamps | [`0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18`](https://testnet.monadvision.com/address/0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18) |
-| KleosCredit | [`0xa5314F72F599412763b03D47150Bb7Ed5E166B43`](https://testnet.monadvision.com/address/0xa5314F72F599412763b03D47150Bb7Ed5E166B43) |
-| USDC (x402 asset) | `0x534b2f3A21130d7a60830c2Df862319e593943A3` |
+| KleosCredit | [`0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88`](https://testnet.monadvision.com/address/0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88) || USDC (x402 asset) | `0x534b2f3A21130d7a60830c2Df862319e593943A3` |
 
 ## Use it
 
