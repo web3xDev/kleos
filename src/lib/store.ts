@@ -14,7 +14,7 @@ export type StoredStamp = {
 
 const LOCAL_DIR = join(process.cwd(), ".data", "stamps");
 
-function useBlob(): boolean {
+function blobEnabled(): boolean {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
@@ -24,7 +24,7 @@ function key(agentId: string, receiptHash: string): string {
 
 export async function putStamp(s: StoredStamp): Promise<void> {
   const k = key(s.receipt.agentId, s.receiptHash);
-  if (useBlob()) {
+  if (blobEnabled()) {
     const { put } = await import("@vercel/blob");
     await put(k, JSON.stringify(s), { access: "public", addRandomSuffix: false, contentType: "application/json" });
     return;
@@ -35,7 +35,7 @@ export async function putStamp(s: StoredStamp): Promise<void> {
 }
 
 export async function getStamp(agentId: string, receiptHash: string): Promise<StoredStamp | null> {
-  if (useBlob()) {
+  if (blobEnabled()) {
     const { head } = await import("@vercel/blob");
     try {
       const meta = await head(key(agentId, receiptHash));
@@ -54,7 +54,7 @@ export async function getStamp(agentId: string, receiptHash: string): Promise<St
 
 export async function listStamps(agentId: string): Promise<StoredStamp[]> {
   let items: StoredStamp[] = [];
-  if (useBlob()) {
+  if (blobEnabled()) {
     const { list } = await import("@vercel/blob");
     const { blobs } = await list({ prefix: `stamps/${agentId}/` });
     items = await Promise.all(blobs.map(async (b) => (await fetch(b.url)).json() as Promise<StoredStamp>));

@@ -53,7 +53,7 @@ if (cs) res.headers.set(cs.name, cs.value);
 
 ## Pay later: Kleos Engine v0
 
-A tool reads an agent's record from chain and, by its own rule, serves it before payment. The agent's signed consent opens an invoice on KleosCredit; the stamp of its payment closes it.
+A tool reads an agent's record from chain and, by its own rule, serves it before payment. The agent's signed consent opens an invoice on KleosCredit; the stamp of its payment, with the tool's signed acknowledgement (`acknowledgePayment`, sent in `X-Kleos-Paid`), closes it.
 
 ```ts
 import { readAgentRecord, decideCredit } from "kleos";

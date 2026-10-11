@@ -114,9 +114,9 @@ const stamper = new Stamper({ agentId: 1910n, account });
 
 const { call, stamp } = await callAndStamp({
   fetch: payingFetch("monad-testnet", account),      // pays x402 402s with the runtime key
-  url: "https://onchainrouter.io/tools/lending-rates",
-  tool: "onchainrouter/lending-rates",
-  platform: "onchainrouter",
+  url: "https://example.com/paid-tool",
+  tool: "example/paid-tool",
+  platform: "example",
   amount: 10_000n,                                    // 0.01 USDC, atomic units
   asset: networks["monad-testnet"].usdc,
   stamper,
@@ -233,7 +233,7 @@ return res;`}</Code>
               A track record is worth something when it changes how a tool treats an agent. With pay later, a tool serves
               an agent <em>before</em> it pays, because the agent&apos;s record says it pays. The credit is onchain too: an
               invoice on <Mono>KleosCredit</Mono>, opened with the agent&apos;s consent and closed by the stamp of its
-              payment. <Link href="/try" className="text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">Try it</Link> runs
+              payment together with the tool&apos;s signed acknowledgement. <Link href="/try" className="text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">Try it</Link> runs
               the whole flow on testnet.
             </p>
             <ol className="mt-4 list-decimal space-y-2 pl-5 text-secondary">
@@ -241,8 +241,8 @@ return res;`}</Code>
               <li>The agent&apos;s runtime signs consent to be invoiced on those terms (EIP-712) and sends it in <Mono>X-Kleos-Credit</Mono>.</li>
               <li>Kleos Engine v0 reads the agent&apos;s record from Monad and applies the tool&apos;s rule.</li>
               <li>If the record qualifies, the tool opens the invoice on <Mono>KleosCredit</Mono> and serves the answer right away, with the invoice in <Mono>X-Kleos-Invoice</Mono>.</li>
-              <li>The agent pays the invoice over x402. The payment is stamped and countersigned like any other.</li>
-              <li>The stamp closes the invoice on <Mono>KleosCredit</Mono>. The record gains one more verified action and a paid invoice.</li>
+              <li>The agent pays the invoice over x402. The payment is stamped and countersigned like any other, and the tool&apos;s response carries its signed &quot;I was paid for this invoice&quot; (<Mono>X-Kleos-Paid</Mono>).</li>
+              <li>The stamp and that acknowledgement close the invoice on <Mono>KleosCredit</Mono>. The record gains one more verified action and a paid invoice.</li>
             </ol>
 
             <h3 className="mt-8 text-lg font-semibold">Kleos Engine v0</h3>

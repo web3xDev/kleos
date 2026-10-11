@@ -2,7 +2,7 @@
 
 **A portable, verifiable payment history for AI agents.** Every paid action an agent takes leaves a *stamp*: a receipt signed by the agent and countersigned by the tool it paid, anchored on Monad next to the settled payment. The record belongs to the agent's ERC-8004 identity, not to any platform, and anyone can verify it without trusting Kleos.
 
-Tools use that history to decide how far to trust an agent, for example serving it first and getting paid after. That credit is on chain too: invoices are opened with the agent's consent and closed by the stamp of the payment, and unpaid ones stay visible.
+Tools use that history to decide how far to trust an agent, for example serving it first and getting paid after. That credit is on chain too: invoices are opened with the agent's consent and closed by the stamp of the payment plus the tool's signed acknowledgement, and unpaid ones stay visible.
 
 > Built for **Monad Metropolis**, Track 4: Trust, Identity & AI Infrastructure. Everything runs on **Monad Testnet**.
 
@@ -29,7 +29,7 @@ On Monad testnet almost 2,000 agents are registered in ERC-8004. One has a verif
 3. **Act.** The agent pays a tool over x402; the payment settles in USDC on Monad.
 4. **Stamp.** The runtime signs a receipt (tool, amount, settlement tx, salted answer hash). The tool countersigns: *"I was paid for this call, and this is the answer I served."* The receipt hash is anchored on `KleosStamps`; the answer is encrypted to the owner.
 5. **Verify.** Anyone recomputes the hash, checks both signatures, reads the anchor and the settlement from Monad: five checks. The profile page runs them in the browser. Kleos serves the receipts, but none of the checks trusts it; a receipt it altered or invented fails them.
-6. **Pay later.** A tool reads the agent's record from chain and, through Kleos Engine and its own rule, serves first. The agent's signed consent opens an invoice on `KleosCredit`; the stamp of its payment closes it. Past due and unpaid, it shows on the profile in red.
+6. **Pay later.** A tool reads the agent's record from chain and, through Kleos Engine and its own rule, serves first. The agent's signed consent opens an invoice on `KleosCredit`; the stamp of its payment, with the tool's signed "I was paid for this invoice", closes it. So an agent can't close an invoice with a payment that went somewhere else. Past due and unpaid, it shows on the profile in red.
 
 ## Kleos Engine
 

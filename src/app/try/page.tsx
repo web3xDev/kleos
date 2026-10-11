@@ -28,7 +28,7 @@ const PAY_LATER_ROWS: Omit<Row, "status">[] = [
   { key: "invoice", title: "Invoice opened on Monad", who: "KleosCredit.open() · only with the agent's signed consent" },
   { key: "pay", title: "Agent pays the invoice", who: "x402 · $0.01 to the tool" },
   { key: "stamp", title: "Stamp anchored, countersigned", who: "The payment joins the track record" },
-  { key: "close", title: "Invoice closed on Monad", who: "KleosCredit.pay() · closed by that stamp" },
+  { key: "close", title: "Invoice closed on Monad", who: "KleosCredit.pay() · that stamp plus the tool's signed \"paid\"" },
 ];
 
 // Detail values that are transaction hashes, per mode (they link to the explorer).

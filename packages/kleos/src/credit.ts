@@ -1,6 +1,7 @@
 // Pay later with a track record. A tool reads an agent's Kleos record from
 // chain and, by its own rule, serves it before payment. The credit becomes an
-// invoice on KleosCredit: opened with the agent's signed consent, closed by
+// invoice on KleosCredit: opened with the agent's signed consent, closed (with
+// the creditor's signed acknowledgement) by
 // the stamp of the payment. Unpaid invoices stay visible past their due date.
 //
 // Wire format (all base64url JSON, except the signature header):

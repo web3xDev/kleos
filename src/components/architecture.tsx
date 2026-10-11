@@ -55,7 +55,7 @@ const layers: Layer[] = [
       { k: "receipt", v: "signed by the runtime, countersigned by the tool (v2) · public fields, fixed order" },
       { k: "body", v: "sealed to the owner · ECIES · the store holds ciphertext only" },
       { k: "anchor", v: "KleosStamps.stamp() · only the agentWallet · settlement required" },
-      { k: "invoice", v: "KleosCredit · opened with the agent's consent · closed by a stamp" },
+      { k: "invoice", v: "KleosCredit · opened with the agent's consent · closed by a stamp and the tool's signed \"paid\"" },
     ],
     arrow: "read by anyone, from chain",
   },
