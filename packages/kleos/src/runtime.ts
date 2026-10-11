@@ -58,12 +58,14 @@ export function loadOrCreateRuntimeKey(explicitKey?: Hex): PrivateKeyAccount {
   if (fromEnv) return privateKeyToAccount(fromEnv);
   const path = runtimeKeyPath();
   try {
-    const { privateKey } = JSON.parse(readFileSync(path, "utf8")) as { privateKey: Hex };
+    // The key file is the runtime's own (~/.kleos), never part of an app bundle:
+    // the comment tells bundlers (Turbopack) not to trace the project for it.
+    const { privateKey } = JSON.parse(readFileSync(/*turbopackIgnore: true*/ path, "utf8")) as { privateKey: Hex };
     return privateKeyToAccount(privateKey);
   } catch {
     const privateKey = generatePrivateKey();
-    mkdirSync(join(path, ".."), { recursive: true });
-    writeFileSync(path, JSON.stringify({ privateKey }, null, 2), { mode: 0o600 });
+    mkdirSync(/*turbopackIgnore: true*/ join(path, ".."), { recursive: true });
+    writeFileSync(/*turbopackIgnore: true*/ path, JSON.stringify({ privateKey }, null, 2), { mode: 0o600 });
     return privateKeyToAccount(privateKey);
   }
 }
