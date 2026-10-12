@@ -1,6 +1,6 @@
 // The pay-later playground. The same tool, asked for credit by two agents:
-//   as: "agent"    → the demo agent (#1910), with a record: served first, then pays the invoice
-//   as: "newcomer" → an agent with no record (#1909): declined, must pay first
+//   as: "agent"    → the demo agent (DEMO_AGENT_ID), with a record: served first, then pays the invoice
+//   as: "newcomer" → an agent with no record (DEMO_NEWCOMER_ID): declined, must pay first
 // Streams each step as it happens, like /api/demo/run.
 //
 // `skipPayment` (dev only, or KLEOS_DEMO_ALLOW_DEFAULT=1) leaves the invoice
@@ -20,6 +20,7 @@ import {
 } from "kleos";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { TOOL_ID } from "@/lib/demo-tool";
+import { DEMO_AGENT_ID, DEMO_NEWCOMER_ID } from "@/lib/chain";
 import { acquireDemo, busyResponse } from "@/lib/demo-lock";
 import { ensureRuntimeGas } from "@/lib/demo-gas";
 
@@ -31,9 +32,9 @@ const allowDefault = () => process.env.NODE_ENV === "development" || process.env
 
 export async function POST(req: Request) {
   const key = process.env.KLEOS_DEMO_RUNTIME_KEY as `0x${string}` | undefined;
-  const demoAgentId = process.env.KLEOS_DEMO_AGENT_ID;
-  const newcomerId = process.env.KLEOS_DEMO_NEWCOMER_ID ?? "1909";
-  if (!key || !demoAgentId) return new Response("demo not configured", { status: 503 });
+  const demoAgentId = DEMO_AGENT_ID.toString();
+  const newcomerId = DEMO_NEWCOMER_ID.toString();
+  if (!key) return new Response("demo not configured", { status: 503 });
 
   const body = (await req.json().catch(() => ({}))) as { as?: "agent" | "newcomer"; skipPayment?: boolean };
   const asNewcomer = body.as === "newcomer";

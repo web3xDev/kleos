@@ -1,7 +1,7 @@
 // Developer docs. Mostly text and code, on purpose.
 
 import Link from "next/link";
-import { addresses, chain, x402Facilitator } from "@/lib/chain";
+import { DEMO_AGENT_ID, addresses, chain, x402Facilitator } from "@/lib/chain";
 import { Label, Mono } from "@/components/ui";
 import { MentalModel } from "@/components/mental-model";
 import { DocsNav } from "@/components/docs-nav";
@@ -110,7 +110,7 @@ export default function DocsPage() {
             <Code>{`import { Stamper, payingFetch, callAndStamp, loadOrCreateRuntimeKey, networks } from "kleos";
 
 const account = loadOrCreateRuntimeKey();            // ~/.kleos/runtime.json
-const stamper = new Stamper({ agentId: 1910n, account });
+const stamper = new Stamper({ agentId: ${DEMO_AGENT_ID}n, account });
 
 const { call, stamp } = await callAndStamp({
   fetch: payingFetch("monad-testnet", account),      // pays x402 402s with the runtime key
@@ -138,7 +138,7 @@ const { call, stamp } = await callAndStamp({
             <Code lang="json">{`{
   "v": 1,
   "network": "monad-testnet",
-  "agentId": "1910",
+  "agentId": "${DEMO_AGENT_ID}",
   "wallet": "0x3539…8b68",          // runtime signer, must equal ERC-8004 agentWallet
   "tool": "kleos-demo/monad-block",
   "platform": "kleos-demo",
@@ -254,7 +254,7 @@ return res;`}</Code>
             </p>
             <Code>{`import { readAgentRecord, decideCredit } from "kleos";
 
-const record = await readAgentRecord(publicClient, "monad-testnet", 1910n);
+const record = await readAgentRecord(publicClient, "monad-testnet", ${DEMO_AGENT_ID}n);
 // { verifiedActions: 32, invoices: { total: 4, open: 0, overdue: 0, paidLate: 0 } }
 
 const { granted, reason } = decideCredit(record, { minVerifiedActions: 20, maxOverdueInvoices: 0 });
@@ -299,7 +299,7 @@ res.headers.set(ack.name, ack.value);   // X-Kleos-Paid`}</Code>
             <Code>{`import { requestCredit, payInvoice, encodeCredit, decodeInvoiceNotice, payingFetch, CREDIT_HEADER, INVOICE_HEADER } from "kleos";
 
 const { kleosCredit: terms } = await (await fetch(url)).json();          // the 402 with terms
-const request = await requestCredit({ account, agentId: 1910n, terms });  // signed consent
+const request = await requestCredit({ account, agentId: ${DEMO_AGENT_ID}n, terms });  // signed consent
 
 const res = await fetch(url, { headers: { [CREDIT_HEADER]: encodeCredit(request) } });
 const answer = await res.text();                                          // served before payment
@@ -415,10 +415,10 @@ const hash = receiptHash(publicPart);                     // compare with the an
                 </div>
               ))}
             </dl>
-            <Code lang="bash">{`curl https://kleos.finance/api/agents/1910
+            <Code lang="bash">{`curl https://kleos.finance/api/agents/${DEMO_AGENT_ID}
 # { "agent": {...}, "trackRecord": { "verifiedActions": 79, ... }, "invoices": { "total": 19, "overdue": 0, ... }, "latestStamps": [...] }
 
-curl "https://kleos.finance/api/verify/0xa238…ed6f?agentId=1910"
+curl "https://kleos.finance/api/verify/0xa238…ed6f?agentId=${DEMO_AGENT_ID}"
 # { "valid": true, "checks": [ { "label": "receiptHashRecomputed", "ok": true }, ... ] }`}</Code>
             <p className="mt-4 text-secondary">
               Kleos publishes facts; what they are worth is the caller&apos;s decision. To serve agents first and bill them

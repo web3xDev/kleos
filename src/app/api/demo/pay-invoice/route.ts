@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 import { createPublicClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { Stamper, kleosCreditAbi, networks, payInvoice, payingFetch, type InvoiceNotice } from "kleos";
-import { addresses, chain } from "@/lib/chain";
+import { DEMO_AGENT_ID, addresses, chain } from "@/lib/chain";
 import { TOOL_ID } from "@/lib/demo-tool";
 import { acquireDemo, busyResponse } from "@/lib/demo-lock";
 import { ensureRuntimeGas } from "@/lib/demo-gas";
@@ -16,8 +16,8 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   const key = process.env.KLEOS_DEMO_RUNTIME_KEY as `0x${string}` | undefined;
-  const demoAgentId = process.env.KLEOS_DEMO_AGENT_ID;
-  if (!key || !demoAgentId) return NextResponse.json({ error: "demo not configured" }, { status: 503 });
+  const demoAgentId = DEMO_AGENT_ID.toString();
+  if (!key) return NextResponse.json({ error: "demo not configured" }, { status: 503 });
 
   const { invoiceId } = (await req.json().catch(() => ({}))) as { invoiceId?: string };
   if (!invoiceId || !/^0x[0-9a-fA-F]{64}$/.test(invoiceId)) return NextResponse.json({ error: "invoiceId required" }, { status: 400 });

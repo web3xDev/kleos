@@ -137,9 +137,7 @@ Environment (`.env.local`):
 | `DRIP_PRIVATE_KEY` | Funds new passkey accounts with testnet gas; also the demo tool's key unless `KLEOS_TOOL_KEY` is set |
 | `KLEOS_TOOL_KEY` | Optional: a separate key for the demo tool (countersigns, opens invoices) |
 | `KLEOS_PAY_TO` | Where demo tool payments go (the address of the tool's key) |
-| `KLEOS_DEMO_RUNTIME_KEY` | The demo agent's runtime key (paired to `KLEOS_DEMO_AGENT_ID`) |
-| `KLEOS_DEMO_AGENT_ID` | The demo agent, `1910` |
-| `KLEOS_DEMO_NEWCOMER_ID` | The agent without a record in the Pay later demo, `1909` by default |
+| `KLEOS_DEMO_RUNTIME_KEY` | The demo agent's runtime key (paired to `DEMO_AGENT_ID` in `src/lib/chain.ts`) |
 | `KLEOS_DEMO_ALLOW_DEFAULT` | Optional: `1` allows the "leave the invoice unpaid" demo outside development |
 | `KLEOS_URL` | Base URL of the stamp store (defaults to the site itself) |
 | `BLOB_READ_WRITE_TOKEN` | Optional: Vercel Blob for the stamp store and drip limits (local files otherwise) |

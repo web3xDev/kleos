@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Ban, Check, Loader2, Play, X } from "lucide-react";
-import { chain } from "@/lib/chain";
+import { DEMO_AGENT_ID, chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 import { Wordmark } from "@/components/mark";
@@ -35,7 +35,7 @@ const PAY_LATER_ROWS: Omit<Row, "status">[] = [
 const TX_KEYS: Record<Mode, string[]> = { first: ["payment", "anchor"], later: ["invoice", "pay", "stamp", "close"] };
 
 const ROWS: Omit<Row, "status">[] = [
-  { key: "agent", title: "Agent wakes up", who: "Agent #1910 · runtime checks it is the registered wallet" },
+  { key: "agent", title: "Agent wakes up", who: `Agent #${DEMO_AGENT_ID} · runtime checks it is the registered wallet` },
   { key: "tool", title: "Calls a paid tool", who: "x402 · $0.01 · kleos-demo/monad-block" },
   { key: "countersign", title: "Tool countersigns", who: "Signed by the address that was paid · commits to the answer it served" },
   { key: "payment", title: "Payment settles on Monad", who: "USDC transferWithAuthorization, submitted by the facilitator" },
@@ -79,7 +79,7 @@ function Expand({ open, children, slow = false }: { open: boolean; children: Rea
 function plainError(msg: string): string {
   if (/insufficient (balance|funds)/i.test(msg)) return "The demo agent is out of gas right now. Try again in a little while.";
   if (/busy/i.test(msg)) return msg;
-  if (/not this agent's wallet/i.test(msg)) return "The demo runtime is no longer paired to agent #1910.";
+  if (/not this agent's wallet/i.test(msg)) return `The demo runtime is no longer paired to agent #${DEMO_AGENT_ID}.`;
   return msg.split("\n")[0].slice(0, 160);
 }
 
@@ -217,7 +217,7 @@ export default function TryPage() {
         {mode === "first" ? (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <Mono className="text-[11px] tracking-[0.14em] text-primary">DEMO AGENT #1910 · {chain.name.toUpperCase()} · REAL SETTLEMENT</Mono>
+              <Mono className="text-[11px] tracking-[0.14em] text-primary">DEMO AGENT #{DEMO_AGENT_ID.toString()} · {chain.name.toUpperCase()} · REAL SETTLEMENT</Mono>
               <div className="mt-1.5 text-xs text-tertiary">Kleos-owned, funded by us · $0.01 per run</div>
             </div>
             <Button variant="accent" onClick={() => run("classic")} loading={running} disabled={running}>
@@ -240,7 +240,7 @@ export default function TryPage() {
               </Button>
               <Button variant="accent" onClick={() => run("credit")} loading={running && kind === "credit"} disabled={running}>
                 <Play size={16} strokeWidth={1.5} />
-                Run as Agent #1910
+                Run as Agent #{DEMO_AGENT_ID.toString()}
               </Button>
             </div>
           </div>
@@ -367,10 +367,10 @@ export default function TryPage() {
           <div className="mt-4 text-lg font-semibold text-primary">Credit declined</div>
           <div className="mt-1 text-sm text-secondary">{declined}</div>
           <p className="mt-3 text-xs text-tertiary">
-            Same tool, same request. The only difference between this agent and #1910 is a record anyone can verify.
+            Same tool, same request. The only difference between this agent and #{DEMO_AGENT_ID.toString()} is a record anyone can verify.
           </p>
           <Button variant="accent" className="mt-5" onClick={() => run("credit")} disabled={running}>
-            Now run as Agent #1910 <ArrowRight size={14} strokeWidth={1.5} />
+            Now run as Agent #{DEMO_AGENT_ID.toString()} <ArrowRight size={14} strokeWidth={1.5} />
           </Button>
         </Card>
         </div>
@@ -394,7 +394,7 @@ export default function TryPage() {
                     : "Invoice left unpaid"
                   : "Served first, paid after"}
             </div>
-            <Mono className="text-secondary">#1910</Mono>
+            <Mono className="text-secondary">#{DEMO_AGENT_ID.toString()}</Mono>
           </div>
           <div className="mt-1 text-sm text-secondary">
             {kind === "classic"

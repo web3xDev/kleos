@@ -5,6 +5,7 @@
 import { Stamper, networks, payingFetch, readCountersign, readSettlement } from "kleos";
 import { privateKeyToAccount } from "viem/accounts";
 import { TOOL_ID } from "@/lib/demo-tool";
+import { DEMO_AGENT_ID } from "@/lib/chain";
 import { acquireDemo, busyResponse } from "@/lib/demo-lock";
 import { ensureRuntimeGas } from "@/lib/demo-gas";
 
@@ -14,8 +15,8 @@ type Step = { step: string; status: "start" | "done" | "error"; detail?: string;
 
 export async function POST(req: Request) {
   const key = process.env.KLEOS_DEMO_RUNTIME_KEY as `0x${string}` | undefined;
-  const agentId = process.env.KLEOS_DEMO_AGENT_ID;
-  if (!key || !agentId) return new Response("demo not configured", { status: 503 });
+  const agentId = DEMO_AGENT_ID.toString();
+  if (!key) return new Response("demo not configured", { status: 503 });
 
   if (!acquireDemo()) return busyResponse();
 
