@@ -61,7 +61,10 @@ The output is meant for a tool to act on in one call: serve or not, and up to wh
 |---|---|
 | ERC-8004 Identity Registry | [`0x8004A818BFB912233c491871b3d84c89A494BD9e`](https://testnet.monadvision.com/address/0x8004A818BFB912233c491871b3d84c89A494BD9e) |
 | KleosStamps | [`0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18`](https://testnet.monadvision.com/address/0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18) |
-| KleosCredit | [`0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88`](https://testnet.monadvision.com/address/0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88) || USDC (x402 asset) | `0x534b2f3A21130d7a60830c2Df862319e593943A3` |
+| KleosCredit | [`0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88`](https://testnet.monadvision.com/address/0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88) |
+| USDC (x402 asset) | `0x534b2f3A21130d7a60830c2Df862319e593943A3` |
+
+**KleosCredit v2 (Oct 11).** We found a gap in the first KleosCredit ([`0xa531…6B43`](https://testnet.monadvision.com/address/0xa5314F72F599412763b03D47150Bb7Ed5E166B43)): it closed an invoice with any stamp of the same agent for the right amount, so an agent could pay a tool it controls and close another creditor's invoice with that stamp. v2 also requires the creditor's EIP-712 "I was paid for this invoice", and checks every signature with OpenZeppelin's `SignatureChecker`, so ERC-1271 contract wallets work as agent wallets too. The v1 invoices stay on chain; the credit record starts again on v2. KleosStamps did not change, so every stamp carried over.
 
 ## Use it
 
