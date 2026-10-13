@@ -12,7 +12,6 @@ import { PRIVY_API, authorizationSignature, privyPublicKey } from "kleos-sdk/pri
 import { Button, Input, Mono } from "@/components/ui";
 import { useToast } from "@/components/toast";
 import { addresses, chain } from "@/lib/chain";
-import { formatUsdc } from "@/lib/stamps";
 import { useSession } from "@/lib/session";
 import { lockMessage } from "@/lib/privy-lock";
 import type { SpendingRules as Rules } from "@/lib/privy";
@@ -35,9 +34,12 @@ function describe(c: { field: string; operator: string; value: string }): string
   const op = { eq: "=", lte: "≤", gte: "≥", lt: "<", gt: ">", in: "in" }[c.operator] ?? c.operator;
   if (c.field === "verifyingContract" || c.field === "to") return `${c.field === "to" ? "to" : "contract"} ${NAMES[c.value.toLowerCase()] ?? c.value}`;
   if (c.field === "chainId" || c.field === "chain_id") return c.value === String(chain.id) ? chain.name : `chain ${c.value}`;
-  if (c.field === "value") return `amount ${op} ${formatUsdc(BigInt(c.value))}`;
+  if (c.field === "value") return `amount ${op} ${usd(BigInt(c.value))}`;
   return `${c.field} ${op} ${c.value}`;
 }
+
+/** USDC with as many decimals as the cap needs ($0.005, not $0.00). */
+const usd = (atomic: bigint) => `$${formatUnits(atomic, 6)}`;
 
 /** The per-payment cap in the rules, in USDC atomic units, if there is one. */
 function capOf(rules: Rules): bigint | null {
@@ -130,7 +132,7 @@ export function SpendingRules({ agentId, owner }: { agentId: bigint; owner?: str
         body: JSON.stringify({ body, signature }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? `update failed (${res.status})`);
-      notify("Spending rules updated", `Privy now allows at most ${formatUsdc(value)} per payment.`, undefined, "success");
+      notify("Spending rules updated", `Privy now allows at most ${usd(value)} per payment.`, undefined, "success");
       load();
     } catch (e) {
       setError(e instanceof Error ? e.message.split("\n")[0] : String(e));

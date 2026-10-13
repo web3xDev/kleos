@@ -80,6 +80,7 @@ function plainError(msg: string): string {
   if (/insufficient (balance|funds)/i.test(msg)) return "The demo agent is out of gas right now. Try again in a little while.";
   if (/busy/i.test(msg)) return msg;
   if (/not this agent's wallet/i.test(msg)) return `The demo runtime is no longer paired to agent #${DEMO_AGENT_ID}.`;
+  if (/policy.violation/i.test(msg)) return "Privy refused to sign: this payment breaks the agent's spending rules. Nothing was paid or stamped.";
   return msg.split("\n")[0].slice(0, 160);
 }
 
