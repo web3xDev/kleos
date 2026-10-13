@@ -3,6 +3,7 @@
 //   node scripts/demo-runtime.mjs status            balances of the current runtime (KLEOS_DEMO_RUNTIME_KEY)
 //   node scripts/demo-runtime.mjs new               a fresh runtime key: prints its address and key
 //   node scripts/demo-runtime.mjs fund <address>    moves all USDC from the current runtime to <address>
+//   node scripts/demo-runtime.mjs fund <address> 2  moves 2 USDC only
 //
 // Reads KLEOS_DEMO_RUNTIME_KEY from the environment or .env.local (only that
 // variable). Gas for the new runtime is not needed here: the demo routes top it
@@ -10,7 +11,7 @@
 
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { createPublicClient, createWalletClient, formatEther, formatUnits, http, isAddress, parseAbi } from "viem";
+import { createPublicClient, createWalletClient, formatEther, formatUnits, http, isAddress, parseAbi, parseUnits } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { monadTestnet } from "viem/chains";
 
@@ -49,7 +50,7 @@ async function currentRuntime() {
   return privateKeyToAccount(key);
 }
 
-const [cmd, arg] = process.argv.slice(2);
+const [cmd, arg, amountArg] = process.argv.slice(2);
 
 if (cmd === "new") {
   const key = generatePrivateKey();
@@ -73,9 +74,10 @@ if (cmd === "new") {
     console.error("That is the current runtime itself. Run fund before switching KLEOS_DEMO_RUNTIME_KEY to the new key.");
     process.exit(2);
   }
-  const { usdc } = await balances(account.address);
-  if (usdc === 0n) {
-    console.error(`The current runtime ${account.address} holds no USDC.`);
+  const { usdc: held } = await balances(account.address);
+  const usdc = amountArg ? parseUnits(amountArg, 6) : held;
+  if (usdc === 0n || usdc > held) {
+    console.error(`The current runtime ${account.address} holds ${formatUnits(held, 6)} USDC; cannot move ${formatUnits(usdc, 6)}.`);
     process.exit(1);
   }
   const wallet = createWalletClient({ account, chain: monadTestnet, transport: http() });

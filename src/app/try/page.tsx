@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Ban, Check, Loader2, Play, X } from "lucide-react";
-import { DEMO_AGENT_ID, chain } from "@/lib/chain";
+import { DEMO_AGENT_ID, DEMO_PRIVY_AGENT_ID, chain } from "@/lib/chain";
 import { Button, Card, Label, Mono, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 import { Wordmark } from "@/components/mark";
@@ -88,6 +88,8 @@ const idle = (mode: Mode): Row[] => (mode === "first" ? ROWS : PAY_LATER_ROWS).m
 export default function TryPage() {
   const [mode, setMode] = useState<Mode>("first");
   const [kind, setKind] = useState<Kind>("classic");
+  // Pay first, run by the agent whose runtime is a Privy server wallet under a spending policy.
+  const [viaPrivy, setViaPrivy] = useState(false);
   const [rows, setRows] = useState<Row[]>(idle("first"));
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,16 +127,21 @@ export default function TryPage() {
     reset(next);
   }
 
-  async function run(k: Kind, opts: { skipPayment?: boolean } = {}) {
+  async function run(k: Kind, opts: { skipPayment?: boolean; privy?: boolean } = {}) {
     setRunning(true);
     setKind(k);
+    setViaPrivy(Boolean(opts.privy));
     reset(k === "classic" ? "first" : "later");
     // The step that carries the tool's answer, per flow.
     const answerStep = k === "classic" ? "tool" : "served";
     try {
       const res =
         k === "classic"
-          ? await fetch("/api/demo/run", { method: "POST" })
+          ? await fetch("/api/demo/run", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(opts.privy ? { as: "privy" } : {}),
+            })
           : await fetch("/api/demo/credit", {
               method: "POST",
               headers: { "content-type": "application/json" },
@@ -220,10 +227,15 @@ export default function TryPage() {
               <Mono className="text-[11px] tracking-[0.14em] text-primary">DEMO AGENT #{DEMO_AGENT_ID.toString()} · {chain.name.toUpperCase()} · REAL SETTLEMENT</Mono>
               <div className="mt-1.5 text-xs text-tertiary">Kleos-owned, funded by us · $0.01 per run</div>
             </div>
-            <Button variant="accent" onClick={() => run("classic")} loading={running} disabled={running}>
-              <Play size={16} strokeWidth={1.5} />
-              Run an action
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={() => run("classic", { privy: true })} loading={running && viaPrivy} disabled={running}>
+                Run with Privy guardrails
+              </Button>
+              <Button variant="accent" onClick={() => run("classic")} loading={running && !viaPrivy} disabled={running}>
+                <Play size={16} strokeWidth={1.5} />
+                Run an action
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -394,7 +406,7 @@ export default function TryPage() {
                     : "Invoice left unpaid"
                   : "Served first, paid after"}
             </div>
-            <Mono className="text-secondary">#{DEMO_AGENT_ID.toString()}</Mono>
+            <Mono className="text-secondary">#{(viaPrivy ? DEMO_PRIVY_AGENT_ID : DEMO_AGENT_ID).toString()}</Mono>
           </div>
           <div className="mt-1 text-sm text-secondary">
             {kind === "classic"

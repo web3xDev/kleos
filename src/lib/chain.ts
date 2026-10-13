@@ -43,5 +43,7 @@ export const x402Facilitator = "https://x402-facilitator.molandak.org";
 /** Kleos's own demo agent (the one /try runs). Its runtime key lives on our server.
  *  The one place its id is set: the Try page, the demo routes and the profile all read it here. */
 export const DEMO_AGENT_ID = 2233n;
+/** The demo agent whose runtime is a Privy server wallet under a spending policy. */
+export const DEMO_PRIVY_AGENT_ID = 2254n;
 /** An agent with no record, for the Pay later demo's "declined" case. */
 export const DEMO_NEWCOMER_ID = 1909n;

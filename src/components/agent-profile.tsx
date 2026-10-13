@@ -24,6 +24,7 @@ import { fetchInvoices, invoiceStatus, span, type Invoice } from "@/lib/credit";
 import { ActiveBadge, Badge, Button, Card, Label, Mono, Shimmer, VerifiedBadge, shortHex } from "@/components/ui";
 import { JsonView } from "@/components/json-view";
 import { SmoothHeight } from "@/components/smooth-height";
+import { SpendingRules } from "@/components/spending-rules";
 
 const PAGE = 12;
 
@@ -356,6 +357,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           <p className="mt-1 text-xs text-tertiary">A passkey-derived address. The person behind it is never revealed.</p>
         </div>
         </div>
+        <SpendingRules agentId={agentId} />
       </div>
 
       {/* Stamp feed */}

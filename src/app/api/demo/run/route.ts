@@ -3,26 +3,32 @@
 // born. Funded by us; rate-limited so the demo wallet lasts.
 
 import { Stamper, networks, payingFetch, readCountersign, readSettlement } from "kleos-sdk";
+import type { LocalAccount } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { TOOL_ID } from "@/lib/demo-tool";
-import { DEMO_AGENT_ID } from "@/lib/chain";
+import { DEMO_AGENT_ID, DEMO_PRIVY_AGENT_ID } from "@/lib/chain";
 import { acquireDemo, busyResponse } from "@/lib/demo-lock";
 import { ensureRuntimeGas } from "@/lib/demo-gas";
+import { privyRuntime } from "@/lib/privy";
 
 export const dynamic = "force-dynamic";
 
 type Step = { step: string; status: "start" | "done" | "error"; detail?: string; ms?: number };
 
 export async function POST(req: Request) {
+  // as: "privy" runs the same action with the agent whose runtime is a Privy
+  // server wallet: every signature goes through Privy and its spending policy.
+  const { as } = (await req.json().catch(() => ({}))) as { as?: "privy" };
   const key = process.env.KLEOS_DEMO_RUNTIME_KEY as `0x${string}` | undefined;
-  const agentId = DEMO_AGENT_ID.toString();
-  if (!key) return new Response("demo not configured", { status: 503 });
+  const privy = as === "privy" ? privyRuntime() : null;
+  const agentId = (privy ? DEMO_PRIVY_AGENT_ID : DEMO_AGENT_ID).toString();
+  if (as === "privy" ? !privy : !key) return new Response("demo not configured", { status: 503 });
 
   if (!acquireDemo()) return busyResponse();
 
   const origin = new URL(req.url).origin;
   const kleosUrl = process.env.KLEOS_URL ?? origin;
-  const account = privateKeyToAccount(key);
+  const account: LocalAccount = privy ?? privateKeyToAccount(key!);
   await ensureRuntimeGas(account.address).catch(() => {});
   const network = "monad-testnet" as const;
   const stamper = new Stamper({ network, agentId: BigInt(agentId), account, kleosUrl });
