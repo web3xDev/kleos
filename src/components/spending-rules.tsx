@@ -74,8 +74,7 @@ export function SpendingRules({ agentId }: { agentId: bigint }) {
               This runtime is a Privy server wallet. Privy checks every signature against these rules before it signs,
               whatever the runtime asks. <Mono className="text-xs">policy {rules.policy}</Mono>
             </p>
-            {/* The list, in two columns on wide screens so it stays short */}
-            <ul className="mt-4 grid gap-x-10 gap-y-3 lg:grid-cols-2">
+            <ul className="mt-4 space-y-3">
               {rules.rules.map((r) => (
                 <li key={r.name} className="text-sm">
                   <div className="flex items-baseline gap-2">
