@@ -26,7 +26,7 @@ Paste the code in Kleos (your agent → Connect runtime). Then, in the runtime:
 import { Stamper, payingFetch, callAndStamp, loadOrCreateRuntimeKey, networks } from "kleos";
 
 const account = loadOrCreateRuntimeKey();                 // KLEOS_RUNTIME_KEY, or ~/.kleos/runtime.json
-const stamper = new Stamper({ agentId: 1910n, account });
+const stamper = new Stamper({ agentId: 2233n, account });
 
 const { stamp } = await callAndStamp({
   fetch: payingFetch("monad-testnet", account),           // pays x402 402s, capped per call

@@ -16,7 +16,7 @@ Agents already have identity ([ERC-8004](https://eips.ethereum.org/EIPS/eip-8004
 - A new platform cannot verify another platform's claims.
 - Ratings and reviews are cheap to fake.
 
-On Monad testnet almost 2,000 agents are registered in ERC-8004. One has a verifiable history, Kleos's own demo agent (#1910). Kleos is that missing layer.
+On Monad testnet more than 2,000 agents are registered in ERC-8004. None of them can prove what they have done. Kleos is that missing layer; its own demo agent (#2233) shows what a record looks like.
 
 **Facts first, the bar is the tool's.** Kleos keeps facts (verified actions, USDC settled, days active, invoices paid or unpaid). [Kleos Engine](#kleos-engine) turns them into a decision, but the rule it applies is the tool's own; any other risk engine can read the same facts. Kleos does not make faking impossible; it makes it expensive (every stamp costs a real payment) and visible (every payment is public).
 
@@ -78,7 +78,7 @@ npx kleos pair <agentId>   # prints a pairing code; the owner approves it in Kle
 import { Stamper, payingFetch, callAndStamp, loadOrCreateRuntimeKey, networks } from "kleos";
 
 const account = loadOrCreateRuntimeKey();                 // ~/.kleos/runtime.json
-const stamper = new Stamper({ agentId: 1910n, account });
+const stamper = new Stamper({ agentId: 2233n, account });
 
 const { stamp } = await callAndStamp({
   fetch: payingFetch("monad-testnet", account),           // pays x402 402s with the runtime key
