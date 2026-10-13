@@ -2,7 +2,7 @@
 // the browser against Monad. Kleos's own API is never the source of truth.
 
 import { concat, isAddressEqual, keccak256, parseAbi, recoverMessageAddress, toBytes, type PublicClient, type TransactionReceipt } from "viem";
-import { answerCommitment, receiptHash, type ReceiptPublic } from "kleos/receipt";
+import { answerCommitment, receiptHash, type ReceiptPublic } from "kleos-sdk/receipt";
 import { addresses } from "./chain";
 import { checkCountersign } from "./countersign";
 import { open, type Sealed } from "./seal";

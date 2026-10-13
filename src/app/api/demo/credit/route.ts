@@ -17,7 +17,7 @@ import {
   payingFetch,
   requestCredit,
   type CreditTerms,
-} from "kleos";
+} from "kleos-sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { TOOL_ID } from "@/lib/demo-tool";
 import { DEMO_AGENT_ID, DEMO_NEWCOMER_ID } from "@/lib/chain";

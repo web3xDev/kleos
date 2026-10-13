@@ -1,4 +1,4 @@
-# kleos
+# kleos-sdk
 
 A portable, verifiable track record for AI agents on Monad.
 
@@ -7,7 +7,7 @@ Every paid action an agent takes becomes a **stamp**: a receipt signed by the ag
 Site, docs and live demo: [kleos.finance](https://kleos.finance) · Source: [github.com/web3xDev/kleos](https://github.com/web3xDev/kleos)
 
 ```bash
-npm install kleos
+npm install kleos-sdk
 ```
 
 Requires Node 20+. Monad testnet only for now.
@@ -17,13 +17,13 @@ Requires Node 20+. Monad testnet only for now.
 Register the agent at [kleos.finance/me](https://kleos.finance/me) with a passkey, then pair the runtime that runs it:
 
 ```bash
-npx kleos pair <agentId>   # prints a pairing code, valid 4 minutes
+npx kleos-sdk pair <agentId>   # prints a pairing code, valid 4 minutes
 ```
 
 Paste the code in Kleos (your agent → Connect runtime). Then, in the runtime:
 
 ```ts
-import { Stamper, payingFetch, callAndStamp, loadOrCreateRuntimeKey, networks } from "kleos";
+import { Stamper, payingFetch, callAndStamp, loadOrCreateRuntimeKey, networks } from "kleos-sdk";
 
 const account = loadOrCreateRuntimeKey();                 // KLEOS_RUNTIME_KEY, or ~/.kleos/runtime.json
 const stamper = new Stamper({ agentId: 2233n, account });
@@ -45,7 +45,7 @@ const { stamp } = await callAndStamp({
 Tools that countersign make their receipts two-sided: "I was paid for this call, and this is the answer I served."
 
 ```ts
-import { countersignPaidCall } from "kleos";
+import { countersignPaidCall } from "kleos-sdk";
 
 const cs = await countersignPaidCall({ account /* the key behind payTo */, headers: req.headers, tool: "my-tool/v1", answer });
 if (cs) res.headers.set(cs.name, cs.value);
@@ -56,7 +56,7 @@ if (cs) res.headers.set(cs.name, cs.value);
 A tool reads an agent's record from chain and, by its own rule, serves it before payment. The agent's signed consent opens an invoice on KleosCredit; the stamp of its payment, with the tool's signed acknowledgement (`acknowledgePayment`, sent in `X-Kleos-Paid`), closes it.
 
 ```ts
-import { readAgentRecord, decideCredit } from "kleos";
+import { readAgentRecord, decideCredit } from "kleos-sdk";
 
 const record = await readAgentRecord(publicClient, "monad-testnet", agentId);
 const { granted, reason } = decideCredit(record, { minVerifiedActions: 20, maxOverdueInvoices: 0 });
@@ -67,7 +67,7 @@ const { granted, reason } = decideCredit(record, { minVerifiedActions: 20, maxOv
 ## Verify
 
 ```ts
-import { verifyReceiptSignature, receiptHash } from "kleos";
+import { verifyReceiptSignature, receiptHash } from "kleos-sdk";
 ```
 
 Recompute a receipt's hash, recover its signer, then read the anchor from KleosStamps and the settlement from Monad. Nothing needs to trust Kleos.
@@ -78,6 +78,8 @@ Recompute a receipt's hash, recover its signer, then read the anchor from KleosS
 |---|---|
 | `kleos pair <agentId>` | Creates the runtime key if needed and prints a pairing code for the agent's owner |
 | `kleos whoami` | Prints the runtime address and where its key lives |
+
+The command is `kleos` once the package is installed; without installing, run it as `npx kleos-sdk <command>`.
 
 Pass `--key 0x…` or set `KLEOS_RUNTIME_KEY` to use an existing key instead of `~/.kleos/runtime.json`.
 

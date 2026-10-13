@@ -5,7 +5,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { withX402 } from "@x402/next";
-import { countersignPaidCall } from "kleos";
+import { countersignPaidCall } from "kleos-sdk";
 import { TOOL_ID, latestBlockAnswer, toolAccount } from "@/lib/demo-tool";
 import { MONAD_TESTNET, payTo, resourceServer } from "@/lib/x402-server";
 

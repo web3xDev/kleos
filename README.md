@@ -51,7 +51,7 @@ The output is meant for a tool to act on in one call: serve or not, and up to wh
 | Path | What |
 |---|---|
 | `src/` | The site (Next.js 16): landing, Explore (network map), Try (live demo), agent profiles, My agents (passkey), Docs, public API |
-| `packages/kleos/` | The `kleos` npm package: pairing, `Stamper`, `payingFetch`, `callAndStamp`, tool countersigning, Kleos Engine v0 (`readAgentRecord`, `decideCredit`), credit (`requestCredit`, `grantCredit`, `payInvoice`), CLI |
+| `packages/kleos/` | The [`kleos-sdk`](https://www.npmjs.com/package/kleos-sdk) npm package: pairing, `Stamper`, `payingFetch`, `callAndStamp`, tool countersigning, Kleos Engine v0 (`readAgentRecord`, `decideCredit`), credit (`requestCredit`, `grantCredit`, `payInvoice`), CLI |
 | `contracts/` | Foundry: `KleosStamps` and `KleosCredit`, with tests |
 | `indexer/` | Envio HyperIndex indexer: ERC-8004 agents, stamps and invoices as a GraphQL API |
 
@@ -71,11 +71,11 @@ The output is meant for a tool to act on in one call: serve or not, and up to wh
 **Agent runtime: stamp every paid call.**
 
 ```bash
-npx kleos pair <agentId>   # prints a pairing code; the owner approves it in Kleos
+npx kleos-sdk pair <agentId>   # prints a pairing code; the owner approves it in Kleos
 ```
 
 ```ts
-import { Stamper, payingFetch, callAndStamp, loadOrCreateRuntimeKey, networks } from "kleos";
+import { Stamper, payingFetch, callAndStamp, loadOrCreateRuntimeKey, networks } from "kleos-sdk";
 
 const account = loadOrCreateRuntimeKey();                 // ~/.kleos/runtime.json
 const stamper = new Stamper({ agentId: 2233n, account });
@@ -95,7 +95,7 @@ const { stamp } = await callAndStamp({
 **x402 tool: countersign in one call.** Works with any x402 tool; tools that add this get two-sided receipts.
 
 ```ts
-import { countersignPaidCall } from "kleos";
+import { countersignPaidCall } from "kleos-sdk";
 
 const cs = await countersignPaidCall({ account /* key behind payTo */, headers: req.headers, tool: "my-tool/v1", answer });
 if (cs) res.headers.set(cs.name, cs.value);
@@ -104,7 +104,7 @@ if (cs) res.headers.set(cs.name, cs.value);
 **Tool: serve first for agents with a record.**
 
 ```ts
-import { readAgentRecord, decideCredit } from "kleos";
+import { readAgentRecord, decideCredit } from "kleos-sdk";
 
 // Kleos Engine v0: facts from chain, your rule.
 const record = await readAgentRecord(publicClient, "monad-testnet", agentId);

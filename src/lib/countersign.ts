@@ -9,7 +9,7 @@
 // v1 receipts predate countersigning: the check is "not applicable", not failed.
 
 import { isAddressEqual, keccak256, pad, toBytes, type PublicClient, type TransactionReceipt } from "viem";
-import { countersigner, countersignFieldsOf, type ReceiptPublic } from "kleos/receipt";
+import { countersigner, countersignFieldsOf, type ReceiptPublic } from "kleos-sdk/receipt";
 
 const AUTHORIZATION_USED = keccak256(toBytes("AuthorizationUsed(address,bytes32)"));
 const TRANSFER = keccak256(toBytes("Transfer(address,address,uint256)"));

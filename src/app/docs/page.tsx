@@ -100,14 +100,14 @@ export default function DocsPage() {
               a passkey. That mints the ERC-8004 identity and writes the owner&apos;s encryption key next to it.
             </p>
             <p className="mt-4 text-secondary">2. In the terminal where your agent runs, pair the runtime:</p>
-            <Code lang="bash">{`npx kleos pair <agentId>
+            <Code lang="bash">{`npx kleos-sdk pair <agentId>
 # prints a pairing code, valid 4 minutes`}</Code>
             <p className="mt-4 text-secondary">
               Paste the code in Kleos → your agent → Connect runtime. The owner submits ERC-8004&apos;s{" "}
               <Mono>setAgentWallet</Mono>; the registry verifies the runtime&apos;s signature itself.
             </p>
             <p className="mt-4 text-secondary">3. In your runtime, stamp every paid call:</p>
-            <Code>{`import { Stamper, payingFetch, callAndStamp, loadOrCreateRuntimeKey, networks } from "kleos";
+            <Code>{`import { Stamper, payingFetch, callAndStamp, loadOrCreateRuntimeKey, networks } from "kleos-sdk";
 
 const account = loadOrCreateRuntimeKey();            // ~/.kleos/runtime.json
 const stamper = new Stamper({ agentId: ${DEMO_AGENT_ID}n, account });
@@ -211,7 +211,7 @@ const { call, stamp } = await callAndStamp({
               (<Mono>Transfer</Mono>). It cannot be reused for another payment.
             </p>
             <p className="mt-4 text-secondary">For an x402 tool it is one call in the handler:</p>
-            <Code>{`import { countersignPaidCall } from "kleos";
+            <Code>{`import { countersignPaidCall } from "kleos-sdk";
 
 const answer = JSON.stringify(result);
 const res = new Response(answer, { headers: { "content-type": "application/json" } });
@@ -252,7 +252,7 @@ return res;`}</Code>
               the facts; the bar is the tool&apos;s. An agent without a record asking the same tool the same thing is
               declined and pays first, like any unknown customer.
             </p>
-            <Code>{`import { readAgentRecord, decideCredit } from "kleos";
+            <Code>{`import { readAgentRecord, decideCredit } from "kleos-sdk";
 
 const record = await readAgentRecord(publicClient, "monad-testnet", ${DEMO_AGENT_ID}n);
 // { verifiedActions: 32, invoices: { total: 4, open: 0, overdue: 0, paidLate: 0 } }
@@ -270,7 +270,7 @@ const { granted, reason } = decideCredit(record, { minVerifiedActions: 20, maxOv
               <Mono>grantCredit</Mono> runs the engine, checks the request matches your terms and opens the invoice from
               your key. Declined, it opens nothing.
             </p>
-            <Code>{`import { grantCredit, decodeCreditRequest, encodeCredit, CREDIT_HEADER, INVOICE_HEADER } from "kleos";
+            <Code>{`import { grantCredit, decodeCreditRequest, encodeCredit, CREDIT_HEADER, INVOICE_HEADER } from "kleos-sdk";
 
 const terms = {
   v: 1, network: "monad-testnet", creditor: account.address, tool: "my-tool/v1",
@@ -290,13 +290,13 @@ return new Response(answer, { headers: { [INVOICE_HEADER]: encodeCredit(invoice)
               On the invoice&apos;s x402 route (<Mono>payUrl</Mono>), acknowledge the payment. KleosCredit closes an invoice
               only with this signature from its creditor, and x402 only delivers the response once the payment settled:
             </p>
-            <Code>{`import { acknowledgePayment } from "kleos";
+            <Code>{`import { acknowledgePayment } from "kleos-sdk";
 
 const ack = await acknowledgePayment({ account, network: "monad-testnet", invoiceId, amount: invoice.amount });
 res.headers.set(ack.name, ack.value);   // X-Kleos-Paid`}</Code>
 
             <h3 className="mt-8 text-lg font-semibold">Agent side</h3>
-            <Code>{`import { requestCredit, payInvoice, encodeCredit, decodeInvoiceNotice, payingFetch, CREDIT_HEADER, INVOICE_HEADER } from "kleos";
+            <Code>{`import { requestCredit, payInvoice, encodeCredit, decodeInvoiceNotice, payingFetch, CREDIT_HEADER, INVOICE_HEADER } from "kleos-sdk";
 
 const { kleosCredit: terms } = await (await fetch(url)).json();          // the 402 with terms
 const request = await requestCredit({ account, agentId: ${DEMO_AGENT_ID}n, terms });  // signed consent
@@ -354,7 +354,7 @@ await payInvoice({
               Kleos serves the receipts, but none of these checks trusts it: each one reads Monad. A receipt Kleos altered
               or invented fails them. Kleos does not decide whether a record is valid.
             </p>
-            <Code>{`import { verifyReceiptSignature, receiptHash } from "kleos";
+            <Code>{`import { verifyReceiptSignature, receiptHash } from "kleos-sdk";
 
 const ok = await verifyReceiptSignature(stamp.receipt);   // signature by wallet
 const hash = receiptHash(publicPart);                     // compare with the anchor`}</Code>
@@ -459,7 +459,7 @@ curl "https://kleos.finance/api/verify/0xa238…ed6f?agentId=${DEMO_AGENT_ID}"
                 </div>
               ))}
             </dl>
-            <p className="mt-4 text-xs text-tertiary">Chain id 10143. Source: github.com/web3xDev/kleos. Package: npm install kleos.</p>
+            <p className="mt-4 text-xs text-tertiary">Chain id 10143. Source: github.com/web3xDev/kleos. Package: npm install kleos-sdk.</p>
           </section>
         </article>
       </div>

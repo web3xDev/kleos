@@ -6,7 +6,7 @@
 import { NextResponse } from "next/server";
 import { createPublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { Stamper, kleosCreditAbi, networks, payInvoice, payingFetch, type InvoiceNotice } from "kleos";
+import { Stamper, kleosCreditAbi, networks, payInvoice, payingFetch, type InvoiceNotice } from "kleos-sdk";
 import { DEMO_AGENT_ID, addresses, chain, serverTransport } from "@/lib/chain";
 import { TOOL_ID } from "@/lib/demo-tool";
 import { acquireDemo, busyResponse } from "@/lib/demo-lock";

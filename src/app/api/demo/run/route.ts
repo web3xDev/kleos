@@ -2,7 +2,7 @@
 // streaming each step as it happens. Judges click, and watch a stamp be
 // born. Funded by us; rate-limited so the demo wallet lasts.
 
-import { Stamper, networks, payingFetch, readCountersign, readSettlement } from "kleos";
+import { Stamper, networks, payingFetch, readCountersign, readSettlement } from "kleos-sdk";
 import { privateKeyToAccount } from "viem/accounts";
 import { TOOL_ID } from "@/lib/demo-tool";
 import { DEMO_AGENT_ID } from "@/lib/chain";

@@ -8,7 +8,7 @@
 import { NextResponse } from "next/server";
 import { listAnchoredStamps } from "@/lib/api";
 import { isAddressEqual, recoverMessageAddress, toBytes } from "viem";
-import { receiptHash, type ReceiptPublic } from "kleos/receipt";
+import { receiptHash, type ReceiptPublic } from "kleos-sdk/receipt";
 import { getStamp, putStamp, type StoredStamp } from "@/lib/store";
 
 export async function POST(req: Request) {

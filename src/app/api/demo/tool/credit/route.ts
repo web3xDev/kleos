@@ -8,7 +8,7 @@
 // The rule is the tool's own (creditTerms().rule). Kleos only supplies the facts.
 
 import { NextResponse, type NextRequest } from "next/server";
-import { CREDIT_HEADER, INVOICE_HEADER, decodeCreditRequest, encodeCredit, grantCredit } from "kleos";
+import { CREDIT_HEADER, INVOICE_HEADER, decodeCreditRequest, encodeCredit, grantCredit } from "kleos-sdk";
 import { creditTerms, latestBlockAnswer, toolAccount } from "@/lib/demo-tool";
 
 export const dynamic = "force-dynamic";

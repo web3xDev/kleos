@@ -4,7 +4,7 @@
 
 import { createPublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import type { CreditTerms } from "kleos";
+import type { CreditTerms } from "kleos-sdk";
 import { addresses, chain, serverTransport } from "./chain";
 import { payTo } from "./x402-server";
 

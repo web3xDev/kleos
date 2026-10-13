@@ -11,7 +11,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { withX402 } from "@x402/next";
 import { createPublicClient, isAddressEqual } from "viem";
-import { acknowledgePayment, countersignPaidCall, kleosCreditAbi } from "kleos";
+import { acknowledgePayment, countersignPaidCall, kleosCreditAbi } from "kleos-sdk";
 import { addresses, chain, serverTransport } from "@/lib/chain";
 import { PRICE_ATOMIC, TOOL_ID, toolAccount } from "@/lib/demo-tool";
 import { MONAD_TESTNET, payTo, resourceServer } from "@/lib/x402-server";

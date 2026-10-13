@@ -2,7 +2,7 @@
 // either read from chain or verifiable against it; nothing is a score.
 
 import { createPublicClient, isAddressEqual, recoverMessageAddress, toBytes, type PublicClient, type TransactionReceipt } from "viem";
-import { receiptHash, type ReceiptPublic } from "kleos/receipt";
+import { receiptHash, type ReceiptPublic } from "kleos-sdk/receipt";
 import { checkCountersign } from "./countersign";
 import { addresses, chain, serverTransport } from "./chain";
 import { kleosStampsAbi } from "./stamps";
