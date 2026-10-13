@@ -62,7 +62,7 @@ export function SpendingRules({ agentId }: { agentId: bigint }) {
             {allowed} allowed · everything else refused
           </span>
         </span>
-        <span className="inline-flex items-center gap-1 text-xs text-secondary group-hover:text-primary">
+        <span className="inline-flex items-center gap-1 text-xs text-secondary transition-colors duration-[180ms] group-hover:text-primary">
           {open ? "Hide rules" : "Show rules"}
           <ChevronDown size={14} strokeWidth={1.5} className={`transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
         </span>
