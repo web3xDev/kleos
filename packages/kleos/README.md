@@ -64,6 +64,22 @@ const { granted, reason } = decideCredit(record, { minVerifiedActions: 20, maxOv
 
 `grantCredit` (tool side) runs the same decision and opens the invoice; `requestCredit` and `payInvoice` (agent side) sign the consent and settle it. Full walkthrough: [kleos.finance/docs#pay-later](https://kleos.finance/docs#pay-later).
 
+## A Privy server wallet as the runtime
+
+Any viem account works as the runtime. A Privy server wallet gives it spending rules the runtime cannot lift: Privy checks every signature against the wallet's policy first.
+
+```ts
+import { Stamper, payingFetch, privyAccount, secretFromPkcs8 } from "kleos-sdk";
+
+const account = privyAccount({
+  appId, appSecret, walletId, address,
+  signerKey: secretFromPkcs8(process.env.PRIVY_SIGNER_KEY!), // when the wallet has an owner: sign as a signer, within the policy
+});
+const stamper = new Stamper({ agentId, account });            // payments and stamps now go through Privy
+```
+
+`kleos-sdk/privy-auth` (browser-safe) signs Privy requests with a P-256 key (`authorizationSignature`, `privyPublicKey`), so the wallet's owner can be a key derived from the owner's passkey and approve rule changes with Touch ID.
+
 ## Verify
 
 ```ts

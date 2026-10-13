@@ -35,7 +35,8 @@ const layers: Layer[] = [
     title: "The software that runs the agent",
     items: [
       { k: "key", v: "its own · paired once · revocable" },
-      { k: "any", v: "an x402-paying runtime with the kleos package" },
+      { k: "any", v: "an x402-paying runtime with the kleos-sdk package" },
+      { k: "privy", v: "or a Privy server wallet: every signature checked against rules only the owner's passkey can change" },
     ],
     arrow: "tool call → x402 payment → settlement on Monad",
   },

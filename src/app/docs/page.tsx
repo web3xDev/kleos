@@ -1,7 +1,7 @@
 // Developer docs. Mostly text and code, on purpose.
 
 import Link from "next/link";
-import { DEMO_AGENT_ID, addresses, chain, x402Facilitator } from "@/lib/chain";
+import { DEMO_AGENT_ID, DEMO_PRIVY_AGENT_ID, addresses, chain, x402Facilitator } from "@/lib/chain";
 import { Label, Mono } from "@/components/ui";
 import { MentalModel } from "@/components/mental-model";
 import { DocsNav } from "@/components/docs-nav";
@@ -42,6 +42,7 @@ const nav: [string, string][] = [
   ["why-not-8004", "Why not ERC-8004's Reputation Registry?"],
   ["countersign", "Tool countersignature"],
   ["pay-later", "Pay later and Kleos Engine v0"],
+  ["privy", "Spending rules with Privy"],
   ["verify", "Verifying a record"],
   ["api", "Package API"],
   ["http", "HTTP API"],
@@ -336,6 +337,39 @@ await payInvoice({
           </section>
 
           <section>
+            <H2 id="privy">Spending rules with Privy</H2>
+            <p className="mt-4 text-secondary">
+              A runtime spends money on its owner&apos;s behalf, so it needs limits it cannot lift itself. A runtime can be a
+              Privy server wallet: <Mono>privyAccount</Mono> makes it a standard viem account, so stamping and x402 payments
+              work unchanged, and Privy checks every signature against the wallet&apos;s policy before it signs. Anything the
+              policy does not allow is refused.
+            </p>
+            <Code>{`import { Stamper, privyAccount, secretFromPkcs8 } from "kleos-sdk";
+
+const account = privyAccount({ appId, appSecret, walletId, address, signerKey: secretFromPkcs8(signerKey) });
+const stamper = new Stamper({ agentId: ${DEMO_PRIVY_AGENT_ID}n, account });   // every signature goes through Privy`}</Code>
+            <ul className="mt-4 list-disc space-y-2 pl-5 text-secondary">
+              <li>
+                <strong className="text-primary">The owner&apos;s passkey owns the rules.</strong> The wallet and its policy are
+                owned by a P-256 key derived from the owner&apos;s passkey (never stored). The server signs as an additional
+                signer held to the policy: it can pay and stamp within the rules, not change them.
+              </li>
+              <li>
+                <strong className="text-primary">Changing a rule takes Touch ID.</strong> The owner edits it on the agent&apos;s
+                profile; the browser signs the Privy request with the passkey-derived key (<Mono>kleos-sdk/privy-auth</Mono>)
+                and the server only relays it.
+              </li>
+              <li>
+                <strong className="text-primary">The rules are public.</strong>{" "}
+                <Link href={`/a/${DEMO_PRIVY_AGENT_ID}`} className="text-primary underline decoration-transparent underline-offset-2 hover:decoration-current">
+                  Agent #{DEMO_PRIVY_AGENT_ID.toString()}
+                </Link>
+                &apos;s profile shows them, read live from Privy (<Mono>GET /api/agents/:id/rules</Mono>).
+              </li>
+            </ul>
+          </section>
+
+          <section>
             <H2 id="verify">Verifying a record</H2>
             <p className="mt-4 text-secondary">
               The profile page&apos;s &quot;Verify this profile&quot; runs in your browser against Monad. For each stamp:
@@ -378,6 +412,8 @@ const hash = receiptHash(publicPart);                     // compare with the an
                 ["decideCredit(record, rule)", "Kleos Engine v0: the tool's rule applied to a record. Returns { granted, reason }."],
                 ["grantCredit({ account, network, terms, request, payUrl })", "Tool side. Runs the engine and, if granted, opens the invoice on KleosCredit."],
                 ["requestCredit({ account, agentId, terms })", "Agent side. Signs consent to be invoiced on the tool's terms (EIP-712)."],
+                ["privyAccount({ appId, appSecret, walletId, address, signerKey? })", "A Privy server wallet as the runtime account. Privy checks every signature against the wallet's policy; with signerKey it signs as a signer held to that policy."],
+                ["authorizationSignature(key, request) · privyPublicKey(key)", "From kleos-sdk/privy-auth (browser-safe): sign a Privy request with a P-256 key, e.g. one derived from the owner's passkey, and get the public key Privy registers as owner."],
                 ["acknowledgePayment({ account, network, invoiceId, amount })", "Tool side. Signs \"I was paid for this invoice\" for the paid invoice response; KleosCredit needs it to close the invoice."],
                 ["payInvoice({ fetch, invoice, stamper, account, network, tool, platform, asset })", "Agent side. Pays the invoice over x402, stamps it, closes it on KleosCredit with the tool's acknowledgement."],
                 ["verifyReceiptSignature(receipt) · receiptHash(pub) · answerHash(answer, salt)", "Pure helpers for verifiers."],
@@ -406,6 +442,7 @@ const hash = receiptHash(publicPart);                     // compare with the an
                 ["GET /api/agents/:id", "Identity, runtime, encryption key, track record (verifiedActions, usdcSettled, daysActive, tools, platforms), invoices from KleosCredit (open, overdue, paid, paidLate and the latest ten) and the latest ten public receipts."],
                 ["GET /api/agents/:id/stamps?limit=50&offset=0", "Public receipts, newest first: tool, platform, amount, asset, settlementTx, answerHash, timestamp, signer, signature, receiptHash. Bodies are never served."],
                 ["GET /api/verify/:receiptHash?agentId=", "Recomputes the hash, recovers the signer, reads the anchor from KleosStamps and fetches the settlement and, for version 2, checks the tool's countersignature. Returns valid plus the five checks."],
+                ["GET /api/agents/:id/rules", "For an agent whose runtime is a Privy server wallet: the spending rules Privy enforces, read live, and whether the owner's passkey owns them."],
               ].map(([sig, desc]) => (
                 <div key={sig}>
                   <dt>

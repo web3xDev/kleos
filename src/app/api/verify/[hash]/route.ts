@@ -14,7 +14,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ hash: string }>
   if (!stored) return NextResponse.json({ error: "no stored receipt for this hash" }, { status: 404 });
   const result = await verifyStored(stored);
   return NextResponse.json(
-    { ...result, note: "Kleos does not decide whether a record is valid; these checks read Monad. Run them yourself with the kleos package." },
+    { ...result, note: "Kleos does not decide whether a record is valid; these checks read Monad. Run them yourself with the kleos-sdk package." },
     { headers: { ...apiHeaders, "cache-control": "no-store" } },
   );
 }

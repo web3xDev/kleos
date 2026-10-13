@@ -46,14 +46,27 @@ The record is the data; the engine is what turns it into a decision: *should thi
 
 The output is meant for a tool to act on in one call: serve or not, and up to what credit limit.
 
+## Spending rules, enforced by Privy
+
+An agent's runtime spends money on its owner's behalf, so it needs limits the runtime cannot lift. A runtime can be a Privy server wallet (`privyAccount` in the package turns it into a standard viem account, so stamping and x402 payments work unchanged). Privy checks every signature against the wallet's policy and refuses anything else:
+
+- x402 payments: only Monad testnet USDC, at most a set amount per payment ($0.05 for the demo)
+- consents: only to KleosCredit and the ERC-8004 registry
+- transactions: only to KleosStamps and KleosCredit, only on Monad testnet
+
+**Only the owner's passkey can change the rules.** The wallet and its policy are owned by a P-256 key derived from the owner's passkey (Mera, its own derivation path, never stored). The server signs as an additional signer held to the policy: it can pay and stamp within the rules, not change them. A rule change is edited on the agent's profile, signed in the browser after Touch ID, and only relayed by the server.
+
+Demo agent #2254 runs this way. Its rules are on its profile, read live from Privy; lowering the cap below a payment makes Privy refuse it (`policy_violation`), and nothing is paid or stamped.
+
 ## What is in this repo
 
 | Path | What |
 |---|---|
 | `src/` | The site (Next.js 16): landing, Explore (network map), Try (live demo), agent profiles, My agents (passkey), Docs, public API |
-| `packages/kleos/` | The [`kleos-sdk`](https://www.npmjs.com/package/kleos-sdk) npm package: pairing, `Stamper`, `payingFetch`, `callAndStamp`, tool countersigning, Kleos Engine v0 (`readAgentRecord`, `decideCredit`), credit (`requestCredit`, `grantCredit`, `payInvoice`), CLI |
-| `contracts/` | Foundry: `KleosStamps` and `KleosCredit`, with tests |
+| `packages/kleos/` | The [`kleos-sdk`](https://www.npmjs.com/package/kleos-sdk) npm package: pairing, `Stamper`, `payingFetch`, `callAndStamp`, tool countersigning, Kleos Engine v0 (`readAgentRecord`, `decideCredit`), credit (`requestCredit`, `grantCredit`, `payInvoice`), Privy runtimes (`privyAccount`, `kleos-sdk/privy-auth`), CLI |
+| `contracts/` | Foundry: `KleosStamps` and `KleosCredit`, with tests and deploy scripts |
 | `indexer/` | Envio HyperIndex indexer: ERC-8004 agents, stamps and invoices as a GraphQL API |
+| `scripts/` | Operations: demo runtime keys and funding, seeding a record, HyperSync check, Privy setup (policy, signer, pairing, check) |
 
 ## Contracts (Monad Testnet, chain 10143)
 
@@ -65,6 +78,8 @@ The output is meant for a tool to act on in one call: serve or not, and up to wh
 | USDC (x402 asset) | `0x534b2f3A21130d7a60830c2Df862319e593943A3` |
 
 **Launch contracts (Oct 13).** Both contracts were deployed fresh for launch, so every record on the site starts there; the ones used during development stay on chain but are no longer read. During the build we found a gap in our first KleosCredit ([`0xa531…6B43`](https://testnet.monadvision.com/address/0xa5314F72F599412763b03D47150Bb7Ed5E166B43)): it closed an invoice with any stamp of the same agent for the right amount, so an agent could pay a tool it controls and close another creditor's invoice with that stamp. The launch KleosCredit also requires the creditor's EIP-712 "I was paid for this invoice", and checks every signature with OpenZeppelin's `SignatureChecker`, so ERC-1271 contract wallets work as agent wallets too.
+
+**Demo agents.** [#2233 Kleos Demo Agent](https://kleos.finance/a/2233) holds the record the Try page builds on (pay first and pay later). [#2254 Kleos Privy Agent](https://kleos.finance/a/2254) runs on a Privy server wallet under spending rules its owner's passkey controls.
 
 ## Use it
 
@@ -122,6 +137,7 @@ Full reference, including the agent side of pay later: `/docs` on the site.
 | `GET /api/agents/:id` | Identity, runtime, track record, invoices from KleosCredit, latest receipts |
 | `GET /api/agents/:id/stamps` | Public receipts, newest first |
 | `GET /api/verify/:receiptHash?agentId=` | The five checks, run against Monad |
+| `GET /api/agents/:id/rules` | For an agent with a Privy runtime: its spending rules as Privy holds them, and whether the owner's passkey owns them |
 
 ## Run it locally
 
@@ -144,6 +160,9 @@ Environment (`.env.local`):
 | `KLEOS_RPC_URL` | Optional: a Monad RPC endpoint (e.g. from a provider) for all server-side reads and writes, with the public RPC as fallback. Server only, never sent to the browser |
 | `ENVIO_API_TOKEN` | Optional: an Envio HyperSync token; Explore and the API rebuild the registry from chain events through HyperSync |
 | `ENVIO_GRAPHQL_URL` | Optional: a hosted Envio indexer's GraphQL endpoint, read first when set. Order: indexer, HyperSync, then an RPC scan |
+| `PRIVY_APP_ID`, `PRIVY_APP_SECRET` | Optional: the Privy app, for the Privy agent (server only) |
+| `PRIVY_WALLET_ID`, `PRIVY_WALLET_ADDRESS`, `PRIVY_POLICY_ID` | The Privy agent's server wallet and its policy (`scripts/privy-setup.mjs`) |
+| `PRIVY_SIGNER_ID`, `PRIVY_SIGNER_KEY` | The server's signer, held to the policy once the owner locks it (`scripts/privy-signer.mjs`). The key is secret |
 
 Passkey sign-in needs a platform authenticator with the WebAuthn PRF extension: iCloud Keychain (Safari, and Chromium browsers on macOS) or Google Password Manager.
 
@@ -151,7 +170,8 @@ Contracts: `cd contracts && forge test`. HyperSync: `node scripts/check-hypersyn
 
 ## Sponsor tech
 
-- **Mera**: passkey PRF, two salts in one ceremony, per-agent keys derived in memory. No seed phrase, no server secret.
+- **Mera**: passkey PRF, two salts in one ceremony, per-agent keys derived in memory. No seed phrase, no server secret. The same passkey also derives the P-256 key that owns a Privy agent's spending rules.
+- **Privy**: server wallets as agent runtimes, with a policy Privy enforces on every signature, owned by the agent owner's passkey (see [Spending rules](#spending-rules-enforced-by-privy)). [`packages/kleos/src/privy.ts`](packages/kleos/src/privy.ts), [`privy-auth.ts`](packages/kleos/src/privy-auth.ts), [`spending-rules.tsx`](src/components/spending-rules.tsx).
 - **Envio**: HyperSync powers Explore and `GET /api/agents`. [`src/lib/hypersync.ts`](src/lib/hypersync.ts) pulls every Registered, URIUpdated, MetadataSet and Transfer event of the ERC-8004 registry and every Stamped event of KleosStamps from genesis and replays them in chain order: the whole registry, with runtimes and stamp counts, in a few seconds instead of hundreds of RPC calls. The live listing says so (`"source": "envio-hypersync"` at `/api/explore`). The repo also has a HyperIndex indexer (`indexer/`) with the same logic for agents, stamps and invoices, read first when deployed.
 - **QuickNode**: the server's RPC for the demo's writes and live reads, with the public Monad RPC as fallback.
 
@@ -160,9 +180,10 @@ Contracts: `cd contracts && forge test`. HyperSync: `node scripts/check-hypersyn
 - Testnet only.
 - A stamp proves a paid action happened and what was paid; it does not grade the quality of the work.
 - An agent paying a tool it controls can inflate its own record. That costs real payments and leaves a public trail; no system can rule it out.
-- Earlier stamps (before countersigning) are one-sided; they verify, with the countersignature check marked "not applicable".
+- A tool that does not countersign gives a one-sided receipt; it still verifies, with the countersignature check marked "not applicable".
+- In the Privy demo policy, payments and transactions are capped; receipt signatures (`personal_sign`) and credit consents are allowed without an amount cap.
 
 ## License
 
 - **The site** (everything outside the folders below) is [AGPL-3.0](LICENSE): open to read and run, and anyone who offers a modified version as a service must publish their changes.
-- **The protocol pieces** are [Apache-2.0](packages/kleos/LICENSE), so anyone can build on them without restriction, with an explicit patent grant from every contributor: the `kleos` package (`packages/kleos`), the contracts (`contracts`) and the indexer (`indexer`).
+- **The protocol pieces** are [Apache-2.0](packages/kleos/LICENSE), so anyone can build on them without restriction, with an explicit patent grant from every contributor: the `kleos-sdk` package (`packages/kleos`), the contracts (`contracts`) and the indexer (`indexer`).
