@@ -24,7 +24,7 @@ export function decodePairing(code: string): PairingPayload {
   if (p.v !== 1 || !p.agentId || !p.wallet || !p.signature || !p.deadline) {
     throw new Error("That is not a Kleos pairing code.");
   }
-  if (p.deadline * 1000 < Date.now()) throw new Error("This pairing code has expired. Run `kleos pair` again.");
+  if (p.deadline * 1000 < Date.now()) throw new Error("This pairing code has expired. Run `npx kleos-sdk pair` again.");
   return p;
 }
 
