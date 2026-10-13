@@ -28,10 +28,10 @@ chains:
         address: "0x8004A818BFB912233c491871b3d84c89A494BD9e"
         handler: ./src/handlers/IdentityRegistry.ts
       - name: KleosStamps
-        address: "0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18"
+        address: "0x1192f1EFE2cd543C24417254B7ff488Ddb6C0F04"
         handler: ./src/handlers/KleosStamps.ts
       - name: KleosCredit
-        address: "0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88"
+        address: "0x5D9680B8Fdf7DC3a543A2b539d410a3EFCcb9bEE"
         handler: ./src/handlers/KleosCredit.ts
 
 # Block number and timestamp come with every event; the tx hash has to be asked for.

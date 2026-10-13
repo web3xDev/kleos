@@ -19,11 +19,11 @@ export const addresses = {
   // ERC-8004 Trustless Agents, from erc-8004/erc-8004-contracts.
   identityRegistry: "0x8004A818BFB912233c491871b3d84c89A494BD9e",
   reputationRegistry: "0x8004B663056A597Dffe9eCcC1965A193B7388713",
-  // Kleos, deployed 2026-09-21 from contracts/script/Deploy.s.sol.
-  kleosStamps: "0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18",
-  // Invoices for work served before payment, v2, deployed 2026-10-11 (block 70093523) from
-  // contracts/script/DeployCredit.s.sol. Closing needs the creditor's acknowledgement.
-  kleosCredit: "0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88",
+  // Kleos, deployed together at launch (2026-10-13, block 70627137) from
+  // contracts/script/DeployAll.s.sol: every record starts here.
+  kleosStamps: "0x1192f1EFE2cd543C24417254B7ff488Ddb6C0F04",
+  // Invoices for work served before payment. Closing needs the creditor's acknowledgement.
+  kleosCredit: "0x5D9680B8Fdf7DC3a543A2b539d410a3EFCcb9bEE",
   // Monad testnet USDC, the x402 asset.
   usdc: "0x534b2f3A21130d7a60830c2Df862319e593943A3",
 } as const;

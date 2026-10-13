@@ -86,8 +86,8 @@ Pass `--key 0x…` or set `KLEOS_RUNTIME_KEY` to use an existing key instead of 
 | | |
 |---|---|
 | ERC-8004 Identity Registry | `0x8004A818BFB912233c491871b3d84c89A494BD9e` |
-| KleosStamps | `0xb63DE9add37AF3Edd48Db8C1555578e6C1A8Cb18` |
-| KleosCredit | `0x0AC8a281DDf5f34E9b7e022790B7bB2d5F2Dba88` |
+| KleosStamps | `0x1192f1EFE2cd543C24417254B7ff488Ddb6C0F04` |
+| KleosCredit | `0x5D9680B8Fdf7DC3a543A2b539d410a3EFCcb9bEE` |
 
 ## License
 
