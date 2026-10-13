@@ -192,8 +192,8 @@ export function SpendingRules({ agentId, owner }: { agentId: bigint; owner?: str
 
             {/* Who can change these rules */}
             <div className="mt-5 border-t border-border-subtle pt-4">
-              <div className="flex items-center gap-2 text-sm">
-                <Lock size={14} strokeWidth={1.5} className={rules.locked ? "text-success" : "text-tertiary"} />
+              <div className="flex items-start gap-2 text-sm">
+                <Lock size={16} strokeWidth={1.5} className={`mt-0.5 shrink-0 ${rules.locked ? "text-success" : "text-tertiary"}`} />
                 {rules.locked ? (
                   <span className="text-secondary">
                     Owned by a key derived from the agent owner&apos;s passkey. Only that Touch ID can change these rules;
