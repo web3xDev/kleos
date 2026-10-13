@@ -10,8 +10,8 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createPublicClient, http } from "viem";
-import { addresses, chain } from "./chain";
+import { createPublicClient } from "viem";
+import { addresses, chain, serverTransport } from "./chain";
 import { identityRegistryAbi, parseRegistration } from "./erc8004";
 import { kleosStampsAbi } from "./stamps";
 
@@ -32,7 +32,7 @@ export type ExploreData = {
   scannedAt: number;
 };
 
-const client = createPublicClient({ chain, transport: http() });
+const client = createPublicClient({ chain, transport: serverTransport() });
 const registry = { address: addresses.identityRegistry, abi: identityRegistryAbi } as const;
 const stampsC = { address: addresses.kleosStamps, abi: kleosStampsAbi } as const;
 

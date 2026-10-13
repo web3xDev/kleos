@@ -1,7 +1,7 @@
 // Monad network and contract addresses. One network at a time; never mix
 // testnet and mainnet numbers on the same page.
 
-import { defineChain } from "viem";
+import { defineChain, fallback, http } from "viem";
 
 export const monadTestnet = defineChain({
   id: 10143,
@@ -14,6 +14,16 @@ export const monadTestnet = defineChain({
 });
 
 export const chain = monadTestnet;
+
+/**
+ * RPC for server code: KLEOS_RPC_URL (a provider endpoint, often with a key in
+ * the URL) first, the public RPC as a fallback when it errors. Not NEXT_PUBLIC_,
+ * so it never reaches the browser; browser code keeps the public RPC.
+ */
+export function serverTransport() {
+  const url = process.env.KLEOS_RPC_URL;
+  return url ? fallback([http(url), http()]) : http();
+}
 
 export const addresses = {
   // ERC-8004 Trustless Agents, from erc-8004/erc-8004-contracts.

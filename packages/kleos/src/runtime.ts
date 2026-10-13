@@ -7,6 +7,7 @@ import { join } from "node:path";
 import {
   createPublicClient,
   createWalletClient,
+  fallback,
   http,
   type Hex,
   type PublicClient,
@@ -74,12 +75,21 @@ export type RuntimeAccount = LocalAccount;
 
 export type Clients = { publicClient: PublicClient; wallet: WalletClient; account: RuntimeAccount };
 
+/**
+ * KLEOS_RPC_URL (e.g. a provider endpoint) first, the chain's public RPC as a
+ * fallback when it errors. Without it, the public RPC alone.
+ */
+export function rpcTransport() {
+  const url = typeof process !== "undefined" ? process.env.KLEOS_RPC_URL : undefined;
+  return url ? fallback([http(url), http()]) : http();
+}
+
 export function clients(network: NetworkName, account: RuntimeAccount): Clients {
   const { chain } = networks[network];
   return {
     account,
-    publicClient: createPublicClient({ chain, transport: http() }),
-    wallet: createWalletClient({ account, chain, transport: http() }),
+    publicClient: createPublicClient({ chain, transport: rpcTransport() }),
+    wallet: createWalletClient({ account, chain, transport: rpcTransport() }),
   };
 }
 

@@ -2,9 +2,9 @@
 // runtime is low on MON it gets a top-up from the drip wallet, so a burst of
 // runs (judges clicking twice) never ends in "out of gas". Testnet MON only.
 
-import { createPublicClient, createWalletClient, formatEther, http, parseEther } from "viem";
+import { createPublicClient, createWalletClient, formatEther, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { chain } from "./chain";
+import { chain, serverTransport } from "./chain";
 
 /** Below this the runtime is topped up (a pay-later run costs up to ~0.1 MON). */
 const LOW = parseEther("0.3");
@@ -25,7 +25,7 @@ export async function ensureRuntimeGas(runtime: `0x${string}`): Promise<void> {
 }
 
 async function topUp(runtime: `0x${string}`): Promise<void> {
-  const publicClient = createPublicClient({ chain, transport: http() });
+  const publicClient = createPublicClient({ chain, transport: serverTransport() });
   const balance = await publicClient.getBalance({ address: runtime });
   if (balance >= LOW) return;
 
@@ -38,7 +38,7 @@ async function topUp(runtime: `0x${string}`): Promise<void> {
     return;
   }
 
-  const wallet = createWalletClient({ account: drip, chain, transport: http() });
+  const wallet = createWalletClient({ account: drip, chain, transport: serverTransport() });
   const hash = await wallet.sendTransaction({ to: runtime, value: TOP_UP });
   await publicClient.waitForTransactionReceipt({ hash });
   console.info(`[demo-gas] topped up runtime ${runtime} with ${formatEther(TOP_UP)} MON (${hash})`);

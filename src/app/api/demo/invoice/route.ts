@@ -10,9 +10,9 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { withX402 } from "@x402/next";
-import { createPublicClient, http, isAddressEqual } from "viem";
+import { createPublicClient, isAddressEqual } from "viem";
 import { acknowledgePayment, countersignPaidCall, kleosCreditAbi } from "kleos";
-import { addresses, chain } from "@/lib/chain";
+import { addresses, chain, serverTransport } from "@/lib/chain";
 import { PRICE_ATOMIC, TOOL_ID, toolAccount } from "@/lib/demo-tool";
 import { MONAD_TESTNET, payTo, resourceServer } from "@/lib/x402-server";
 
@@ -20,7 +20,7 @@ async function handler(req: NextRequest) {
   const id = new URL(req.url).searchParams.get("id") ?? "";
   if (!/^0x[0-9a-fA-F]{64}$/.test(id)) return NextResponse.json({ error: "invoice id required" }, { status: 400 });
 
-  const client = createPublicClient({ chain, transport: http() });
+  const client = createPublicClient({ chain, transport: serverTransport() });
   const inv = await client.readContract({
     address: addresses.kleosCredit,
     abi: kleosCreditAbi,

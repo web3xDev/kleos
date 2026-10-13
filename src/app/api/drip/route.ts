@@ -3,9 +3,9 @@
 // "go find a faucet". Mainnet replaces this with a relayer.
 
 import { NextResponse } from "next/server";
-import { createPublicClient, createWalletClient, http, parseEther, isAddress, formatEther } from "viem";
+import { createPublicClient, createWalletClient, parseEther, isAddress, formatEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { chain } from "@/lib/chain";
+import { chain, serverTransport } from "@/lib/chain";
 import { checkDripLimits, ipKey, recordDrip } from "@/lib/drip-limits";
 
 const DRIP = parseEther("0.2");
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const { address } = (await req.json().catch(() => ({}))) as { address?: string };
   if (!address || !isAddress(address)) return NextResponse.json({ error: "bad address" }, { status: 400 });
 
-  const publicClient = createPublicClient({ chain, transport: http() });
+  const publicClient = createPublicClient({ chain, transport: serverTransport() });
   const balance = await publicClient.getBalance({ address });
   if (balance >= THRESHOLD) return NextResponse.json({ dripped: false, balance: formatEther(balance) });
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   // Recorded before sending, so parallel calls see each other.
   await recordDrip(address, ip);
 
-  const wallet = createWalletClient({ account, chain, transport: http() });
+  const wallet = createWalletClient({ account, chain, transport: serverTransport() });
   const hash = await wallet.sendTransaction({ to: address, value: DRIP });
   await publicClient.waitForTransactionReceipt({ hash });
   return NextResponse.json({ dripped: true, hash });

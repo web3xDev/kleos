@@ -1,14 +1,14 @@
 // Shared shapes and helpers for the public API. Everything served here is
 // either read from chain or verifiable against it; nothing is a score.
 
-import { createPublicClient, http, isAddressEqual, recoverMessageAddress, toBytes, type PublicClient, type TransactionReceipt } from "viem";
+import { createPublicClient, isAddressEqual, recoverMessageAddress, toBytes, type PublicClient, type TransactionReceipt } from "viem";
 import { receiptHash, type ReceiptPublic } from "kleos/receipt";
 import { checkCountersign } from "./countersign";
-import { addresses, chain } from "./chain";
+import { addresses, chain, serverTransport } from "./chain";
 import { kleosStampsAbi } from "./stamps";
 import { listStamps, type StoredStamp } from "./store";
 
-export const publicClient: PublicClient = createPublicClient({ chain, transport: http() });
+export const publicClient: PublicClient = createPublicClient({ chain, transport: serverTransport() });
 
 // Anchors are permanent, so a hash seen anchored once never needs re-reading.
 const anchoredSeen = new Set<string>();

@@ -2,10 +2,10 @@
 // it offers. Used by the pay-first route, the pay-later route and the invoice
 // route, so all three are the same tool.
 
-import { createPublicClient, http } from "viem";
+import { createPublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { CreditTerms } from "kleos";
-import { addresses, chain } from "./chain";
+import { addresses, chain, serverTransport } from "./chain";
 import { payTo } from "./x402-server";
 
 export const TOOL_ID = "kleos-demo/monad-block";
@@ -23,7 +23,7 @@ export function toolAccount() {
 
 /** The tool's answer: the latest Monad block. */
 export async function latestBlockAnswer(): Promise<string> {
-  const client = createPublicClient({ chain, transport: http() });
+  const client = createPublicClient({ chain, transport: serverTransport() });
   const block = await client.getBlock();
   return JSON.stringify({
     tool: TOOL_ID,
