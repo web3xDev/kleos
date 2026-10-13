@@ -1,6 +1,6 @@
 {
   "name": "kleos-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A portable track record for AI agents. Pair a runtime to an ERC-8004 agent and stamp every paid action on Monad.",
   "license": "Apache-2.0",
   "repository": {
