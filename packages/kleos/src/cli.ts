@@ -12,6 +12,11 @@ const [cmd, ...rest] = keyIdx === -1 ? argv : argv.filter((_, i) => i !== keyIdx
 const network = (process.env.KLEOS_NETWORK ?? "monad-testnet") as NetworkName;
 
 async function main() {
+  // Only commands that need the key touch it; a bare `kleos` must not create one.
+  if (cmd !== "whoami" && cmd !== "pair") {
+    console.error("usage: kleos <pair <agentId> | whoami> [--key 0x...]   (or KLEOS_RUNTIME_KEY=0x...)");
+    process.exit(2);
+  }
   const account = loadOrCreateRuntimeKey(explicitKey);
 
   if (cmd === "whoami") {
