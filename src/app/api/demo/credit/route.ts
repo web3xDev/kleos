@@ -40,7 +40,8 @@ export async function POST(req: Request) {
   const asNewcomer = body.as === "newcomer";
   const skipPayment = Boolean(body.skipPayment) && allowDefault() && !asNewcomer;
 
-  if (!acquireDemo()) return busyResponse();
+  // The newcomer never sends a transaction, so it does not hold up the demo runtime.
+  if (!asNewcomer && !acquireDemo()) return busyResponse();
 
   const origin = new URL(req.url).origin;
   const network = "monad-testnet" as const;
