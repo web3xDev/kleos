@@ -42,6 +42,8 @@ type SessionContextValue = {
   signIn: (opts?: { quiet?: boolean }) => Promise<void>;
   /** Step-up check before an irreversible action: one passkey prompt that must yield this session's address. */
   confirm: () => Promise<void>;
+  /** Like confirm, but hands back the fresh keys for one action; the caller ends their session after use. */
+  freshKeys: () => Promise<SignInResult>;
   create: () => Promise<void>;
   end: () => void;
   secondsLeft: number;
@@ -113,6 +115,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       throw new Error("That passkey belongs to a different account.");
     }
   }, []);
+  const freshKeys = useCallback(async () => {
+    const current = sessionRef.current;
+    if (!current) throw new Error("Not signed in");
+    const keys = await signInOwner();
+    if (toViemAccount(keys.owner.session).address.toLowerCase() !== current.address.toLowerCase()) {
+      keys.owner.session.end();
+      throw new Error("That passkey belongs to a different account.");
+    }
+    return keys;
+  }, []);
   const create = useCallback(() => start(createOwner), [start]);
 
   // Session clock. Expiry ends the session, which zeroes the key.
@@ -127,8 +139,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const secondsLeft = session ? Math.max(0, Math.round((session.endsAt - now) / 1000)) : 0;
 
   const value = useMemo(
-    () => ({ session, publicClient, busy, error, signIn, confirm, create, end, secondsLeft }),
-    [session, publicClient, busy, error, signIn, confirm, create, end, secondsLeft],
+    () => ({ session, publicClient, busy, error, signIn, confirm, freshKeys, create, end, secondsLeft }),
+    [session, publicClient, busy, error, signIn, confirm, freshKeys, create, end, secondsLeft],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

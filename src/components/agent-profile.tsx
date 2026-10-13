@@ -357,7 +357,7 @@ export function AgentProfile({ agentId }: { agentId: bigint }) {
           <p className="mt-1 text-xs text-tertiary">A passkey-derived address. The person behind it is never revealed.</p>
         </div>
         </div>
-        <SpendingRules agentId={agentId} />
+        <SpendingRules agentId={agentId} owner={agent?.owner} />
       </div>
 
       {/* Stamp feed */}

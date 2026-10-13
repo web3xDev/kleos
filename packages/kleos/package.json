@@ -37,6 +37,10 @@
     "./receipt": {
       "types": "./dist/receipt.d.ts",
       "default": "./dist/receipt.js"
+    },
+    "./privy-auth": {
+      "types": "./dist/privy-auth.d.ts",
+      "default": "./dist/privy-auth.js"
     }
   },
   "scripts": {

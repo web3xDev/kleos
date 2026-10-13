@@ -8,8 +8,7 @@
 
 import { getTypesForEIP712Domain, toHex, type Hex, type LocalAccount, type TypedDataDefinition } from "viem";
 import { toAccount } from "viem/accounts";
-
-const API = "https://api.privy.io/v1";
+import { PRIVY_API as API, authorizationSignature } from "./privy-auth.js";
 
 export type PrivyConfig = {
   appId: string;
@@ -18,20 +17,31 @@ export type PrivyConfig = {
   walletId: string;
   /** Its address, so signing needs no extra lookup. */
   address: `0x${string}`;
+  /**
+   * The signer's P-256 secret, when the wallet has an owner: requests are then
+   * authorized as that signer, and Privy holds them to the signer's policy.
+   */
+  signerKey?: Uint8Array;
 };
 
 /** JSON with bigints as decimal strings, the way Privy's API takes them. */
 const json = (v: unknown) => JSON.stringify(v, (_, x) => (typeof x === "bigint" ? x.toString() : x));
 
 async function rpc<T>(cfg: PrivyConfig, body: Record<string, unknown>): Promise<T> {
-  const res = await fetch(`${API}/wallets/${cfg.walletId}/rpc`, {
+  const url = `${API}/wallets/${cfg.walletId}/rpc`;
+  const sent = json(body);
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
       "privy-app-id": cfg.appId,
       authorization: `Basic ${Buffer.from(`${cfg.appId}:${cfg.appSecret}`).toString("base64")}`,
+      // Signed over exactly the body that is sent.
+      ...(cfg.signerKey
+        ? { "privy-authorization-signature": authorizationSignature(cfg.signerKey, { method: "POST", url, body: JSON.parse(sent), appId: cfg.appId }) }
+        : {}),
     },
-    body: json(body),
+    body: sent,
   });
   const text = await res.text();
   // A policy refusal comes back as an error here: the runtime cannot get around it.

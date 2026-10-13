@@ -67,4 +67,5 @@ export type { PairingPayload, StampInput, StampResult, StamperOptions, RuntimeAc
 export { payingFetch, readSettlement, readCountersign, callAndStamp } from "./x402.js";
 export type { Settlement, PaidCall } from "./x402.js";
 export { privyAccount } from "./privy.js";
+export { authorizationSignature, privyPublicKey, secretFromPkcs8, canonicalize } from "./privy-auth.js";
 export type { PrivyConfig } from "./privy.js";

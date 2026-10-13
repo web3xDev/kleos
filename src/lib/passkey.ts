@@ -17,6 +17,7 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
+import { p256 } from "@noble/curves/nist.js";
 import { createTwoSaltClient } from "./webauthn-two-salts";
 
 const CREDENTIAL_KEY = "kleos.credential";
@@ -39,6 +40,11 @@ export type EncryptionKeys = {
   // fresh device knows which key opens which agent's history. The agent id
   // itself cannot be used: it is only known after the mint.
   forIndex: (index: number) => { privateKey: Uint8Array; publicKey: `0x${string}` };
+  /**
+   * A P-256 key for Privy, from the same root: it owns a Privy agent's wallet
+   * and spending rules, so changing them takes this passkey. Never stored.
+   */
+  privyOwner: () => Uint8Array;
 };
 
 function rpId(): string {
@@ -86,6 +92,13 @@ function encryptionFromRoot(root: Uint8Array): EncryptionKeys {
         privateKey,
         publicKey: `0x${bytesToHex(secp256k1.getPublicKey(privateKey, true))}`,
       };
+    },
+    privyOwner() {
+      // Retry with a counter in the vanishingly rare case the output is not a valid P-256 scalar.
+      for (let i = 0; ; i++) {
+        const key = hkdf(sha256, root, utf8ToBytes("kleos.privy-owner.v1"), utf8ToBytes(String(i)), 32);
+        if (p256.utils.isValidSecretKey(key)) return key;
+      }
     },
   };
 }
