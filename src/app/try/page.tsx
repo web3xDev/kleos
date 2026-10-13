@@ -132,6 +132,16 @@ export default function TryPage() {
     setKind(k);
     setViaPrivy(Boolean(opts.privy));
     reset(k === "classic" ? "first" : "later");
+    if (opts.privy) {
+      // Same steps, another agent: say which one, and who signs for it.
+      setRows((rs) =>
+        rs.map((r) =>
+          r.key === "agent"
+            ? { ...r, who: `Agent #${DEMO_PRIVY_AGENT_ID} · runtime is a Privy server wallet; Privy checks every signature against its spending rules` }
+            : r,
+        ),
+      );
+    }
     // The step that carries the tool's answer, per flow.
     const answerStep = k === "classic" ? "tool" : "served";
     try {
