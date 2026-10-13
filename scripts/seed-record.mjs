@@ -23,11 +23,19 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /** One run; resolves to { ok, detail } from the streamed steps. */
 async function run(path, body) {
   for (let attempt = 0; attempt < 6; attempt++) {
+    // A dropped connection never reached the site (no run started): wait and try again.
     const res = await fetch(`${base}${path}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body ?? {}),
+    }).catch((e) => {
+      console.log(`  connection failed (${e.cause?.code ?? e.message}), retrying`);
+      return null;
     });
+    if (!res) {
+      await sleep(GAP_MS);
+      continue;
+    }
     if (res.status === 429) {
       await sleep(GAP_MS);
       continue;
