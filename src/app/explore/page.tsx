@@ -211,7 +211,7 @@ export default function ExplorePage() {
         <Metric value={data?.totalStamps} label="Verified actions" />
         <Metric value={settledTotal} label="USDC settled" />
       </div>
-      <p className="mt-4 pb-3 text-xs text-tertiary">Read live from Monad: the ERC-8004 registry and KleosStamps.</p>
+      <p className="mt-4 pb-3 text-xs text-tertiary">Read from Monad through Envio HyperSync: the ERC-8004 registry and KleosStamps.</p>
 
       {/* The network, one square per agent: the contrast between identity and history, seen */}
       <section className="mt-6">

@@ -157,7 +157,7 @@ async function readAgent(publicClient: PublicClient, id: bigint): Promise<Agent>
 }
 
 // Local cache of agent ids per owner. A convenience only: a fresh device
-// rebuilds the list from chain (HyperSync) once that path is wired.
+// rebuilds the list from chain: the registry listing (Envio HyperSync) is the source of truth.
 function cacheKey(owner: string) {
   return `kleos.agents.${owner.toLowerCase()}`;
 }

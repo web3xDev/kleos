@@ -63,7 +63,7 @@ const layers: Layer[] = [
     where: "Anyone",
     title: "Track record",
     items: [
-      { k: "explore", v: "the whole registry, stamp counts from KleosStamps" },
+      { k: "explore", v: "the whole registry and stamp counts, from chain events via Envio HyperSync" },
       { k: "profile", v: "verified actions · USDC settled · days · tools · invoices" },
       { k: "verify", v: "recompute hash · recover signer · read anchor · fetch settlement · check the countersignature, in the browser" },
       { k: "decide", v: "Kleos Engine v0 · a tool's rule over stamps and invoices" },

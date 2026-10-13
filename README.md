@@ -142,16 +142,18 @@ Environment (`.env.local`):
 | `KLEOS_URL` | Base URL of the stamp store (defaults to the site itself) |
 | `BLOB_READ_WRITE_TOKEN` | Optional: Vercel Blob for the stamp store and drip limits (local files otherwise) |
 | `KLEOS_RPC_URL` | Optional: a Monad RPC endpoint (e.g. from a provider) for all server-side reads and writes, with the public RPC as fallback. Server only, never sent to the browser |
-| `ENVIO_GRAPHQL_URL` | Optional: the Envio indexer's GraphQL endpoint; Explore and the API read the registry from it, falling back to an RPC scan |
+| `ENVIO_API_TOKEN` | Optional: an Envio HyperSync token; Explore and the API rebuild the registry from chain events through HyperSync |
+| `ENVIO_GRAPHQL_URL` | Optional: a hosted Envio indexer's GraphQL endpoint, read first when set. Order: indexer, HyperSync, then an RPC scan |
 
 Passkey sign-in needs a platform authenticator with the WebAuthn PRF extension: iCloud Keychain (Safari, and Chromium browsers on macOS) or Google Password Manager.
 
-Contracts: `cd contracts && forge test`. Indexer: see `indexer/config.yaml`; it runs on Envio's hosted service (deploy pending).
+Contracts: `cd contracts && forge test`. HyperSync: `node scripts/check-hypersync.mjs` reads the registry the way the site does. Indexer: see `indexer/config.yaml`.
 
 ## Sponsor tech
 
 - **Mera**: passkey PRF, two salts in one ceremony, per-agent keys derived in memory. No seed phrase, no server secret.
-- **Envio**: HyperIndex over ERC-8004, KleosStamps and KleosCredit on Monad testnet (in `indexer/`), so lists of agents, stamps and invoices come straight from chain events. The indexer is written and builds; its hosted deploy and the site's switch to it are in progress.
+- **Envio**: HyperSync powers Explore and `GET /api/agents`. [`src/lib/hypersync.ts`](src/lib/hypersync.ts) pulls every Registered, URIUpdated, MetadataSet and Transfer event of the ERC-8004 registry and every Stamped event of KleosStamps from genesis and replays them in chain order: the whole registry, with runtimes and stamp counts, in a few seconds instead of hundreds of RPC calls. The live listing says so (`"source": "envio-hypersync"` at `/api/explore`). The repo also has a HyperIndex indexer (`indexer/`) with the same logic for agents, stamps and invoices, read first when deployed.
+- **QuickNode**: the server's RPC for the demo's writes and live reads, with the public Monad RPC as fallback.
 
 ## Limits, stated plainly
 
