@@ -105,7 +105,7 @@ function KleosTag() {
 // Last scan and settled totals, kept for the life of the tab: coming back to
 // Explore shows them at once (then refreshes) instead of flashing placeholders.
 let lastData: ExploreData | null = null;
-let lastSettled = new Map<number, { usdc: bigint; last: number | null }>();
+let lastSettled = new Map<number, { usdc: bigint; last: number | null; actions: number }>();
 
 export default function ExplorePage() {
   const [data, setData] = useState<ExploreData | null>(() => lastData);
@@ -117,7 +117,9 @@ export default function ExplorePage() {
   // Open by default: browsing the registry is what this page is for.
   const [listOpen, setListOpen] = useState(true);
   // USDC settled and last stamp time per agent with a record, read from their stamps.
-  const [settled, setSettled] = useState<Map<number, { usdc: bigint; last: number | null }>>(() => lastSettled);
+  // Per agent with a record, read live from its stamps: USDC settled, last stamp, and the
+  // action count, which is fresher than the registry listing's (cached for a minute).
+  const [settled, setSettled] = useState<Map<number, { usdc: bigint; last: number | null; actions: number }>>(() => lastSettled);
 
   useEffect(() => {
     fetch("/api/explore")
@@ -166,6 +168,7 @@ export default function ExplorePage() {
           {
             usdc: stamps.reduce((t, s) => t + BigInt(s.receipt.amount), 0n),
             last: stamps.length ? Math.max(...stamps.map((s) => s.receipt.timestamp)) : null,
+            actions: stamps.length,
           },
         ] as const;
       }),
@@ -184,17 +187,20 @@ export default function ExplorePage() {
     if (!data) return [];
     const needle = q.trim().toLowerCase();
     return data.agents
+      .map((a) => ({ ...a, stamps: settled.get(a.id)?.actions ?? a.stamps }))
       .filter((a) => (filter === "record" ? a.stamps > 0 : true))
       .filter((a) => !needle || String(a.id) === needle || a.name?.toLowerCase().includes(needle) || a.owner.toLowerCase().includes(needle))
       .sort((a, b) => b.stamps - a.stamps || b.id - a.id);
-  }, [data, q, filter]);
+  }, [data, q, filter, settled]);
 
   const pages = Math.max(1, Math.ceil(rows.length / PAGE));
   const current = Math.min(page, pages - 1);
   const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
 
 
-  // Network USDC settled, shown once every recorded agent's stamps are read.
+  // Network totals from the live stamps once every recorded agent's are read; until then the listing's.
+  const allRead = recorded.length > 0 && settled.size === recorded.length;
+  const actionsTotal = allRead ? [...settled.values()].reduce((t, v) => t + v.actions, 0) : data?.totalStamps;
   const settledTotal =
     settledFailed ? "–" : recorded.length > 0 && settled.size === recorded.length ? formatUsdc([...settled.values()].reduce((t, v) => t + v.usdc, 0n)) : data && recorded.length === 0 ? "$0" : undefined;
 
@@ -208,7 +214,7 @@ export default function ExplorePage() {
       <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
         <Metric value={data?.total} label="Registered" />
         <Metric value={data?.withTrackRecord} label="With a track record" accent />
-        <Metric value={data?.totalStamps} label="Verified actions" />
+        <Metric value={actionsTotal} label="Verified actions" />
         <Metric value={settledTotal} label="USDC settled" />
       </div>
       <p className="mt-4 pb-3 text-xs text-tertiary">Read from Monad through Envio HyperSync: the ERC-8004 registry and KleosStamps.</p>
@@ -262,7 +268,7 @@ export default function ExplorePage() {
             {featured.map((a) => (
               <RecordCard
                 key={a.id}
-                agent={a}
+                agent={{ ...a, stamps: settled.get(a.id)?.actions ?? a.stamps }}
                 summary={a.id >= 9000 ? { usdc: BigInt(a.stamps) * 10_000n, last: preview.now - (a.id - 8990) * 3600 } : settled.get(a.id)}
               />
             ))}
