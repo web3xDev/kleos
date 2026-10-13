@@ -1,7 +1,7 @@
 // GET /api/agents?withRecord=1&limit=50&offset=0
 // Every ERC-8004 agent on Monad testnet with its Kleos stamp count.
-import { NextResponse } from "next/server";
-import { explore } from "@/lib/registry-scan";
+import { NextResponse, after } from "next/server";
+import { explore, refreshing } from "@/lib/registry-scan";
 import { apiHeaders } from "@/lib/api";
 import { chain } from "@/lib/chain";
 
@@ -11,6 +11,7 @@ export async function GET(req: Request) {
   const limit = Math.min(500, Math.max(1, Number(url.searchParams.get("limit") ?? 50)));
   const offset = Math.max(0, Number(url.searchParams.get("offset") ?? 0));
   const data = await explore();
+  after(() => refreshing());
   const all = data.agents.filter((a) => (withRecord ? a.stamps > 0 : true)).sort((a, b) => b.stamps - a.stamps || b.id - a.id);
   return NextResponse.json(
     {

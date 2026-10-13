@@ -92,6 +92,41 @@ function saveSnapshot(data: ExploreData): void {
   }
 }
 
+// On Vercel the disk does not survive a cold start, so the last scan is also
+// kept in Blob: a fresh server answers from it at once instead of scanning
+// ~2k agents first, then refreshes behind the response.
+const BLOB_SNAPSHOT = "snapshots/explore.json";
+const blobEnabled = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+
+async function loadBlobSnapshot(): Promise<ExploreData | null> {
+  if (!blobEnabled()) return null;
+  try {
+    const { head } = await import("@vercel/blob");
+    const meta = await head(BLOB_SNAPSHOT);
+    // Cache-busting query: the CDN copy can lag an overwrite.
+    const res = await fetch(`${meta.url}?v=${Date.now()}`, { cache: "no-store" });
+    return res.ok ? ((await res.json()) as ExploreData) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function saveBlobSnapshot(data: ExploreData): Promise<void> {
+  if (!blobEnabled()) return;
+  try {
+    const { put } = await import("@vercel/blob");
+    await put(BLOB_SNAPSHOT, JSON.stringify(data), {
+      access: "public",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      cacheControlMaxAge: 60,
+      contentType: "application/json",
+    });
+  } catch {
+    // a missed save only means the next cold start scans
+  }
+}
+
 /**
  * Highest existing id. Ids are minted densely from 0 but tokens can be
  * burned, so probe in windows: the registry ends where a whole window of
@@ -211,9 +246,10 @@ async function load(): Promise<ExploreData> {
 function refresh(): Promise<ExploreData> {
   if (!inflight) {
     inflight = load()
-      .then((data) => {
+      .then(async (data) => {
         cache = { data, at: Date.now() };
         saveSnapshot(data);
+        await saveBlobSnapshot(data);
         return data;
       })
       .finally(() => {
@@ -223,7 +259,16 @@ function refresh(): Promise<ExploreData> {
   return inflight;
 }
 
+/** The refresh still running behind a response, if any: route handlers hand it to after(). */
+export function refreshing(): Promise<unknown> | null {
+  return inflight;
+}
+
 export async function explore(): Promise<ExploreData> {
+  if (!cache) {
+    const snapshot = await loadBlobSnapshot();
+    if (snapshot) cache = { data: snapshot, at: snapshot.scannedAt };
+  }
   if (cache) {
     if (Date.now() - cache.at >= TTL) void refresh().catch(() => null);
     return cache.data;
