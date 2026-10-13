@@ -7,6 +7,8 @@
 import { useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { Label, Mono } from "@/components/ui";
+import { addresses, chain } from "@/lib/chain";
+import { formatUsdc } from "@/lib/stamps";
 import type { SpendingRules as Rules } from "@/lib/privy";
 
 const METHOD: Record<string, string> = {
@@ -15,8 +17,19 @@ const METHOD: Record<string, string> = {
   personal_sign: "Signs messages",
 };
 
+// Known contracts by name, so a rule reads as what it allows, not as hex.
+const NAMES: Record<string, string> = {
+  [addresses.usdc.toLowerCase()]: "USDC",
+  [addresses.kleosStamps.toLowerCase()]: "KleosStamps",
+  [addresses.kleosCredit.toLowerCase()]: "KleosCredit",
+  [addresses.identityRegistry.toLowerCase()]: "ERC-8004 registry",
+};
+
 function describe(c: { field: string; operator: string; value: string }): string {
   const op = { eq: "=", lte: "≤", gte: "≥", lt: "<", gt: ">", in: "in" }[c.operator] ?? c.operator;
+  if (c.field === "verifyingContract" || c.field === "to") return `${c.field === "to" ? "to" : "contract"} ${NAMES[c.value.toLowerCase()] ?? c.value}`;
+  if (c.field === "chainId" || c.field === "chain_id") return c.value === String(chain.id) ? chain.name : `chain ${c.value}`;
+  if (c.field === "value") return `amount ${op} ${formatUsdc(BigInt(c.value))}`;
   return `${c.field} ${op} ${c.value}`;
 }
 
