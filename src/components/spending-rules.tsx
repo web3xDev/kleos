@@ -152,8 +152,8 @@ export function SpendingRules({ agentId, owner }: { agentId: bigint; owner?: str
         aria-expanded={open}
         className="group flex w-full flex-wrap items-center justify-between gap-3 px-5 py-4 text-left"
       >
-        <span className="flex items-center gap-2">
-          <ShieldCheck size={16} strokeWidth={1.5} className="text-success" />
+        <span className="flex items-center gap-2.5">
+          <ShieldCheck size={20} strokeWidth={1.5} className="shrink-0 text-success" />
           <span className="text-sm font-medium text-primary">Spending rules, enforced by Privy</span>
           <span className="text-xs text-tertiary">
             {allowed} allowed · everything else refused{rules.locked ? " · only the owner's passkey can change them" : ""}
