@@ -14,6 +14,7 @@ import { createPublicClient } from "viem";
 import { addresses, chain, serverTransport } from "./chain";
 import { identityRegistryAbi, parseRegistration } from "./erc8004";
 import { kleosStampsAbi } from "./stamps";
+import { fromHyperSync } from "./hypersync";
 
 export type ExploreAgent = {
   id: number;
@@ -30,6 +31,8 @@ export type ExploreData = {
   totalStamps: number;
   agents: ExploreAgent[];
   scannedAt: number;
+  /** Where this listing came from: the hosted indexer, HyperSync, or the RPC scan. */
+  source?: "envio-indexer" | "envio-hypersync" | "rpc";
 };
 
 const client = createPublicClient({ chain, transport: serverTransport() });
@@ -231,16 +234,25 @@ async function fromEnvio(url: string): Promise<ExploreData> {
 }
 
 /** Envio when configured, the RPC scan otherwise or when Envio fails. */
+/** The hosted Envio indexer, then Envio HyperSync, then the RPC scan: the first that answers. */
 async function load(): Promise<ExploreData> {
   const url = process.env.ENVIO_GRAPHQL_URL;
   if (url) {
     try {
-      return await fromEnvio(url);
+      return { ...(await fromEnvio(url)), source: "envio-indexer" };
     } catch (e) {
-      console.warn(`[explore] Envio unavailable, scanning the registry over RPC: ${e instanceof Error ? e.message : e}`);
+      console.warn(`[explore] Envio indexer unavailable: ${e instanceof Error ? e.message : e}`);
     }
   }
-  return scan();
+  const token = process.env.ENVIO_API_TOKEN;
+  if (token) {
+    try {
+      return { ...(await fromHyperSync(token)), source: "envio-hypersync" };
+    } catch (e) {
+      console.warn(`[explore] HyperSync unavailable, scanning the registry over RPC: ${e instanceof Error ? e.message : e}`);
+    }
+  }
+  return { ...(await scan()), source: "rpc" };
 }
 
 function refresh(): Promise<ExploreData> {
